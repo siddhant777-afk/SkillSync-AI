@@ -17,7 +17,15 @@ export const API_ENDPOINTS = {
   PROJECTS: "/api/v1/projects",
   ACHIEVEMENTS: "/api/v1/achievements",
   RECOMMENDATIONS: "/api/v1/career/recommendations",
+  LEADERBOARD: "/api/v1/leaderboard",
+  CAREER_JOBS: "/api/v1/career/jobs",
+  CAREER_LIVE_JOBS: "/api/v1/career/live-jobs",
+  NOTIFICATIONS: "/api/v1/notifications",
   RESUME: "/api/v1/resume",
   RESUME_AI_REVIEW: "/api/v1/resume/ai-review",
+  RESUME_AUTO_FILL: "/api/v1/resume/auto-fill",
+  VERIFY_HANDLE: "/api/v1/dashboard/verify-handle",
+  VERIFY_PLATFORM: "/api/v1/users/verify-platform",
   RECRUITER_CANDIDATES: "/api/v1/recruiter/candidates",
 };
+

@@ -87,14 +87,14 @@ class AIService:
             avg_skill = sum(s.level for s in skills) / len(skills)
             skill_points = min(20, (avg_skill / 100) * 15 + min(5, len(skills)))
         else:
-            skill_points = 10
+            skill_points = 0
 
         # 4. Resume / Profile score (0-15 points)
-        ats = resume.ats_score if resume else 75
+        ats = resume.ats_score if (resume and resume.ats_score is not None) else 0
         resume_points = min(15, (ats / 100) * 15)
 
         total_score = round(coding_points + project_points + skill_points + resume_points)
-        return max(30, min(99, total_score))
+        return max(0, min(100, total_score))
 
     @staticmethod
     def identify_skill_gaps(target_role: str, user_skills: List[Skill]) -> List[Dict[str, str]]:
@@ -132,75 +132,119 @@ class AIService:
         return gaps
 
     @staticmethod
-    async def review_resume_ats(resume: ResumeData, target_role: str = "Software Engineer") -> Dict[str, Any]:
+    async def review_resume_ats(
+        resume: ResumeData,
+        target_role: str = "Software Engineer",
+        base_score: Optional[int] = None,
+    ) -> Dict[str, Any]:
         """
-        Calculates ATS compatibility score and returns detailed suggestions.
-        Can invoke Gemini API if GEMINI_API_KEY is configured.
+        Evaluates resume ATS compatibility and generates targeted AI recommendations and missing keywords.
+        Ensures the score remains 100% deterministic and grounded in actual resume contents.
         """
-        # Check if Gemini key is available
+        has_content = bool(
+            (resume.skills_json and len(resume.skills_json) > 0) or
+            (resume.summary and len(resume.summary.strip()) > 0) or
+            (resume.education and len(resume.education) > 0) or
+            (resume.projects_json and len(resume.projects_json) > 0) or
+            (resume.experience_json and len(resume.experience_json) > 0) or
+            (resume.achievements_json and len(resume.achievements_json) > 0)
+        )
+
+        if not has_content:
+            return {
+                "ats_score": 0,
+                "feedback": "Your resume currently contains no details. Fill in your summary, education, skills, and projects to evaluate your ATS readiness.",
+                "missing_keywords": ["Python", "SQL", "Git", "REST APIs", "Docker"],
+            }
+
+        final_score = base_score if base_score is not None else 0
+
+        # Collect user existing keywords
+        user_text = f"{resume.headline or ''} {resume.summary or ''} {' '.join(resume.skills_json or [])}".lower()
+        for p in (resume.projects_json or []):
+            if isinstance(p, dict):
+                user_text += f" {p.get('title', '')} {p.get('stack', '')} {p.get('description', '')}".lower()
+
+        # Find target role required skills
+        role_reqs = ROLE_REQUIRED_SKILLS.get(target_role, ROLE_REQUIRED_SKILLS.get("Full Stack Developer", []))
+        if not role_reqs:
+            role_reqs = [
+                {"name": "Docker & Containers"},
+                {"name": "PostgreSQL / SQL"},
+                {"name": "CI/CD Pipelines"},
+                {"name": "System Architecture"},
+                {"name": "Unit Testing & QA"},
+            ]
+
+        missing_keywords = []
+        for req in role_reqs:
+            kw_name = req["name"]
+            terms = [t.strip().lower() for t in kw_name.replace("&", "/").split("/") if t.strip()]
+            if not any(term in user_text for term in terms):
+                clean_kw = kw_name.split("/")[0].strip()
+                if clean_kw not in missing_keywords:
+                    missing_keywords.append(clean_kw)
+
+        if len(missing_keywords) < 3:
+            default_additions = ["Docker", "CI/CD", "PostgreSQL", "REST APIs", "Cloud Deployment"]
+            for da in default_additions:
+                if da.lower() not in user_text and da not in missing_keywords:
+                    missing_keywords.append(da)
+
+        # Generate qualitative feedback
+        ai_feedback_text = ""
         if settings.GEMINI_API_KEY:
             try:
                 prompt = f"""
-                You are an expert technical ATS evaluator and tech recruiter.
-                Analyze the following resume sections for the target role: {target_role}.
+                You are an enterprise technical ATS evaluator and senior hiring manager reviewing a candidate for '{target_role}'.
+                The candidate's deterministic parser score is {final_score}/100.
                 Headline: {resume.headline}
                 Summary: {resume.summary}
                 Skills: {resume.skills_json}
                 Projects: {resume.projects_json}
-                Experience: {resume.experience_json}
+                Education: {resume.education}
+                Missing Recommended Keywords: {missing_keywords[:5]}
 
                 Provide a JSON response with:
-                - ats_score (integer between 60 and 98)
-                - feedback (string with clear recommendations, quantified metrics and keywords)
-                - missing_keywords (list of strings)
+                - feedback: 2-3 sentences of precise, actionable advice on improving ATS pass rate for {target_role}. Focus on quantifying project impact and incorporating missing technical keywords.
                 """
                 url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={settings.GEMINI_API_KEY}"
                 payload = {
                     "contents": [{"parts": [{"text": prompt}]}],
                     "generationConfig": {"response_mime_type": "application/json"},
                 }
-                async with httpx.AsyncClient(timeout=10.0) as client:
+                async with httpx.AsyncClient(timeout=8.0) as client:
                     resp = await client.post(url, json=payload)
                     if resp.status_code == 200:
                         data = resp.json()
                         text = data["candidates"][0]["content"]["parts"][0]["text"]
                         import json
                         parsed = json.loads(text)
-                        return {
-                            "ats_score": parsed.get("ats_score", 86),
-                            "feedback": parsed.get("feedback", "Strong resume baseline."),
-                            "missing_keywords": parsed.get("missing_keywords", []),
-                        }
+                        if parsed.get("feedback"):
+                            ai_feedback_text = parsed.get("feedback")
             except Exception:
                 pass
 
-        # Robust built-in heuristic evaluation
-        score = 78
-        feedback_points = []
+        if not ai_feedback_text:
+            feedback_points = []
+            if len(resume.summary or "") < 60:
+                feedback_points.append("Expand your professional summary to highlight core technical focus areas and years of coding experience.")
+            else:
+                feedback_points.append("Professional summary is concise and highlights key competencies.")
 
-        # Analyze summary
-        if len(resume.summary or "") < 80:
-            score -= 5
-            feedback_points.append("Expand professional summary with core focus areas and years of coding experience.")
-        else:
-            score += 4
+            proj_list = resume.projects_json or []
+            if len(proj_list) < 2:
+                feedback_points.append("Add at least 2 technical projects with GitHub links and quantified impact metrics.")
+            else:
+                feedback_points.append("Project portfolio demonstrates hands-on implementation capabilities.")
 
-        # Analyze projects
-        proj_list = resume.projects_json or []
-        if len(proj_list) >= 2:
-            score += 6
-            feedback_points.append("Strong technical project portfolio demonstrated.")
-        else:
-            score -= 6
-            feedback_points.append("Add at least 2 full-stack or machine learning projects with GitHub links.")
+            if missing_keywords:
+                feedback_points.append(f"Consider integrating relevant keywords like {', '.join(missing_keywords[:3])} into your skills and project descriptions.")
 
-        # Keywords & impact
-        feedback_points.append("Include quantifiable outcomes (e.g., 'reduced query latency by 40%', 'processed 50k records').")
-        feedback_points.append("Mention Docker, CI/CD, and live deployment URLs to maximize ATS matching.")
+            ai_feedback_text = " ".join(feedback_points)
 
-        final_score = max(65, min(95, score))
         return {
             "ats_score": final_score,
-            "feedback": " ".join(feedback_points),
-            "missing_keywords": ["Docker", "CI/CD", "PostgreSQL", "Scalability", "Unit Testing"],
+            "feedback": ai_feedback_text,
+            "missing_keywords": missing_keywords[:6],
         }

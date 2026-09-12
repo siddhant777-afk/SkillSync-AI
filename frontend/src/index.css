@@ -12,19 +12,122 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+html.dark {
+  color: #ffffff;
+  background: #090d16;
+  color-scheme: dark;
+}
+
 * {
   box-sizing: border-box;
 }
 
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 body {
   margin: 0;
   min-width: 320px;
   background: #f1f5f9;
+  overflow-x: hidden;
+  word-break: break-word;
 }
+
+html.dark body {
+  background: #090d16;
+  color: #ffffff;
+}
+
+/* Bulletproof contrast calibration: Ensure crisp white on dark, and crisp black on light */
+html.dark h1:not(#printable-resume *):not(.bg-white *),
+html.dark h2:not(#printable-resume *):not(.bg-white *),
+html.dark h3:not(#printable-resume *):not(.bg-white *),
+html.dark h4:not(#printable-resume *):not(.bg-white *),
+html.dark h5:not(#printable-resume *):not(.bg-white *),
+html.dark h6:not(#printable-resume *):not(.bg-white *),
+html.dark strong:not(#printable-resume *):not(.bg-white *),
+html.dark b:not(#printable-resume *):not(.bg-white *),
+html.dark th:not(#printable-resume *):not(.bg-white *) {
+  color: #ffffff !important;
+}
+
+/* In dark mode, dark utility classes become bright white when on dark surfaces */
+html.dark :not(#printable-resume):not(.bg-white):not(.bg-amber-100):not(.bg-emerald-100):not(.bg-rose-100):not(.bg-blue-100) > .text-slate-950,
+html.dark :not(#printable-resume):not(.bg-white):not(.bg-amber-100):not(.bg-emerald-100):not(.bg-rose-100):not(.bg-blue-100) > .text-slate-900,
+html.dark :not(#printable-resume):not(.bg-white):not(.bg-amber-100):not(.bg-emerald-100):not(.bg-rose-100):not(.bg-blue-100) > .text-slate-800,
+html.dark :not(#printable-resume):not(.bg-white):not(.bg-amber-100):not(.bg-emerald-100):not(.bg-rose-100):not(.bg-blue-100) > .text-slate-700,
+html.dark :not(#printable-resume):not(.bg-white):not(.bg-amber-100):not(.bg-emerald-100):not(.bg-rose-100):not(.bg-blue-100) > .text-gray-900,
+html.dark :not(#printable-resume):not(.bg-white):not(.bg-amber-100):not(.bg-emerald-100):not(.bg-rose-100):not(.bg-blue-100) > .text-gray-800,
+html.dark :not(#printable-resume):not(.bg-white):not(.bg-amber-100):not(.bg-emerald-100):not(.bg-rose-100):not(.bg-blue-100) > .text-zinc-900,
+html.dark :not(#printable-resume):not(.bg-white):not(.bg-amber-100):not(.bg-emerald-100):not(.bg-rose-100):not(.bg-blue-100) > .text-zinc-800 {
+  color: #ffffff !important;
+}
+
+/* Elements on explicit white / light surfaces must strictly stay pitch black / dark slate */
+#printable-resume,
+#printable-resume *,
+html.dark #printable-resume,
+html.dark #printable-resume * {
+  color: #0f172a !important;
+}
+
+#printable-resume {
+  background-color: #ffffff !important;
+}
+
+/* Secondary & helper text in dark mode - high-contrast light slate */
+html.dark :not(#printable-resume *) > .text-slate-600,
+html.dark :not(#printable-resume *) > .text-gray-600 {
+  color: #e2e8f0 !important;
+}
+
+html.dark :not(#printable-resume *) > .text-slate-500,
+html.dark :not(#printable-resume *) > .text-slate-400,
+html.dark :not(#printable-resume *) > .text-gray-500 {
+  color: #cbd5e1 !important;
+}
+
+/* Inputs, selects, and textareas in dark mode */
+html.dark input:not([type="checkbox"]):not([type="radio"]),
+html.dark select,
+html.dark textarea {
+  color: #ffffff !important;
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+/* Tables in dark mode */
+html.dark td:not(#printable-resume *) {
+  color: #f1f5f9 !important;
+}
+
+/* Print perfection: Force 100% black text on pure white paper */
+@media print {
+  *, html, body, html.dark, html.dark body, html.dark * {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+}
+
+/* Preserve accent colors in dark mode with high luminance */
+html.dark .text-emerald-500, html.dark .text-emerald-400, html.dark .text-emerald-600, html.dark .text-emerald-700 { color: #34d399 !important; }
+html.dark .text-green-500, html.dark .text-green-400, html.dark .text-green-600, html.dark .text-green-700 { color: #4ade80 !important; }
+html.dark .text-amber-500, html.dark .text-amber-400, html.dark .text-amber-600, html.dark .text-amber-700 { color: #fbbf24 !important; }
+html.dark .text-rose-500, html.dark .text-rose-400, html.dark .text-rose-600, html.dark .text-rose-700 { color: #fb7185 !important; }
+html.dark .text-red-500, html.dark .text-red-400, html.dark .text-red-600, html.dark .text-red-700 { color: #f87171 !important; }
+html.dark .text-indigo-600, html.dark .text-indigo-500, html.dark .text-indigo-400, html.dark .text-indigo-300 { color: #a5b4fc !important; }
+html.dark .text-blue-600, html.dark .text-blue-500, html.dark .text-blue-400, html.dark .text-blue-300 { color: #93c5fd !important; }
+html.dark .text-purple-600, html.dark .text-purple-500, html.dark .text-purple-400, html.dark .text-purple-300 { color: #d8b4fe !important; }
+html.dark .text-sky-600, html.dark .text-sky-500, html.dark .text-sky-400, html.dark .text-sky-300 { color: #7dd3fc !important; }
 
 button,
 input,

@@ -1,14 +1,17 @@
-import { useState } from "react";
-import { Bell, Lock, Palette, Save, UserRound, CheckCircle2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Bell, Lock, Palette, Save, UserRound, CheckCircle2, Sun, Moon, Monitor } from "lucide-react";
 import PageHeader from "../../components/common/PageHeader";
 import { useUser } from "../../hooks/useUser";
+import { useTheme } from "../../hooks/useTheme";
 import toast from "react-hot-toast";
 
 const Settings = () => {
   const { user, updateProfile } = useUser();
+  const { theme, setTheme } = useTheme();
+
   const [activeTab, setActiveTab] = useState("Profile");
   const [displayName, setDisplayName] = useState(user?.name || "");
-  const [careerGoal, setCareerGoal] = useState(user?.careerGoal || "AI / ML Engineer");
+  const [careerGoal, setCareerGoal] = useState(user?.careerGoal || "Software Engineer");
   const [weeklyDigest, setWeeklyDigest] = useState(true);
   const [loading, setLoading] = useState(false);
 
@@ -20,10 +23,12 @@ const Settings = () => {
   const handleSave = async () => {
     setLoading(true);
     try {
-      await updateProfile({
-        full_name: displayName,
-        career_goal: careerGoal,
-      });
+      if (updateProfile) {
+        await updateProfile({
+          full_name: displayName,
+          career_goal: careerGoal,
+        });
+      }
       toast.success("Preferences updated successfully!");
     } catch {
       toast.error("Failed to save preferences.");
@@ -40,23 +45,23 @@ const Settings = () => {
   ];
 
   return (
-    <div>
+    <div className="space-y-6 max-w-full overflow-x-hidden">
       <PageHeader
         eyebrow="Account"
         title="Settings & Preferences"
-        description="Control your professional profile preferences, notifications and security parameters."
+        description="Control your professional profile preferences, notifications, theme appearance, and security parameters."
       />
 
-      <div className="grid gap-6 lg:grid-cols-[0.75fr_1.25fr]">
-        <section className="h-fit rounded-2xl border border-slate-100 bg-white p-4 shadow-sm space-y-1">
+      <div className="grid gap-6 lg:grid-cols-[0.75fr_1.25fr] min-w-0">
+        <section className="h-fit rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-xs space-y-1 min-w-0">
           {tabs.map(([label, Icon]) => (
             <button
               key={label}
               onClick={() => setActiveTab(label)}
               className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-semibold transition ${
                 activeTab === label
-                  ? "bg-indigo-50 text-indigo-700 shadow-sm"
-                  : "text-slate-600 hover:bg-slate-50"
+                  ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 shadow-xs"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50"
               }`}
             >
               <Icon size={18} /> {label}
@@ -64,42 +69,44 @@ const Settings = () => {
           ))}
         </section>
 
-        <section className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
+        <section className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs min-w-0">
           {activeTab === "Profile" && (
-            <div className="space-y-4">
-              <h2 className="text-lg font-bold text-slate-900">Profile Preferences</h2>
-              <p className="text-xs text-slate-400">Manage how your name and target role appear to recruiters.</p>
+            <div className="space-y-4 min-w-0">
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white">Profile Preferences</h2>
+              <p className="text-xs text-slate-400 dark:text-slate-500">Manage how your name and target role appear to recruiters.</p>
 
               <div className="pt-2 space-y-4">
                 <label className="block">
-                  <span className="text-xs font-semibold text-slate-600">Display Name</span>
+                  <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">Display Name</span>
                   <input
                     type="text"
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
-                    className="mt-1.5 w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                    className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-850 px-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900/30"
                   />
                 </label>
 
                 <label className="block">
-                  <span className="text-xs font-semibold text-slate-600">Career Goal / Target Role</span>
+                  <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">Career Goal / Target Role</span>
                   <select
                     value={careerGoal}
                     onChange={(e) => setCareerGoal(e.target.value)}
-                    className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                    className="mt-1.5 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-850 px-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-indigo-500"
                   >
-                    <option>AI / ML Engineer</option>
-                    <option>Backend Developer</option>
-                    <option>Data Scientist</option>
-                    <option>Full Stack Developer</option>
-                    <option>Cloud / DevOps Engineer</option>
+                    <option value="AI / ML Engineer">AI / ML Engineer</option>
+                    <option value="Backend Developer">Backend Developer</option>
+                    <option value="Full Stack Developer">Full Stack Developer</option>
+                    <option value="Cloud / DevOps Engineer">Cloud / DevOps Engineer</option>
+                    <option value="Cybersecurity Analyst">Cybersecurity Analyst</option>
+                    <option value="Data Scientist">Data Scientist</option>
+                    <option value="Mobile App Developer">Mobile App Developer</option>
                   </select>
                 </label>
 
-                <div className="flex items-center justify-between rounded-xl bg-slate-50 p-4">
+                <div className="flex items-center justify-between rounded-xl bg-slate-50 dark:bg-slate-850 p-4 border border-slate-100 dark:border-slate-800">
                   <div>
-                    <p className="font-semibold text-slate-800 text-sm">Weekly Placement Digest</p>
-                    <p className="text-xs text-slate-400">Receive algorithmic skill gaps & contest performance via email.</p>
+                    <p className="font-semibold text-slate-800 dark:text-slate-200 text-sm">Weekly Placement Digest</p>
+                    <p className="text-xs text-slate-400 dark:text-slate-500">Receive algorithmic skill gaps & contest performance via email.</p>
                   </div>
                   <input
                     type="checkbox"
@@ -113,7 +120,7 @@ const Settings = () => {
               <button
                 onClick={handleSave}
                 disabled={loading}
-                className="mt-6 inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 disabled:opacity-50"
+                className="mt-6 inline-flex items-center gap-2 rounded-xl bg-indigo-600 dark:bg-indigo-500 px-5 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-indigo-700 dark:hover:bg-indigo-600 disabled:opacity-50 transition"
               >
                 <Save size={16} />
                 {loading ? "Saving..." : "Save Changes"}
@@ -122,18 +129,18 @@ const Settings = () => {
           )}
 
           {activeTab === "Notifications" && (
-            <div className="space-y-4">
-              <h2 className="text-lg font-bold text-slate-900">Notification Channels</h2>
+            <div className="space-y-4 min-w-0">
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white">Notification Channels</h2>
               <div className="space-y-3 pt-2">
                 {[
                   ["Contest Reminders", "Alerts for LeetCode, Codeforces and CodeChef rounds"],
                   ["Skill Gap Updates", "Notifications when new role requirements are benchmarked"],
                   ["Recruiter Matches", "When a recruiter filters or views your candidate profile"],
                 ].map(([title, desc]) => (
-                  <label key={title} className="flex items-center justify-between rounded-xl bg-slate-50 p-4">
+                  <label key={title} className="flex items-center justify-between rounded-xl bg-slate-50 dark:bg-slate-850 p-4 border border-slate-100 dark:border-slate-800">
                     <div>
-                      <p className="text-sm font-semibold text-slate-800">{title}</p>
-                      <p className="text-xs text-slate-400">{desc}</p>
+                      <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">{title}</p>
+                      <p className="text-xs text-slate-400 dark:text-slate-500">{desc}</p>
                     </div>
                     <input type="checkbox" defaultChecked className="h-5 w-5 accent-indigo-600" />
                   </label>
@@ -143,28 +150,50 @@ const Settings = () => {
           )}
 
           {activeTab === "Appearance" && (
-            <div className="space-y-4">
-              <h2 className="text-lg font-bold text-slate-900">Theme & Display</h2>
-              <p className="text-xs text-slate-500">SkillSync AI uses the high-contrast modern indigo theme.</p>
-              <div className="flex items-center gap-3 pt-2">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-600 text-white font-bold">
-                  ✓
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-slate-800">Light / High Contrast (Active)</p>
-                  <p className="text-xs text-slate-400">Optimized for dashboard analytics and code reviews.</p>
-                </div>
+            <div className="space-y-4 min-w-0">
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white">Theme & Display Settings</h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Choose how SkillSync AI looks across your devices. Theme preference is automatically saved.
+              </p>
+
+              <div className="grid gap-3 pt-2 sm:grid-cols-3">
+                {[
+                  { id: "light", label: "Light Mode", icon: Sun, desc: "Clean bright interface for daylight coding." },
+                  { id: "dark", label: "Dark Mode", icon: Moon, desc: "Ultra low-glare deep theme for long sessions." },
+                  { id: "system", label: "System Auto", icon: Monitor, desc: "Syncs automatically with OS settings." },
+                ].map(({ id, label, icon: Icon, desc }) => {
+                  const isActive = theme === id;
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => setTheme(id)}
+                      className={`flex flex-col items-start p-4 rounded-xl border text-left transition ${
+                        isActive
+                          ? "border-indigo-600 bg-indigo-50/70 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 shadow-xs"
+                          : "border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-850 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-700"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between w-full">
+                        <Icon size={20} className={isActive ? "text-indigo-600 dark:text-indigo-400" : "text-slate-400"} />
+                        {isActive && <CheckCircle2 size={16} className="text-indigo-600 dark:text-indigo-400" />}
+                      </div>
+                      <span className="mt-3 text-sm font-bold text-slate-900 dark:text-white">{label}</span>
+                      <span className="mt-1 text-xs text-slate-500 dark:text-slate-400">{desc}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
 
           {activeTab === "Security" && (
-            <div className="space-y-4">
-              <h2 className="text-lg font-bold text-slate-900">Account Security</h2>
-              <p className="text-xs text-slate-400">Authentication is secured via JWT token authorization and PostgreSQL bcrypt hashes.</p>
-              <div className="rounded-xl bg-emerald-50 p-4 text-emerald-800 text-xs flex items-center gap-2">
+            <div className="space-y-4 min-w-0">
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white">Account Security</h2>
+              <p className="text-xs text-slate-400 dark:text-slate-500">Authentication is secured via JWT bearer tokens and PostgreSQL bcrypt hashes.</p>
+              <div className="rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 p-4 text-emerald-800 dark:text-emerald-300 text-xs flex items-center gap-2">
                 <CheckCircle2 size={16} />
-                <span>Your connection is authenticated and active.</span>
+                <span>Your session is authenticated, encrypted, and active.</span>
               </div>
             </div>
           )}

@@ -27,6 +27,11 @@ const userService = {
     return response.data;
   },
 
+  verifyPlatform: async (platform, username) => {
+    const response = await api.post(API_ENDPOINTS.VERIFY_PLATFORM, { platform, username });
+    return response.data;
+  },
+
   updateSettings: async (data) => {
     const response = await api.put(API_ENDPOINTS.SETTINGS, data);
     return response.data;

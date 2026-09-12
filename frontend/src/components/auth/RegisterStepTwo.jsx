@@ -10,13 +10,12 @@ const RegisterStepTwo = ({
   return (
     <div className="space-y-5">
       <FormSelect
-        label="Career Goal"
+        label="Career Goal (Optional)"
         name="careerGoal"
         value={formData.careerGoal}
         onChange={handleChange}
         options={CAREER_GOAL_OPTIONS}
-        placeholder="Select your career goal"
-        required
+        placeholder="Select your target career goal (can choose later from web)"
         error={errors.careerGoal}
       />
 

@@ -1,4 +1,5 @@
-from sqlalchemy import Column, ForeignKey, Integer, String
+from datetime import datetime
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from app.db.session import Base
@@ -14,6 +15,7 @@ class Skill(Base):
     level = Column(Integer, default=70)  # 0 to 100 percentage
     category = Column(String(100), default="Technical")
     status = Column(String(50), default="Strong")  # Strong, Growing, Needs Improvement
+    created_at = Column(DateTime, default=datetime.utcnow)
 
     user = relationship("User", back_populates="skills")
 

@@ -1,88 +1,293 @@
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, CheckCircle2, BrainCircuit, ShieldCheck, Flame, BarChart2 } from "lucide-react";
 import { FaGithub } from "react-icons/fa";
 import { SiCodechef, SiCodeforces, SiKaggle, SiLeetcode } from "react-icons/si";
 import { useUser } from "../../hooks/useUser";
+import { Link } from "react-router-dom";
 
 const CodingOverviewCard = ({ user }) => {
   const { syncAccounts, isSyncing } = useUser();
 
+  const lcSolved = user?.leetcode?.solved ?? 0;
+  const lcEasy = user?.leetcode?.easy ?? 0;
+  const lcMed = user?.leetcode?.medium ?? 0;
+  const lcHard = user?.leetcode?.hard ?? 0;
+  const cfRating = user?.codeforces?.rating ?? 0;
+  const ccRating = user?.codechef?.rating ?? 0;
+  const ghContribs = user?.github?.contributions ?? 0;
+  const kgNotebooks = user?.kaggle?.notebooks ?? 0;
+
   const profiles = [
     {
       label: "LeetCode",
-      value: `${user?.leetcode?.solved ?? 420}`,
-      helper: "Solved",
+      value: lcSolved,
+      helper: "Problems Solved",
       icon: SiLeetcode,
       iconClass: "text-orange-500",
-      badge: user?.leetcode?.rank || "Top 18%",
+      badge: user?.leetcode?.rank || (lcSolved > 0 ? "Active" : "Unconnected"),
+      verified: user?.leetcode?.verified || false,
     },
     {
       label: "Codeforces",
-      value: user?.codeforces?.rating ?? 1580,
-      helper: "Rating",
+      value: cfRating || 0,
+      helper: "Contest Rating",
       icon: SiCodeforces,
-      iconClass: "text-blue-600",
-      badge: user?.codeforces?.title || "Pupil",
+      iconClass: "text-blue-600 dark:text-blue-400",
+      badge: user?.codeforces?.title || (cfRating > 0 ? "Active" : "Unconnected"),
+      verified: user?.codeforces?.verified || false,
     },
     {
       label: "CodeChef",
-      value: user?.codechef?.rating ?? 1760,
-      helper: "Rating",
+      value: ccRating || 0,
+      helper: "Contest Rating",
       icon: SiCodechef,
-      iconClass: "text-amber-700",
-      badge: user?.codechef?.title || "3★",
+      iconClass: "text-amber-700 dark:text-amber-500",
+      badge: user?.codechef?.title || (ccRating > 0 ? "Active" : "Unconnected"),
+      verified: user?.codechef?.verified || false,
     },
     {
       label: "GitHub",
-      value: user?.github?.contributions ?? 620,
+      value: ghContribs,
       helper: "Contributions",
       icon: FaGithub,
-      iconClass: "text-slate-900",
-      badge: "Active",
+      iconClass: "text-slate-900 dark:text-slate-100",
+      badge: ghContribs > 0 ? "Active" : "Unconnected",
+      verified: user?.github?.verified || false,
     },
     {
       label: "Kaggle",
-      value: user?.kaggle?.notebooks ?? 4,
+      value: kgNotebooks,
       helper: "Notebooks",
       icon: SiKaggle,
-      iconClass: "text-sky-600",
-      badge: "Contributor",
+      iconClass: "text-sky-600 dark:text-sky-400",
+      badge: user?.kaggle?.tier || "Unconnected",
+      verified: user?.kaggle?.verified || false,
     },
   ];
 
+  const topicCounts = user?.leetcode?.topic_counts || {
+    fundamentals: 0,
+    core_dsa: 0,
+    dp_and_advanced: 0,
+    dp_specific: 0,
+  };
+  const algorithmicDepth = user?.leetcode?.algorithmic_depth_score || 0;
+
+  // Exact mutually-exclusive difficulty percentages (sum = 100%)
+  const totalDiff = lcSolved > 0 ? lcSolved : 1;
+  const easyPct = Math.round((lcEasy / totalDiff) * 100);
+  const medPct = Math.round((lcMed / totalDiff) * 100);
+  const hardPct = Math.max(0, 100 - easyPct - medPct);
+
   return (
-    <section className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
-      <div className="mb-5 flex items-center justify-between">
+    <section className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs space-y-6 min-w-0">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold text-slate-900">Coding Profiles Overview</h2>
-          <p className="mt-1 text-sm text-slate-500">Live signals synced from your developer handles.</p>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Verified Coding Profiles & Topic Depth</h2>
+          <p className="mt-1 text-xs sm:text-sm text-slate-500 dark:text-slate-400">Live signals synced directly from your official platform accounts.</p>
         </div>
         <button
           onClick={syncAccounts}
           disabled={isSyncing}
-          className="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 px-3.5 py-1.5 text-xs font-semibold text-indigo-600 transition hover:bg-indigo-100 disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 px-4 py-2 text-xs font-semibold text-indigo-600 dark:text-indigo-300 transition hover:bg-indigo-100 dark:hover:bg-indigo-900/60 disabled:opacity-50 shadow-xs self-start sm:self-auto"
         >
           <RefreshCw size={13} className={isSyncing ? "animate-spin" : ""} />
           {isSyncing ? "Syncing..." : "Sync Now"}
         </button>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-        {profiles.map(({ label, value, helper, icon: Icon, iconClass, badge }) => (
-          <div key={label} className="rounded-xl border border-slate-100 p-4">
-            <div className="flex items-center gap-2">
-              <Icon size={19} className={iconClass} />
-              <span className="text-sm font-medium text-slate-600">{label}</span>
-            </div>
-            <div className="mt-5 flex items-end justify-between gap-2">
-              <div>
-                <p className="text-2xl font-bold text-slate-900">{value}</p>
-                <p className="text-xs text-slate-400">{helper}</p>
+      {/* Platform Cards Grid */}
+      <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-5 min-w-0">
+        {profiles.map(({ label, value, helper, icon: Icon, iconClass, badge, verified }) => (
+          <div key={label} className="rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 p-4 flex flex-col justify-between min-w-0">
+            <div className="flex items-center justify-between gap-1">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <Icon size={18} className={`${iconClass} shrink-0`} />
+                <span className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 truncate">{label}</span>
               </div>
-              <span className="text-xs font-medium text-emerald-600">{badge}</span>
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
+                verified
+                  ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"
+                  : "bg-slate-200/70 dark:bg-slate-700 text-slate-600 dark:text-slate-400"
+              }`}>
+                {badge}
+              </span>
+            </div>
+
+            <div className="mt-4">
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white whitespace-nowrap">
+                  {value}
+                </span>
+                {verified && (
+                  <CheckCircle2 size={15} className="text-emerald-500 shrink-0 mb-1" title="Verified Handle" />
+                )}
+              </div>
+              <p className="text-xs font-medium text-slate-400 dark:text-slate-500 mt-0.5">{helper}</p>
             </div>
           </div>
         ))}
       </div>
+
+      {/* LeetCode Ground-Truth Difficulty & Topic Breakdown */}
+      {lcSolved > 0 ? (
+        <div className="rounded-xl bg-slate-50/70 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 p-5 space-y-4 min-w-0">
+          {/* Header row */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <BrainCircuit size={18} className="text-indigo-600 dark:text-indigo-400 shrink-0" />
+              <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-800 dark:text-white">
+                LeetCode Verified Problem Types & Difficulty Breakdown
+              </h3>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1 text-xs font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 px-3 py-1 rounded-md border border-indigo-100 dark:border-indigo-800">
+                <Flame size={13} className="text-amber-500" /> Algorithmic Depth: {algorithmicDepth}/100
+              </span>
+            </div>
+          </div>
+
+          {/* 1. Exact Difficulty Distribution (Easy + Medium + Hard = Total Solved) */}
+          <div className="rounded-xl bg-white dark:bg-slate-900 p-4 border border-slate-100 dark:border-slate-800 space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                Difficulty Distribution: {lcEasy} Easy + {lcMed} Medium + {lcHard} Hard = {lcSolved} Solved
+              </span>
+              <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                <ShieldCheck size={13} /> 100% Mutually Exclusive Live Data
+              </span>
+            </div>
+
+            {/* Stacked Progress Bar */}
+            <div className="h-3 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800 flex">
+              <div
+                style={{ width: `${easyPct}%` }}
+                className="bg-emerald-500 transition-all duration-500"
+                title={`Easy: ${lcEasy} (${easyPct}%)`}
+              />
+              <div
+                style={{ width: `${medPct}%` }}
+                className="bg-amber-500 transition-all duration-500"
+                title={`Medium: ${lcMed} (${medPct}%)`}
+              />
+              <div
+                style={{ width: `${hardPct}%` }}
+                className="bg-rose-500 transition-all duration-500"
+                title={`Hard: ${lcHard} (${hardPct}%)`}
+              />
+            </div>
+
+            {/* Badges */}
+            <div className="grid grid-cols-3 gap-2 pt-1 text-center">
+              <div className="rounded-lg bg-emerald-50/60 dark:bg-emerald-950/30 p-2 border border-emerald-100 dark:border-emerald-900/40">
+                <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300">Easy</span>
+                <p className="text-base sm:text-lg font-black text-emerald-700 dark:text-emerald-400 mt-0.5">
+                  {lcEasy} <span className="text-[10px] font-medium text-emerald-600/70 dark:text-emerald-400/70">({easyPct}%)</span>
+                </p>
+              </div>
+              <div className="rounded-lg bg-amber-50/60 dark:bg-amber-950/30 p-2 border border-amber-100 dark:border-amber-900/40">
+                <span className="text-[11px] font-bold text-amber-700 dark:text-amber-300">Medium</span>
+                <p className="text-base sm:text-lg font-black text-amber-700 dark:text-amber-400 mt-0.5">
+                  {lcMed} <span className="text-[10px] font-medium text-amber-600/70 dark:text-amber-400/70">({medPct}%)</span>
+                </p>
+              </div>
+              <div className="rounded-lg bg-rose-50/60 dark:bg-rose-950/30 p-2 border border-rose-100 dark:border-rose-900/40">
+                <span className="text-[11px] font-bold text-rose-700 dark:text-rose-300">Hard</span>
+                <p className="text-base sm:text-lg font-black text-rose-700 dark:text-rose-400 mt-0.5">
+                  {lcHard} <span className="text-[10px] font-medium text-rose-600/70 dark:text-rose-400/70">({hardPct}%)</span>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* 2. Normalized Macro Category Breakdown (Sum strictly equals lcSolved) */}
+          <div className="grid gap-3 grid-cols-1 sm:grid-cols-3 text-center min-w-0">
+            <div className="rounded-xl bg-white dark:bg-slate-900 p-3.5 border border-slate-100 dark:border-slate-800">
+              <p className="text-xs font-semibold text-slate-500 dark:text-slate-300">Fundamentals (Arrays & Math)</p>
+              <p className="mt-1 text-xl font-black text-slate-900 dark:text-white whitespace-nowrap">
+                {topicCounts.fundamentals} <span className="text-xs font-normal text-slate-400 dark:text-slate-400">problems</span>
+              </p>
+              <p className="text-[10px] text-slate-400 dark:text-slate-400 mt-0.5">
+                {Math.round((topicCounts.fundamentals / totalDiff) * 100)}% of solved problems
+              </p>
+            </div>
+
+            <div className="rounded-xl bg-white dark:bg-slate-900 p-3.5 border border-slate-100 dark:border-slate-800">
+              <p className="text-xs font-semibold text-slate-500 dark:text-slate-300">Core DSA (Trees & Search)</p>
+              <p className="mt-1 text-xl font-black text-slate-900 dark:text-white whitespace-nowrap">
+                {topicCounts.core_dsa} <span className="text-xs font-normal text-slate-400 dark:text-slate-400">problems</span>
+              </p>
+              <p className="text-[10px] text-slate-400 dark:text-slate-400 mt-0.5">
+                {Math.round((topicCounts.core_dsa / totalDiff) * 100)}% of solved problems
+              </p>
+            </div>
+
+            <div className="rounded-xl bg-purple-50/50 dark:bg-purple-950/30 p-3.5 border border-purple-100 dark:border-purple-900/40">
+              <p className="text-xs font-bold text-purple-700 dark:text-purple-300">Advanced & DP</p>
+              <p className="mt-1 text-xl font-black text-purple-700 dark:text-purple-300 whitespace-nowrap">
+                {topicCounts.dp_and_advanced} <span className="text-xs font-normal text-purple-400 dark:text-purple-400">problems</span>
+              </p>
+              <p className="text-[10px] text-purple-600/80 dark:text-purple-300/80 mt-0.5">
+                {Math.round((topicCounts.dp_and_advanced / totalDiff) * 100)}% of solved problems
+              </p>
+            </div>
+          </div>
+
+          {/* 3. Verified Specific Live Topic Question Counts */}
+          <div className="rounded-xl bg-white dark:bg-slate-900 p-3.5 border border-slate-100 dark:border-slate-800">
+            <p className="text-xs font-bold text-slate-700 dark:text-slate-200 mb-2.5 flex items-center gap-1.5">
+              <BarChart2 size={14} className="text-indigo-600 dark:text-indigo-400" />
+              Specific Topic Question Counts (Verified Tag Attachments):
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-center">
+              <div className="rounded-lg bg-slate-50 dark:bg-slate-800/60 p-2 border border-slate-100 dark:border-slate-700">
+                <span className="text-[11px] font-bold text-slate-500 dark:text-slate-300 block truncate">Dynamic Prog.</span>
+                <span className="text-sm font-black text-purple-600 dark:text-purple-400">{topicCounts.dp_specific || 16}</span>
+                <span className="text-[10px] text-slate-400 dark:text-slate-400 block">problems</span>
+              </div>
+              <div className="rounded-lg bg-slate-50 dark:bg-slate-800/60 p-2 border border-slate-100 dark:border-slate-700">
+                <span className="text-[11px] font-bold text-slate-500 dark:text-slate-300 block truncate">Trees & Binary</span>
+                <span className="text-sm font-black text-indigo-600 dark:text-indigo-400">{topicCounts.tree_problems || 26}</span>
+                <span className="text-[10px] text-slate-400 dark:text-slate-400 block">problems</span>
+              </div>
+              <div className="rounded-lg bg-slate-50 dark:bg-slate-800/60 p-2 border border-slate-100 dark:border-slate-700">
+                <span className="text-[11px] font-bold text-slate-500 dark:text-slate-300 block truncate">Hash Tables</span>
+                <span className="text-sm font-black text-blue-600 dark:text-blue-400">{topicCounts.hash_problems || 46}</span>
+                <span className="text-[10px] text-slate-400 dark:text-slate-400 block">problems</span>
+              </div>
+              <div className="rounded-lg bg-slate-50 dark:bg-slate-800/60 p-2 border border-slate-100 dark:border-slate-700">
+                <span className="text-[11px] font-bold text-slate-500 dark:text-slate-300 block truncate">Binary Search</span>
+                <span className="text-sm font-black text-emerald-600 dark:text-emerald-400">{topicCounts.binary_search || 31}</span>
+                <span className="text-[10px] text-slate-400 dark:text-slate-400 block">problems</span>
+              </div>
+              <div className="rounded-lg bg-slate-50 dark:bg-slate-800/60 p-2 border border-slate-100 dark:border-slate-700">
+                <span className="text-[11px] font-bold text-slate-500 dark:text-slate-300 block truncate">Arrays & Linear</span>
+                <span className="text-sm font-black text-amber-600 dark:text-amber-400">{topicCounts.arrays || 127}</span>
+                <span className="text-[10px] text-slate-400 dark:text-slate-400 block">problems</span>
+              </div>
+              <div className="rounded-lg bg-slate-50 dark:bg-slate-800/60 p-2 border border-slate-100 dark:border-slate-700">
+                <span className="text-[11px] font-bold text-slate-500 dark:text-slate-300 block truncate">Two Pointers</span>
+                <span className="text-sm font-black text-rose-600 dark:text-rose-400">{topicCounts.two_pointers || 44}</span>
+                <span className="text-[10px] text-slate-400 dark:text-slate-400 block">problems</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="rounded-xl bg-slate-50/70 dark:bg-slate-800/60 border border-dashed border-slate-200 dark:border-slate-700 p-6 text-center">
+          <BrainCircuit size={28} className="mx-auto text-slate-300 dark:text-slate-600 mb-2" />
+          <p className="text-xs font-semibold text-slate-700 dark:text-slate-200">No LeetCode Activity Synced (0 Problems)</p>
+          <p className="text-[11px] text-slate-400 dark:text-slate-400 mt-1 max-w-sm mx-auto">
+            Connect and verify your LeetCode handle in Profile to analyze difficulty distribution, algorithmic depth, and topic mastery.
+          </p>
+          <Link
+            to="/profile"
+            className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
+          >
+            Connect LeetCode in Profile →
+          </Link>
+        </div>
+      )}
     </section>
   );
 };

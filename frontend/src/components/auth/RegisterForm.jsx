@@ -67,6 +67,31 @@ const RegisterForm = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const handleDirectRegister = async () => {
+    const validationErrors = validateStepOne(formData);
+    if (Object.keys(validationErrors).length) {
+      setErrors(validationErrors);
+      return;
+    }
+
+    if (!formData.isVerified) {
+      toast.error("Please verify your email with the 6-digit code before registering.");
+      return;
+    }
+
+    setLoading(true);
+    const response = await register(formData);
+
+    if (response.success) {
+      toast.success("Account created successfully! Welcome to SkillSync AI.");
+      navigate(ROUTES.DASHBOARD);
+    } else {
+      toast.error(response.message || "Registration failed.");
+    }
+
+    setLoading(false);
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     const validationErrors = validateStepTwo(formData);
@@ -139,13 +164,25 @@ const RegisterForm = () => {
           )}
 
           {step === 1 ? (
-            <button
-              type="button"
-              onClick={handleNext}
-              className="rounded-xl bg-indigo-600 px-6 py-3 font-semibold text-white hover:bg-indigo-700"
-            >
-              Next Step →
-            </button>
+            <div className="flex flex-col sm:flex-row gap-2.5">
+              <button
+                type="button"
+                onClick={handleDirectRegister}
+                disabled={loading}
+                title="Register immediately without filling optional fields - can fill anytime from web profile"
+                className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-5 py-3 text-xs sm:text-sm font-bold text-indigo-700 hover:bg-indigo-100 transition"
+              >
+                <span>Register Directly (Skip Details) ⚡</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleNext}
+                disabled={loading}
+                className="rounded-xl bg-indigo-600 px-6 py-3 font-semibold text-white hover:bg-indigo-700 transition shadow-xs text-xs sm:text-sm"
+              >
+                Next Step →
+              </button>
+            </div>
           ) : (
             <button
               type="submit"

@@ -7,14 +7,16 @@ import "./index.css";
 import { AuthProvider } from "./context/AuthContext";
 import { UserProvider } from "./context/UserContext";
 import { SidebarProvider } from "./context/SidebarContext";
+import { ThemeProvider } from "./context/ThemeContext";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <BrowserRouter>
-      <AuthProvider>
-        <UserProvider>
-          <SidebarProvider>
-            <App />
+      <ThemeProvider>
+        <AuthProvider>
+          <UserProvider>
+            <SidebarProvider>
+              <App />
             <Toaster
               position="top-right"
               reverseOrder={false}
@@ -31,7 +33,8 @@ ReactDOM.createRoot(document.getElementById("root")).render(
           </SidebarProvider>
         </UserProvider>
       </AuthProvider>
-    </BrowserRouter>
+    </ThemeProvider>
+  </BrowserRouter>
   </React.StrictMode>,
 );
 

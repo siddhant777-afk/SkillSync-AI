@@ -13,11 +13,14 @@ import Skills from "../pages/skills/Skills";
 import Projects from "../pages/projects/Projects";
 import Achievements from "../pages/achievements/Achievements";
 import Recommendations from "../pages/recommendations/Recommendations";
+import Leaderboard from "../pages/leaderboard/Leaderboard";
+import JobRecommendations from "../pages/career/JobRecommendations";
 import ResumeBuilder from "../pages/resume/ResumeBuilder";
 import Settings from "../pages/settings/Settings";
 import RecruiterCandidates from "../pages/recruiter/RecruiterCandidates";
 
 import NotFound from "../pages/NotFound";
+
 
 import ProtectedRoute from "./ProtectedRoute";
 import PublicRoute from "./PublicRoute";
@@ -115,6 +118,24 @@ const AppRoutes = () => {
       />
 
       <Route
+        path="/leaderboard"
+        element={
+          <ProtectedPage>
+            <Leaderboard />
+          </ProtectedPage>
+        }
+      />
+
+      <Route
+        path="/jobs"
+        element={
+          <ProtectedPage>
+            <JobRecommendations />
+          </ProtectedPage>
+        }
+      />
+
+      <Route
         path="/resume"
         element={
           <ProtectedPage>
@@ -122,6 +143,7 @@ const AppRoutes = () => {
           </ProtectedPage>
         }
       />
+
 
       <Route
         path="/settings"

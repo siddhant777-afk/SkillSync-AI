@@ -1,3 +1,4 @@
+from app.models.notification import Notification
 from app.db.session import Base
 from app.models.user import User
 from app.models.profile import StudentProfile, ConnectedAccounts, PlatformStats
@@ -18,5 +19,6 @@ __all__ = [
     "Project",
     "Achievement",
     "Recommendation",
+    "Notification",
     "ResumeData",
 ]

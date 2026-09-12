@@ -43,20 +43,7 @@ export const validateStepOne = (formData) => {
     errors.confirmPassword = "Passwords do not match.";
   }
 
-  // College
-  if (!formData.college.trim()) {
-    errors.college = "College name is required.";
-  }
-
-  // Branch
-  if (!formData.branch) {
-    errors.branch = "Please select your branch.";
-  }
-
-  // Year
-  if (!formData.year) {
-    errors.year = "Please select your year.";
-  }
+  // College, Branch, Year are optional during registration (user can fill/update anytime directly from web)
 
   return errors;
 };
@@ -67,10 +54,7 @@ export const validateStepOne = (formData) => {
 export const validateStepTwo = (formData) => {
   const errors = {};
 
-  // Career Goal
-  if (!formData.careerGoal) {
-    errors.careerGoal = "Please select your career goal.";
-  }
+  // Career Goal is optional during registration (can be selected later from web)
 
   // GitHub Username (Optional)
   if (

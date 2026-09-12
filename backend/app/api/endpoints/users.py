@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 from typing import Any, Dict
+from pydantic import BaseModel
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -10,6 +11,7 @@ from app.models.resume import ResumeData
 from app.models.skill import Skill, SkillGap
 from app.models.user import User
 from app.schemas import ConnectedAccountsUpdate, ProfileUpdate
+from app.core.normalizer import normalize_college_name, normalize_branch_name
 from app.services.ai_service import AIService
 from app.services.sync_service import PlatformSyncService
 
@@ -35,27 +37,39 @@ def get_user_profile(user: User = Depends(get_current_user), db: Session = Depen
 
     github_stats = stats.get("github", {
         "username": gh_username,
-        "contributions": 0 if not gh_username else 150,
-        "repositories": 0 if not gh_username else 5,
+        "contributions": 0,
+        "repositories": 0,
+        "stars": 0,
+        "status": "unconnected" if not gh_username else "connected",
+        "verified": bool(gh_username and "github" in stats and stats["github"].get("verified")),
     })
     leetcode_stats = stats.get("leetcode", {
         "username": lc_username,
-        "solved": 0 if not lc_username else 45,
-        "rank": "Unranked" if not lc_username else "Top 45%",
+        "solved": 0,
+        "rank": "Unconnected" if not lc_username else "Unranked",
+        "status": "unconnected" if not lc_username else "connected",
+        "verified": bool(lc_username and "leetcode" in stats and stats["leetcode"].get("verified")),
     })
     codeforces_stats = stats.get("codeforces", {
         "username": cf_username,
-        "rating": 0 if not cf_username else 1200,
-        "title": "Unrated" if not cf_username else "Newbie",
+        "rating": 0,
+        "title": "Unconnected" if not cf_username else "Unrated",
+        "status": "unconnected" if not cf_username else "connected",
+        "verified": bool(cf_username and "codeforces" in stats and stats["codeforces"].get("verified")),
     })
     codechef_stats = stats.get("codechef", {
         "username": cc_username,
-        "rating": 0 if not cc_username else 1400,
-        "title": "Unrated" if not cc_username else "1★",
+        "rating": 0,
+        "title": "Unconnected" if not cc_username else "Unrated",
+        "status": "unconnected" if not cc_username else "connected",
+        "verified": bool(cc_username and "codechef" in stats and stats["codechef"].get("verified")),
     })
     kaggle_stats = stats.get("kaggle", {
         "username": kg_username,
-        "notebooks": 0 if not kg_username else 1,
+        "notebooks": 0,
+        "tier": "Unconnected" if not kg_username else "Unranked",
+        "status": "unconnected" if not kg_username else "connected",
+        "verified": bool(kg_username and "kaggle" in stats and stats["kaggle"].get("verified")),
     })
 
     return {
@@ -63,13 +77,13 @@ def get_user_profile(user: User = Depends(get_current_user), db: Session = Depen
         "name": user.full_name,
         "email": user.email,
         "initials": "".join([part[0] for part in user.full_name.split() if part]).upper() or "SS",
-        "year": profile.year if profile else "3rd Year",
-        "branch": profile.branch if profile else "AIML",
-        "college": profile.college if profile else "GL Bajaj Institute of Technology and Management",
-        "bio": profile.bio if profile else "",
-        "careerGoal": profile.career_goal if profile else "AI / ML Engineer",
-        "placementReadiness": profile.placement_readiness if profile else 82,
-        "profileCompletion": profile.profile_completion if profile else 90,
+        "year": profile.year if profile and profile.year else "",
+        "branch": profile.branch if profile and profile.branch else "",
+        "college": profile.college if profile and profile.college else "",
+        "bio": profile.bio if profile and profile.bio else "",
+        "careerGoal": profile.career_goal if profile and profile.career_goal else "",
+        "placementReadiness": profile.placement_readiness if profile and profile.placement_readiness is not None else 0,
+        "profileCompletion": profile.profile_completion if profile and profile.profile_completion is not None else 0,
         "github": github_stats,
         "leetcode": leetcode_stats,
         "codeforces": codeforces_stats,
@@ -103,10 +117,10 @@ def update_user_profile(
         profile.bio = data.bio
     if data.year:
         profile.year = data.year
-    if data.branch:
-        profile.branch = data.branch
-    if data.college:
-        profile.college = data.college
+    if data.branch is not None:
+        profile.branch = normalize_branch_name(data.branch)
+    if data.college is not None:
+        profile.college = normalize_college_name(data.college)
     if data.career_goal:
         profile.career_goal = data.career_goal
     if data.target_company_type:
@@ -199,3 +213,96 @@ def update_settings(
 
     db.commit()
     return {"success": True, "message": "Settings saved successfully."}
+
+
+class VerifyPlatformRequest(BaseModel):
+    platform: str
+    username: str
+
+
+@router.post("/verify-platform")
+async def verify_and_sync_single_platform(
+    payload: VerifyPlatformRequest,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Verify an individual platform handle (leetcode, github, codeforces, codechef, kaggle),
+    extract live statistics, persist the verified handle, and recompute placement readiness.
+    """
+    clean_platform = payload.platform.lower().strip()
+    clean_user = payload.username.strip()
+
+    if not clean_user:
+        raise HTTPException(status_code=400, detail="Username cannot be empty")
+
+    verify_res = await PlatformSyncService.verify_handle(clean_platform, clean_user)
+    if not verify_res.get("exists") and not verify_res.get("verified"):
+        return {
+            "success": False,
+            "verified": False,
+            "platform": clean_platform,
+            "username": clean_user,
+            "message": f"Handle '@{clean_user}' could not be verified on {clean_platform.capitalize()}. Please check the handle or ensure your profile privacy is set to Public.",
+        }
+
+    # Save to connected accounts
+    accounts = user.connected_accounts
+    if not accounts:
+        accounts = ConnectedAccounts(user_id=user.id)
+        db.add(accounts)
+
+    if clean_platform == "leetcode":
+        accounts.leetcode_username = clean_user
+        stats_data = await PlatformSyncService.sync_leetcode(clean_user)
+    elif clean_platform == "github":
+        accounts.github_username = clean_user
+        stats_data = await PlatformSyncService.sync_github(clean_user)
+    elif clean_platform == "codeforces":
+        accounts.codeforces_username = clean_user
+        stats_data = await PlatformSyncService.sync_codeforces(clean_user)
+    elif clean_platform == "codechef":
+        accounts.codechef_username = clean_user
+        stats_data = await PlatformSyncService.sync_codechef(clean_user)
+    elif clean_platform == "kaggle":
+        accounts.kaggle_username = clean_user
+        stats_data = await PlatformSyncService.sync_kaggle(clean_user)
+    else:
+        raise HTTPException(status_code=400, detail=f"Unsupported platform: {clean_platform}")
+
+    accounts.last_synced_at = datetime.now(timezone.utc)
+
+    # Persist or update PlatformStats
+    ps = db.query(PlatformStats).filter(
+        PlatformStats.user_id == user.id,
+        PlatformStats.platform == clean_platform,
+    ).first()
+    if not ps:
+        ps = PlatformStats(user_id=user.id, platform=clean_platform, stats_data=stats_data)
+        db.add(ps)
+    else:
+        ps.stats_data = stats_data
+
+    # Recompute placement readiness
+    all_stats = {s.platform: s.stats_data for s in user.platform_stats}
+    all_stats[clean_platform] = stats_data
+    skills = db.query(Skill).filter(Skill.user_id == user.id).all()
+    projects = db.query(Project).filter(Project.user_id == user.id).all()
+    resume = db.query(ResumeData).filter(ResumeData.user_id == user.id).first()
+
+    new_score = AIService.calculate_placement_readiness(all_stats, skills, projects, resume)
+    profile = user.profile
+    if profile:
+        profile.placement_readiness = new_score
+
+    db.commit()
+
+    return {
+        "success": True,
+        "verified": True,
+        "platform": clean_platform,
+        "username": clean_user,
+        "stats": stats_data,
+        "placementReadiness": new_score,
+        "message": f"Successfully verified @{clean_user} and extracted live metrics from {clean_platform.capitalize()}!",
+    }

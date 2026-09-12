@@ -2,7 +2,12 @@ import { useMemo, useState } from "react";
 import { SidebarContext } from "./SidebarContextValue";
 
 export const SidebarProvider = ({ children }) => {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => {
+    if (typeof window !== "undefined") {
+      return window.innerWidth < 1024;
+    }
+    return false;
+  });
 
   const toggleSidebar = () => setCollapsed((prev) => !prev);
   const openSidebar = () => setCollapsed(false);

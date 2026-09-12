@@ -60,6 +60,23 @@ def add_skill(data: SkillCreate, user: User = Depends(get_current_user), db: Ses
     if matching_gap:
         db.delete(matching_gap)
 
+    # Record momentum notification
+    from app.models.notification import Notification
+    from datetime import datetime
+    skill.created_at = datetime.utcnow()
+    notif = Notification(
+        user_id=user.id,
+        type="skill_milestone",
+        title=f"⚡ Skill Mastered: {skill.name}",
+        message=f"Added {skill.name} ({skill.level}%). Your technical versatility and placement momentum have been updated.",
+        link="/skills",
+        link_label="View Skill Matrix",
+        company="SkillSync AI",
+        tags=[skill.name, skill.category],
+        is_read=False,
+    )
+    db.add(notif)
+
     db.commit()
     db.refresh(skill)
 

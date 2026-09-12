@@ -11,14 +11,14 @@ class StudentProfile(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), unique=True, nullable=False)
 
-    year = Column(String(50), default="3rd Year")
-    branch = Column(String(100), default="Computer Science / AIML")
-    college = Column(String(255), default="Engineering Institute of Technology")
+    year = Column(String(50), default="")
+    branch = Column(String(100), default="")
+    college = Column(String(255), default="")
     bio = Column(Text, nullable=True)
-    career_goal = Column(String(100), default="AI / ML Engineer")  # AI / ML Engineer, Backend Developer, etc.
-    target_company_type = Column(String(100), default="Product Companies & Tech Startups")
-    placement_readiness = Column(Integer, default=70)
-    profile_completion = Column(Integer, default=80)
+    career_goal = Column(String(100), default="")
+    target_company_type = Column(String(100), default="")
+    placement_readiness = Column(Integer, default=0)
+    profile_completion = Column(Integer, default=0)
 
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))

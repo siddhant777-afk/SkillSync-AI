@@ -65,6 +65,26 @@ export const UserProvider = ({ children }) => {
     fetchDashboardData();
   }, [fetchDashboardData, isAuthenticated, currentUser?.email]);
 
+  // Live reactivity: Automatically re-sync and update whenever any part of the app updates or tab refocuses
+  useEffect(() => {
+    const handleGlobalUpdate = () => {
+      fetchDashboardData();
+    };
+    window.addEventListener("skillsync:update", handleGlobalUpdate);
+    window.addEventListener("focus", handleGlobalUpdate);
+    return () => {
+      window.removeEventListener("skillsync:update", handleGlobalUpdate);
+      window.removeEventListener("focus", handleGlobalUpdate);
+    };
+  }, [fetchDashboardData]);
+
+  const notifyGlobalUpdate = useCallback(() => {
+    fetchDashboardData();
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("skillsync:update"));
+    }
+  }, [fetchDashboardData]);
+
   const syncAccounts = async () => {
     setIsSyncing(true);
     const toastId = toast.loading("Syncing GitHub, LeetCode & Codeforces...");
@@ -72,6 +92,7 @@ export const UserProvider = ({ children }) => {
       const res = await userService.syncAccounts();
       toast.success(res.message || "All profiles synchronized successfully!", { id: toastId });
       await fetchDashboardData();
+      notifyGlobalUpdate();
       return res;
     } catch {
       toast.error("Could not complete live sync. Using cached profile stats.", { id: toastId });
@@ -86,6 +107,7 @@ export const UserProvider = ({ children }) => {
       await userService.updateProfile(profileData);
       toast.success("Profile updated successfully!");
       await fetchDashboardData();
+      notifyGlobalUpdate();
       return true;
     } catch {
       toast.error("Failed to update profile.");
@@ -98,6 +120,7 @@ export const UserProvider = ({ children }) => {
       await userService.updateCodingProfiles(accountHandles);
       toast.success("Platform handles saved!");
       await syncAccounts();
+      notifyGlobalUpdate();
       return true;
     } catch {
       toast.error("Failed to update platform handles.");
@@ -115,8 +138,10 @@ export const UserProvider = ({ children }) => {
       updateProfile,
       updateCodingProfiles,
       refreshUser: fetchDashboardData,
+      refetch: fetchDashboardData,
+      notifyGlobalUpdate,
     }),
-    [user, isSyncing, isLoading, fetchDashboardData],
+    [user, isSyncing, isLoading, fetchDashboardData, notifyGlobalUpdate],
   );
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;

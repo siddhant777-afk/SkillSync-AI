@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user, get_db
+from app.core.normalizer import normalize_college_name, normalize_branch_name
 from app.core.security import create_access_token, create_refresh_token, get_password_hash, verify_password
 from app.models.profile import ConnectedAccounts, StudentProfile, PlatformStats
 from app.models.resume import ResumeData
@@ -163,53 +164,61 @@ def register(data: UserRegister, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(user)
 
-    # Initialize Student Profile
+    # Initialize Student Profile - only save what the user actually provided
+    clean_college = normalize_college_name(data.college)
+    clean_branch = normalize_branch_name(data.branch)
+    clean_year = (data.year or "").strip()
+
+    # Calculate initial completion based on filled fields
+    completion_score = 20
+    if clean_college: completion_score += 15
+    if clean_branch: completion_score += 15
+    if clean_year: completion_score += 10
+    if career_goal: completion_score += 10
+
     profile = StudentProfile(
         user_id=user.id,
-        year=data.year or "3rd Year",
-        branch=data.branch or "AIML",
-        college=data.college or "Engineering College",
+        year=clean_year,
+        branch=clean_branch,
+        college=clean_college,
         career_goal=career_goal,
-        placement_readiness=70,
-        profile_completion=80,
+        placement_readiness=0,
+        profile_completion=min(100, completion_score),
     )
     db.add(profile)
 
     # Initialize Connected Accounts
     accounts = ConnectedAccounts(
         user_id=user.id,
-        github_username=data.github or "",
-        leetcode_username=data.leetcode or "",
-        codeforces_username=data.codeforces or "",
-        codechef_username=data.codechef or "",
-        kaggle_username=data.kaggle or "",
+        github_username=(data.github or "").strip(),
+        leetcode_username=(data.leetcode or "").strip(),
+        codeforces_username=(data.codeforces or "").strip(),
+        codechef_username=(data.codechef or "").strip(),
+        kaggle_username=(data.kaggle or "").strip(),
     )
     db.add(accounts)
 
-    # Initialize role-relevant skills for new student
-    req_skills = ROLE_REQUIRED_SKILLS.get(career_goal, ROLE_REQUIRED_SKILLS["AI / ML Engineer"])
-    for s in req_skills[:5]:
-        db.add(Skill(user_id=user.id, name=s["name"], level=70, category=s["category"], status="Strong"))
+    # New user starts with authentic zero-state resume (all data entered by user)
+    initial_education = []
+    if clean_college or clean_branch:
+        initial_education.append({
+            "degree": clean_branch or "",
+            "institution": clean_college or "",
+            "year": clean_year or "",
+            "score": "",
+        })
 
-    # Initialize initial skill gaps
-    for s in req_skills[5:]:
-        db.add(SkillGap(user_id=user.id, name=s["name"], priority=s["priority"], category=s["category"], reason="Target competency for role"))
-
-    # Initialize Resume
     resume = ResumeData(
         user_id=user.id,
-        headline=f"Aspiring {career_goal}",
-        summary=f"Enthusiastic {data.branch or 'Computer Science'} student specializing in {career_goal} with a strong foundation in software engineering, algorithms, and practical development.",
-        ats_score=78,
-        skills_json=[s["name"] for s in req_skills[:6]],
-        education=[
-            {
-                "degree": f"B.Tech in {data.branch or 'Computer Science'}",
-                "institution": data.college or "Engineering College",
-                "year": data.year or "3rd Year",
-                "score": "8.5 CGPA",
-            }
-        ],
+        headline=f"Aspiring {career_goal}" if career_goal else "",
+        summary="",
+        ats_score=0,
+        skills_json=[],
+        projects_json=[],
+        experience_json=[],
+        achievements_json=[],
+        education=initial_education,
+        ai_feedback="Resume created. Fill in your summary, skills, and projects from the web to increase your ATS score.",
     )
     db.add(resume)
     db.commit()
@@ -325,10 +334,10 @@ def get_me(user: User = Depends(get_current_user)):
         "fullName": user.full_name,
         "role": user.role,
         "avatarUrl": user.avatar_url,
-        "year": profile.year if profile else "3rd Year",
-        "branch": profile.branch if profile else "AIML",
-        "college": profile.college if profile else "Engineering College",
-        "careerGoal": profile.career_goal if profile else "AI / ML Engineer",
-        "placementReadiness": profile.placement_readiness if profile else 75,
-        "profileCompletion": profile.profile_completion if profile else 85,
+        "year": profile.year if profile else "",
+        "branch": profile.branch if profile else "",
+        "college": profile.college if profile else "",
+        "careerGoal": profile.career_goal if profile else "",
+        "placementReadiness": profile.placement_readiness if profile and profile.placement_readiness is not None else 0,
+        "profileCompletion": profile.profile_completion if profile and profile.profile_completion is not None else 0,
     }

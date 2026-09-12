@@ -11,9 +11,12 @@ export const ROUTES = {
   PROJECTS: "/projects",
   ACHIEVEMENTS: "/achievements",
   RECOMMENDATIONS: "/recommendations",
+  LEADERBOARD: "/leaderboard",
+  JOBS: "/jobs",
   RESUME: "/resume",
   SETTINGS: "/settings",
   RECRUITER: "/recruiter",
+
 
   NOT_FOUND: "*",
 };

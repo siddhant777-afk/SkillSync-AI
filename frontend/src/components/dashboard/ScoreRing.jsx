@@ -14,7 +14,7 @@ const ScoreRing = ({ value, label = "/100", size = "lg" }) => {
           r={radius}
           fill="none"
           stroke="currentColor"
-          className="text-slate-200"
+          className="text-slate-200 dark:text-slate-800"
           strokeWidth={stroke}
         />
         <circle
@@ -23,7 +23,7 @@ const ScoreRing = ({ value, label = "/100", size = "lg" }) => {
           r={radius}
           fill="none"
           stroke="currentColor"
-          className="text-emerald-500"
+          className="text-emerald-500 dark:text-emerald-400"
           strokeWidth={stroke}
           strokeLinecap="round"
           strokeDasharray={circumference}
@@ -32,8 +32,10 @@ const ScoreRing = ({ value, label = "/100", size = "lg" }) => {
       </svg>
 
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className={`${size === "lg" ? "text-4xl" : "text-3xl"} font-bold text-slate-900`}>{value}</span>
-        <span className="text-xs text-slate-400">{label}</span>
+        <span className={`${size === "lg" ? "text-4xl" : "text-3xl"} font-bold text-slate-900 dark:text-white`}>
+          {value}
+        </span>
+        <span className="text-xs text-slate-400 dark:text-slate-500">{label}</span>
       </div>
     </div>
   );

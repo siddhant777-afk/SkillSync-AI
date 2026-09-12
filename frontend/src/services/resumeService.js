@@ -16,6 +16,12 @@ const resumeService = {
     const response = await api.post(API_ENDPOINTS.RESUME_AI_REVIEW, { target_role: targetRole });
     return response.data;
   },
+
+  autoFillProfile: async () => {
+    const response = await api.post(API_ENDPOINTS.RESUME_AUTO_FILL);
+    return response.data;
+  },
 };
+
 
 export default resumeService;

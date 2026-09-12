@@ -33,4 +33,5 @@ class User(Base):
     projects = relationship("Project", back_populates="user", cascade="all, delete-orphan")
     achievements = relationship("Achievement", back_populates="user", cascade="all, delete-orphan")
     recommendations = relationship("Recommendation", back_populates="user", cascade="all, delete-orphan")
+    notifications = relationship("Notification", back_populates="user", cascade="all, delete-orphan")
     resume = relationship("ResumeData", back_populates="user", uselist=False, cascade="all, delete-orphan")

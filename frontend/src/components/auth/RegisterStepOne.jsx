@@ -229,33 +229,30 @@ const RegisterStepOne = ({
       </div>
 
       <FormInput
-        label="College / Institution"
+        label="College / Institution (Optional)"
         name="college"
         value={formData.college}
         onChange={handleChange}
-        placeholder="e.g. GL Bajaj Institute of Technology and Management"
-        required
+        placeholder="e.g. GL Bajaj Institute of Technology (can fill later from web)"
         error={errors.college}
       />
 
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
         <FormSelect
-          label="Branch"
+          label="Branch (Optional)"
           name="branch"
           value={formData.branch}
           onChange={handleChange}
           options={BRANCH_OPTIONS}
-          required
           error={errors.branch}
         />
 
         <FormSelect
-          label="Year of Study"
+          label="Year of Study (Optional)"
           name="year"
           value={formData.year}
           onChange={handleChange}
           options={YEAR_OPTIONS}
-          required
           error={errors.year}
         />
       </div>

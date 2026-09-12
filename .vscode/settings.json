@@ -1,3 +1,1 @@
-{
-    "python-envs.defaultEnvManager": "ms-python.python:system"
-}
+{\n  \"python.defaultInterpreterPath\": \"${workspaceFolder}\\backend\\.venv\\Scripts\\python.exe\",\n  \"python.terminal.activateEnvironment\": true\n}
