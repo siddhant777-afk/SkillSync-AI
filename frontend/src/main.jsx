@@ -10,7 +10,7 @@ import { SidebarProvider } from "./context/SidebarContext";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <BrowserRouter basename="/SkillSync-AI">
+    <BrowserRouter>
       <AuthProvider>
         <UserProvider>
           <SidebarProvider>

@@ -13,6 +13,7 @@ export const ROUTES = {
   RECOMMENDATIONS: "/recommendations",
   RESUME: "/resume",
   SETTINGS: "/settings",
+  RECRUITER: "/recruiter",
 
   NOT_FOUND: "*",
 };

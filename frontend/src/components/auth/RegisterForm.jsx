@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 import ProgressBar from "./ProgressBar";
 import RegisterStepOne from "./RegisterStepOne";
 import RegisterStepTwo from "./RegisterStepTwo";
@@ -27,11 +28,17 @@ const RegisterForm = () => {
     leetcode: "",
     codeforces: "",
     codechef: "",
+    isVerified: false,
+    verificationCode: "",
   });
 
   const handleChange = (event) => {
     const { name, value } = event.target;
-    setFormData((current) => ({ ...current, [name]: value }));
+    setFormData((current) => ({
+      ...current,
+      [name]: value,
+      ...(name === "email" ? { isVerified: false, verificationCode: "" } : {}),
+    }));
     if (errors[name]) {
       setErrors((current) => ({ ...current, [name]: "" }));
     }
@@ -43,6 +50,12 @@ const RegisterForm = () => {
       setErrors(validationErrors);
       return;
     }
+
+    if (!formData.isVerified) {
+      toast.error("Please verify your email with the 6-digit code before proceeding to Step 2.");
+      return;
+    }
+
     setErrors({});
     setStep(2);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -66,8 +79,8 @@ const RegisterForm = () => {
     const response = await register(formData);
 
     if (response.success) {
-      toast.success("Account created successfully.");
-      navigate(ROUTES.LOGIN);
+      toast.success("Account created successfully! Welcome to SkillSync AI.");
+      navigate(ROUTES.DASHBOARD);
     } else {
       toast.error(response.message || "Registration failed.");
     }
@@ -77,6 +90,18 @@ const RegisterForm = () => {
 
   return (
     <div className="w-full max-w-2xl rounded-2xl bg-white p-8 shadow-xl">
+      <div className="mb-6 flex items-center justify-between border-b border-slate-100 pb-4">
+        <Link
+          to={ROUTES.LOGIN}
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 transition hover:text-indigo-800 hover:underline"
+        >
+          <ArrowLeft size={14} /> Back to Login
+        </Link>
+        <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600">
+          Step {step} of 2
+        </span>
+      </div>
+
       <div className="mb-8 text-center">
         <h2 className="text-3xl font-bold text-gray-900">Create Your Account</h2>
         <p className="mt-2 text-sm text-gray-500">Join SkillSync AI and begin your placement journey.</p>
@@ -84,20 +109,49 @@ const RegisterForm = () => {
       <ProgressBar currentStep={step} totalSteps={2} />
       <form onSubmit={handleSubmit} className="mt-8 space-y-8">
         {step === 1 ? (
-          <RegisterStepOne formData={formData} errors={errors} handleChange={handleChange} />
+          <RegisterStepOne
+            formData={formData}
+            errors={errors}
+            handleChange={handleChange}
+            setFormData={setFormData}
+          />
         ) : (
           <RegisterStepTwo formData={formData} errors={errors} handleChange={handleChange} />
         )}
 
         <div className="flex flex-col-reverse gap-4 pt-4 sm:flex-row sm:justify-between">
           {step === 2 ? (
-            <button type="button" onClick={handlePrevious} disabled={loading} className="rounded-xl border border-gray-300 px-6 py-3 font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-60">Previous</button>
-          ) : <div />}
+            <button
+              type="button"
+              onClick={handlePrevious}
+              disabled={loading}
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-gray-300 px-6 py-3 font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-60"
+            >
+              <ArrowLeft size={16} /> Previous (Step 1)
+            </button>
+          ) : (
+            <Link
+              to={ROUTES.LOGIN}
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-gray-300 px-6 py-3 font-medium text-gray-700 hover:bg-gray-100"
+            >
+              <ArrowLeft size={16} /> Back to Login
+            </Link>
+          )}
 
           {step === 1 ? (
-            <button type="button" onClick={handleNext} className="rounded-xl bg-indigo-600 px-6 py-3 font-semibold text-white hover:bg-indigo-700">Next</button>
+            <button
+              type="button"
+              onClick={handleNext}
+              className="rounded-xl bg-indigo-600 px-6 py-3 font-semibold text-white hover:bg-indigo-700"
+            >
+              Next Step →
+            </button>
           ) : (
-            <button type="submit" disabled={loading} className="rounded-xl bg-indigo-600 px-6 py-3 font-semibold text-white hover:bg-indigo-700 disabled:opacity-60">
+            <button
+              type="submit"
+              disabled={loading}
+              className="rounded-xl bg-indigo-600 px-6 py-3 font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+            >
               {loading ? "Creating Account..." : "Create Account"}
             </button>
           )}

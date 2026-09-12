@@ -1,5 +1,5 @@
 
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 
 import MainLayout from "../layouts/MainLayout";
 
@@ -15,6 +15,7 @@ import Achievements from "../pages/achievements/Achievements";
 import Recommendations from "../pages/recommendations/Recommendations";
 import ResumeBuilder from "../pages/resume/ResumeBuilder";
 import Settings from "../pages/settings/Settings";
+import RecruiterCandidates from "../pages/recruiter/RecruiterCandidates";
 
 import NotFound from "../pages/NotFound";
 
@@ -130,6 +131,20 @@ const AppRoutes = () => {
           </ProtectedPage>
         }
       />
+
+      <Route
+        path="/recruiter"
+        element={
+          <ProtectedPage>
+            <RecruiterCandidates />
+          </ProtectedPage>
+        }
+      />
+
+      {/* Legacy /SkillSync-AI route aliases */}
+      <Route path="/SkillSync-AI/login" element={<Navigate to="/login" replace />} />
+      <Route path="/SkillSync-AI/register" element={<Navigate to="/register" replace />} />
+      <Route path="/SkillSync-AI/*" element={<Navigate to="/" replace />} />
 
       {/* 404 */}
       <Route path="*" element={<NotFound />} />

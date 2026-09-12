@@ -36,13 +36,17 @@ class Settings(BaseSettings):
     # Database
     # ------------------------------------------------------------------
 
-    DATABASE_URL: str
+    DATABASE_URL: str = Field(
+        default="postgresql+psycopg://postgres:postgres@localhost:5432/skillsync_ai"
+    )
 
     # ------------------------------------------------------------------
     # JWT
     # ------------------------------------------------------------------
 
-    SECRET_KEY: str
+    SECRET_KEY: str = Field(
+        default="9f8c6b29d4724e8ab9c7e0c3894bf8217e54c86a23b54d19bb6a27e4e1a6c429"
+    )
 
     ALGORITHM: str = Field(default="HS256")
 

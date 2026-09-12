@@ -3,6 +3,7 @@ import {
   Award,
   BarChart3,
   BrainCircuit,
+  Briefcase,
   FileText,
   FolderKanban,
   LayoutDashboard,
@@ -57,6 +58,11 @@ const menuItems = [
     title: "Resume Builder",
     icon: FileText,
     path: ROUTES.RESUME,
+  },
+  {
+    title: "Talent Explorer",
+    icon: Briefcase,
+    path: ROUTES.RECRUITER,
   },
   {
     title: "Settings",

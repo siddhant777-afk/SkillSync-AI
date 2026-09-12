@@ -27,12 +27,23 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-      localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
-      localStorage.removeItem(STORAGE_KEYS.USER);
+      const url = error.config?.url || "";
+      const isAuthEndpoint =
+        url.includes("/auth/login") ||
+        url.includes("/auth/register") ||
+        url.includes("/auth/send-verification-code") ||
+        url.includes("/auth/verify-email");
 
-      if (window.location.pathname !== "/login") {
-        window.location.assign("/login");
+      if (!isAuthEndpoint) {
+        localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+        localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+        localStorage.removeItem(STORAGE_KEYS.USER);
+
+        const base = import.meta.env.BASE_URL || "/";
+        const loginPath = base.endsWith("/") ? `${base}login` : `${base}/login`;
+        if (!window.location.pathname.endsWith("/login")) {
+          window.location.assign(loginPath);
+        }
       }
     }
 
