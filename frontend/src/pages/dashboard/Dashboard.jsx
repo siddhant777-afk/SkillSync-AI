@@ -14,8 +14,19 @@ import PlacementReportModal from "../../components/modals/PlacementReportModal";
 import { useUser } from "../../hooks/useUser";
 
 const Dashboard = () => {
-  const { user } = useUser();
+  const { user, isLoading } = useUser();
   const [reportOpen, setReportOpen] = useState(false);
+
+  if (isLoading && !user) {
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent" />
+          <p className="text-sm font-medium text-slate-500">Loading your career intelligence dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   const userName = user?.name ? user.name.split(" ")[0] : "Student";
 

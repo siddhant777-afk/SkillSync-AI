@@ -9,11 +9,20 @@ import {
 } from "recharts";
 
 const ProgressOverviewCard = ({ progress }) => {
-  const data = progress.months.map((month, index) => ({
+  const fallback = {
+    months: ["Dec", "Jan", "Feb", "Mar", "Apr", "May"],
+    leetcode: [420, 455, 500, 540, 585, 625],
+    github: [180, 255, 330, 410, 510, 620],
+    projects: [2, 3, 4, 5, 6, 8],
+  };
+
+  const safeProgress = progress && Array.isArray(progress.months) && progress.months.length ? progress : fallback;
+
+  const data = safeProgress.months.map((month, index) => ({
     month,
-    leetcode: progress.leetcode[index],
-    github: progress.github[index],
-    projects: progress.projects[index] * 50,
+    leetcode: safeProgress.leetcode ? safeProgress.leetcode[index] : 0,
+    github: safeProgress.github ? safeProgress.github[index] : 0,
+    projects: safeProgress.projects ? safeProgress.projects[index] * 50 : 0,
   }));
 
   return (
