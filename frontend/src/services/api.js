@@ -2,8 +2,8 @@ import axios from "axios";
 import { STORAGE_KEYS } from "../constants/storage";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000",
-  timeout: 10000,
+  baseURL: import.meta.env.VITE_API_BASE_URL || (import.meta.env.PROD ? "https://skillsync-ai-1-o7w6.onrender.com" : "http://127.0.0.1:8000"),
+  timeout: 15000,
   headers: {
     "Content-Type": "application/json",
   },
