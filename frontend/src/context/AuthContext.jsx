@@ -43,10 +43,69 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
+  const requestLoginOtp = async (credentials) => {
+    setLoading(true);
+    try {
+      const data = await authService.loginRequestOtp(credentials);
+      return {
+        success: true,
+        otpRequired: true,
+        email: data.email,
+        message: data.message,
+        devOtp: data.dev_otp,
+      };
+    } catch (err) {
+      const errorMsg =
+        err.response?.data?.message ||
+        err.response?.data?.detail ||
+        "Incorrect email or password. Please try again.";
+      return { success: false, message: errorMsg };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const verifyLoginOtp = async ({ email, code }) => {
+    setLoading(true);
+    try {
+      const data = await authService.loginVerifyOtp({ email, code });
+      if (data.access_token) {
+        localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, data.access_token);
+        localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, data.refresh_token);
+      }
+      const user = data.user || {
+        email,
+        fullName: email.split("@")[0],
+      };
+      localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
+
+      setCurrentUser(user);
+      setIsAuthenticated(true);
+      return { success: true, user };
+    } catch (err) {
+      const errorMsg =
+        err.response?.data?.message ||
+        err.response?.data?.detail ||
+        "Invalid or expired verification code. Please try again.";
+      return { success: false, message: errorMsg };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const login = async (credentials) => {
     setLoading(true);
     try {
       const data = await authService.login(credentials);
+      if (data.otp_required) {
+        return {
+          success: true,
+          otpRequired: true,
+          email: data.email,
+          message: data.message,
+          devOtp: data.dev_otp,
+        };
+      }
       if (data.access_token) {
         localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, data.access_token);
         localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, data.refresh_token);
@@ -131,6 +190,8 @@ export const AuthProvider = ({ children }) => {
       currentUser,
       loading,
       login,
+      requestLoginOtp,
+      verifyLoginOtp,
       register,
       logout,
     }),

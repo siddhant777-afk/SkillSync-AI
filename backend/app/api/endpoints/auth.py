@@ -1,5 +1,6 @@
 import random
-from typing import Dict
+import time
+from typing import Any, Dict
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -10,6 +11,9 @@ from app.models.resume import ResumeData
 from app.models.skill import Skill, SkillGap
 from app.models.user import User
 from app.schemas import (
+    LoginOtpChallengeResponse,
+    LoginRequestOtp,
+    LoginVerifyOtp,
     SendVerificationCodeRequest,
     TokenResponse,
     UserLogin,
@@ -17,45 +21,85 @@ from app.schemas import (
     VerifyEmailRequest,
 )
 from app.services.ai_service import ROLE_REQUIRED_SKILLS
+from app.services.email_service import send_otp_email
 
 router = APIRouter()
 
-# In-memory store for pending email verification codes
-PENDING_VERIFICATIONS: Dict[str, str] = {}
+# Pending registration OTPs: email -> {"code": str, "expires_at": float}
+PENDING_REGISTRATION_OTPS: Dict[str, Dict[str, Any]] = {}
+
+# Verified registration emails: email -> expires_at (valid for 15 minutes to submit form)
+VERIFIED_REGISTRATION_EMAILS: Dict[str, float] = {}
+
+# Pending login OTPs: email -> {"code": str, "user_id": int, "expires_at": float}
+PENDING_LOGIN_OTPS: Dict[str, Dict[str, Any]] = {}
+
+
+def build_user_info(user: User) -> Dict[str, Any]:
+    profile = user.profile
+    return {
+        "id": user.id,
+        "email": user.email,
+        "fullName": user.full_name,
+        "role": user.role,
+        "year": profile.year if profile else "3rd Year",
+        "branch": profile.branch if profile else "AIML",
+        "college": profile.college if profile else "Engineering College",
+        "careerGoal": profile.career_goal if profile else "AI / ML Engineer",
+    }
 
 
 @router.post("/send-verification-code")
-def send_verification_code(data: SendVerificationCodeRequest):
+def send_verification_code(data: SendVerificationCodeRequest, db: Session = Depends(get_db)):
     email = data.email.lower().strip()
+
+    # Reject if email is already registered in database
+    existing = db.query(User).filter(User.email == email).first()
+    if existing:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="An account with this email already exists. Please log in.",
+        )
+
     code = f"{random.randint(100000, 999999)}"
-    PENDING_VERIFICATIONS[email] = code
+    expires_at = time.time() + 600  # 10 minutes
+    PENDING_REGISTRATION_OTPS[email] = {
+        "code": code,
+        "expires_at": expires_at,
+    }
+
+    send_otp_email(to_email=email, otp_code=code, purpose="register")
+
     return {
         "success": True,
         "message": f"Verification code sent to {email}.",
-        "code": code,  # Provided in response for easy demonstration/testing
+        "code": code,
+        "dev_otp": code,
     }
 
 
 @router.post("/verify-email")
 def verify_email(data: VerifyEmailRequest, db: Session = Depends(get_db)):
     email = data.email.lower().strip()
-    expected = PENDING_VERIFICATIONS.get(email)
+    pending = PENDING_REGISTRATION_OTPS.get(email)
 
-    # Accept either the generated OTP, or default test code 123456
-    if expected and expected == data.code.strip():
-        valid = True
-    elif data.code.strip() == "123456":
-        valid = True
-    else:
-        valid = False
-
-    if not valid:
+    if not pending or pending.get("expires_at", 0) < time.time():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid or expired verification code.",
+            detail="Verification code has expired or was not requested. Please request a new code.",
         )
 
-    # If user already registered, mark verified
+    if pending.get("code") != data.code.strip():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid verification code. Please check your email and try again.",
+        )
+
+    # Valid OTP: grant 15 minutes window to complete registration
+    VERIFIED_REGISTRATION_EMAILS[email] = time.time() + 900
+    PENDING_REGISTRATION_OTPS.pop(email, None)
+
+    # If user already exists in DB, update is_verified
     user = db.query(User).filter(User.email == email).first()
     if user:
         user.is_verified = True
@@ -78,10 +122,30 @@ def register(data: UserRegister, db: Session = Depends(get_db)):
             detail="A user with this email already exists. Please login.",
         )
 
+    # Strictly enforce email OTP verification
+    verified_until = VERIFIED_REGISTRATION_EMAILS.get(email_clean, 0)
+    is_verified = (verified_until > time.time())
+
+    if not is_verified:
+        code_provided = (data.verification_code or data.verificationCode or "").strip()
+        pending = PENDING_REGISTRATION_OTPS.get(email_clean)
+        if pending and pending.get("code") == code_provided and pending.get("expires_at", 0) > time.time():
+            is_verified = True
+            PENDING_REGISTRATION_OTPS.pop(email_clean, None)
+
+    if not is_verified:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email not verified. Please verify the 6-digit OTP sent to your email before completing registration.",
+        )
+
+    # Remove temporary verification entry
+    VERIFIED_REGISTRATION_EMAILS.pop(email_clean, None)
+
     full_name = data.get_full_name()
     career_goal = data.get_career_goal()
 
-    # Create User
+    # Create User in PostgreSQL
     user = User(
         email=email_clean,
         hashed_password=get_password_hash(data.password),
@@ -142,62 +206,96 @@ def register(data: UserRegister, db: Session = Depends(get_db)):
         ],
     )
     db.add(resume)
-
     db.commit()
 
     access_token = create_access_token(user.id)
     refresh_token = create_refresh_token(user.id)
 
-    user_info = {
-        "id": user.id,
-        "email": user.email,
-        "fullName": user.full_name,
-        "role": user.role,
-        "year": profile.year,
-        "branch": profile.branch,
-        "college": profile.college,
-        "careerGoal": profile.career_goal,
-    }
-
     return {
         "access_token": access_token,
         "refresh_token": refresh_token,
         "token_type": "bearer",
-        "user": user_info,
+        "user": build_user_info(user),
     }
 
 
-@router.post("/login", response_model=TokenResponse)
-def login(data: UserLogin, db: Session = Depends(get_db)):
+@router.post("/login-request-otp", response_model=LoginOtpChallengeResponse)
+def login_request_otp(data: LoginRequestOtp, db: Session = Depends(get_db)):
     email_clean = data.email.lower().strip()
     user = db.query(User).filter(User.email == email_clean).first()
-    if not user or not verify_password(data.password, user.hashed_password):
+    if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password.",
+            detail="We cannot find an account with that email address.",
         )
+
+    if not verify_password(data.password, user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect password. Please try again.",
+        )
+
+    code = f"{random.randint(100000, 999999)}"
+    expires_at = time.time() + 600  # 10 minutes
+    PENDING_LOGIN_OTPS[email_clean] = {
+        "code": code,
+        "user_id": user.id,
+        "expires_at": expires_at,
+    }
+
+    send_otp_email(to_email=email_clean, otp_code=code, purpose="login")
+
+    return {
+        "success": True,
+        "otp_required": True,
+        "email": user.email,
+        "message": f"Two-step verification code sent to {user.email}.",
+        "dev_otp": code,
+    }
+
+
+@router.post("/login-verify-otp", response_model=TokenResponse)
+def login_verify_otp(data: LoginVerifyOtp, db: Session = Depends(get_db)):
+    email_clean = data.email.lower().strip()
+    pending = PENDING_LOGIN_OTPS.get(email_clean)
+
+    if not pending or pending.get("expires_at", 0) < time.time():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Verification code has expired or was not requested. Please request a new code.",
+        )
+
+    if pending.get("code") != data.code.strip():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid verification code. Please check your email and try again.",
+        )
+
+    user = db.query(User).filter(User.id == pending["user_id"]).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User account not found.",
+        )
+
+    # Clear pending login OTP
+    PENDING_LOGIN_OTPS.pop(email_clean, None)
 
     access_token = create_access_token(user.id)
     refresh_token = create_refresh_token(user.id)
 
-    profile = user.profile
-    user_info = {
-        "id": user.id,
-        "email": user.email,
-        "fullName": user.full_name,
-        "role": user.role,
-        "year": profile.year if profile else "3rd Year",
-        "branch": profile.branch if profile else "AIML",
-        "college": profile.college if profile else "Engineering College",
-        "careerGoal": profile.career_goal if profile else "AI / ML Engineer",
-    }
-
     return {
         "access_token": access_token,
         "refresh_token": refresh_token,
         "token_type": "bearer",
-        "user": user_info,
+        "user": build_user_info(user),
     }
+
+
+@router.post("/login")
+def login(data: UserLogin, db: Session = Depends(get_db)):
+    # Standard login triggers Amazon-style OTP request
+    return login_request_otp(LoginRequestOtp(email=data.email, password=data.password), db=db)
 
 
 @router.post("/logout")

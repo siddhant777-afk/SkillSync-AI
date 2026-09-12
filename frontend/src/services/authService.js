@@ -7,6 +7,16 @@ const authService = {
     return response.data;
   },
 
+  loginRequestOtp: async (credentials) => {
+    const response = await api.post(API_ENDPOINTS.LOGIN_REQUEST_OTP, credentials);
+    return response.data;
+  },
+
+  loginVerifyOtp: async ({ email, code }) => {
+    const response = await api.post(API_ENDPOINTS.LOGIN_VERIFY_OTP, { email, code });
+    return response.data;
+  },
+
   register: async (userData) => {
     const response = await api.post(API_ENDPOINTS.REGISTER, userData);
     return response.data;

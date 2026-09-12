@@ -50,6 +50,24 @@ class UserLogin(BaseModel):
     password: str
 
 
+class LoginRequestOtp(BaseModel):
+    email: EmailStr
+    password: str
+
+
+class LoginVerifyOtp(BaseModel):
+    email: EmailStr
+    code: str
+
+
+class LoginOtpChallengeResponse(BaseModel):
+    success: bool
+    otp_required: bool = True
+    email: str
+    message: str
+    dev_otp: Optional[str] = None
+
+
 class TokenResponse(BaseModel):
     access_token: str
     refresh_token: str
