@@ -47,7 +47,7 @@ def generate_amazon_style_html(otp_code: str, purpose: str = "login", email: str
             <td style="padding: 36px 36px 28px;">
               <h2 style="margin: 0 0 12px; color: #0f172a; font-size: 20px; font-weight: 700;">{title_text}</h2>
               <p style="margin: 0 0 24px; color: #475569; font-size: 14px; line-height: 1.6;">
-                Use the following One-Time Password (OTP) to {action_text}. This code is valid for <strong>10 minutes</strong>.
+                Use the following One-Time Password (OTP) to {action_text}. This code is valid for <strong>1 minute</strong>.
               </p>
               <!-- OTP Box -->
               <div style="background-color: #f8fafc; border: 2px dashed #6366f1; border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 28px;">
@@ -127,24 +127,24 @@ Error:     SMTP_HOST, SMTP_USER or SMTP_PASSWORD missing in .env
     try:
         msg = MIMEMultipart("alternative")
         msg["Subject"] = subject
-        msg["From"] = settings.SMTP_FROM_EMAIL or settings.SMTP_USER
+        msg["From"] = f"SkillSync <{settings.SMTP_USER}>"
         msg["To"] = normalized_email
 
         text_content = (
             f"SkillSync AI {title_text}\n\n"
             f"Your One-Time Password (OTP) is: {otp_code}\n\n"
-            f"This code is valid for 10 minutes. Do not share it with anyone."
+            f"This code is valid for 1 minute only. Do not share it with anyone."
         )
         html_content = generate_amazon_style_html(otp_code, purpose=purpose, email=normalized_email)
 
         msg.attach(MIMEText(text_content, "plain"))
         msg.attach(MIMEText(html_content, "html"))
 
-        with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=12) as server:
+        with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=15) as server:
             if settings.SMTP_TLS:
                 server.starttls()
-            server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
-            server.sendmail(msg["From"], [normalized_email], msg.as_string())
+            server.login(settings.SMTP_USER.strip(), settings.SMTP_PASSWORD.replace(" ", "").strip())
+            server.sendmail(settings.SMTP_USER.strip(), [normalized_email], msg.as_string())
 
         logger.info(f"Successfully delivered OTP email to {normalized_email}")
         return True

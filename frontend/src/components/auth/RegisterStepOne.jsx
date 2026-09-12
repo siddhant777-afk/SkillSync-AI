@@ -107,7 +107,6 @@ const RegisterStepOne = ({
             handleChange(e);
             setCodeSent(false);
             setLocalCode("");
-            setDevOtpNotice("");
             setVerifyError("");
           }}
           placeholder="yourname@college.edu or gmail.com"

@@ -72,7 +72,7 @@ def send_verification_code(data: SendVerificationCodeRequest, db: Session = Depe
             detail=str(e),
         )
 
-    expires_at = time.time() + 600  # 10 minutes
+    expires_at = time.time() + 60  # 1 minute
     PENDING_REGISTRATION_OTPS[email] = {
         "code": code,
         "expires_at": expires_at,
@@ -252,7 +252,7 @@ def login_request_otp(data: LoginRequestOtp, db: Session = Depends(get_db)):
             detail=str(e),
         )
 
-    expires_at = time.time() + 600  # 10 minutes
+    expires_at = time.time() + 60  # 1 minute
     PENDING_LOGIN_OTPS[email_clean] = {
         "code": code,
         "user_id": user.id,

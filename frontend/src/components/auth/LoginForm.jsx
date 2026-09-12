@@ -300,7 +300,7 @@ const LoginForm = () => {
               />
             </div>
             <p className="mt-1.5 text-right text-[11px] text-slate-400">
-              Code expires in 10 minutes
+              Code expires in 1 minute
             </p>
           </div>
 
