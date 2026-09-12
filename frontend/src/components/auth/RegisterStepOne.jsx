@@ -14,7 +14,6 @@ const RegisterStepOne = ({
 }) => {
   const [codeSent, setCodeSent] = useState(Boolean(formData.verificationCode));
   const [localCode, setLocalCode] = useState(formData.verificationCode || "");
-  const [devOtpNotice, setDevOtpNotice] = useState("");
   const [sending, setSending] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
@@ -38,16 +37,10 @@ const RegisterStepOne = ({
 
     setSending(true);
     try {
-      const res = await authService.sendVerificationCode(cleanEmail);
+      await authService.sendVerificationCode(cleanEmail);
       setCodeSent(true);
       setResendCooldown(30);
-      if (res.dev_otp || res.code) {
-        const code = res.dev_otp || res.code;
-        setDevOtpNotice(code);
-        toast.success(`Verification code sent! (Dev Code: ${code})`, { duration: 10000 });
-      } else {
-        toast.success(`Verification code sent to ${cleanEmail}! Check your inbox.`);
-      }
+      toast.success(`Verification code sent to ${cleanEmail}! Please check your email inbox.`);
     } catch (err) {
       const msg =
         err.response?.data?.message ||
@@ -170,25 +163,6 @@ const RegisterStepOne = ({
               <span>Two-Step Verification: Enter 6-digit code sent to {formData.email}</span>
             </div>
 
-            {/* Dev Mode Paste Helper */}
-            {devOtpNotice && (
-              <div className="rounded-lg bg-amber-50 px-3 py-2 border border-amber-200 text-xs text-amber-900 flex items-center justify-between">
-                <div>
-                  <span className="font-semibold">Dev OTP Code: </span>
-                  <span className="font-mono font-bold tracking-wider">{devOtpNotice}</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setLocalCode(devOtpNotice);
-                    setFormData((prev) => ({ ...prev, verificationCode: devOtpNotice }));
-                  }}
-                  className="text-[10px] font-semibold text-amber-800 bg-white border border-amber-300 rounded px-2 py-0.5 hover:bg-amber-100"
-                >
-                  1-Click Paste
-                </button>
-              </div>
-            )}
 
             <div className="flex gap-2">
               <input

@@ -80,60 +80,78 @@ def generate_amazon_style_html(otp_code: str, purpose: str = "login", email: str
 """
 
 
+from email_validator import validate_email, EmailNotValidError
+
+
+def validate_email_deliverability(email: str) -> str:
+    """
+    Validates that the email address syntax is correct and that the domain
+    has valid MX DNS records capable of receiving mail.
+    """
+    try:
+        validated = validate_email(email, check_deliverability=True)
+        return validated.normalized
+    except EmailNotValidError as e:
+        raise ValueError(f"Invalid email: {str(e)}")
+
+
 def send_otp_email(to_email: str, otp_code: str, purpose: str = "login") -> bool:
     """
-    Sends an OTP verification email to the user.
-    If SMTP is configured in settings, sends real email.
-    Always logs the OTP to console for immediate development access.
+    Sends an OTP verification email to the user's real email address.
+    Strictly enforces DNS deliverability and SMTP delivery.
+    Raises an exception if the email is invalid or SMTP delivery fails.
     """
+    # 1. Validate email syntax and DNS MX deliverability
+    normalized_email = validate_email_deliverability(to_email)
+
     title_text = "Two-Step Verification" if purpose == "login" else "Email Verification"
     subject = f"SkillSync AI: {otp_code} is your verification code"
 
-    # Always log formatted OTP banner to terminal so developer / user can see it instantly
-    banner = f"""
+    # 2. Check if SMTP configuration is present
+    if not (settings.SMTP_HOST and settings.SMTP_USER and settings.SMTP_PASSWORD):
+        # Format banner to server log for operator diagnostics
+        banner = f"""
 ================================================================================
-[SkillSync AI Email Service]
-To:        {to_email}
-Subject:   {subject}
+[SkillSync AI Email Service - SMTP NOT CONFIGURED]
+To:        {normalized_email}
 Purpose:   {title_text}
-OTP CODE:  >>> {otp_code} <<<
-Expires:   10 minutes
+Error:     SMTP_HOST, SMTP_USER or SMTP_PASSWORD missing in .env
 ================================================================================
 """
-    logger.info(banner)
+        logger.error(banner)
+        raise RuntimeError(
+            "SMTP email service is not configured. Please configure SMTP_USER and SMTP_PASSWORD in backend/.env to deliver OTPs to real inboxes."
+        )
+
+    # 3. Dispatch real email via SMTP
     try:
-        print(banner, flush=True)
-    except Exception:
-        pass
+        msg = MIMEMultipart("alternative")
+        msg["Subject"] = subject
+        msg["From"] = settings.SMTP_FROM_EMAIL or settings.SMTP_USER
+        msg["To"] = normalized_email
 
-    # If SMTP is configured, attempt real email dispatch
-    if settings.SMTP_HOST and settings.SMTP_USER and settings.SMTP_PASSWORD:
-        try:
-            msg = MIMEMultipart("alternative")
-            msg["Subject"] = subject
-            msg["From"] = settings.SMTP_FROM_EMAIL or settings.SMTP_USER
-            msg["To"] = to_email
+        text_content = (
+            f"SkillSync AI {title_text}\n\n"
+            f"Your One-Time Password (OTP) is: {otp_code}\n\n"
+            f"This code is valid for 10 minutes. Do not share it with anyone."
+        )
+        html_content = generate_amazon_style_html(otp_code, purpose=purpose, email=normalized_email)
 
-            text_content = (
-                f"SkillSync AI {title_text}\n\n"
-                f"Your One-Time Password (OTP) is: {otp_code}\n\n"
-                f"This code is valid for 10 minutes. Do not share it with anyone."
-            )
-            html_content = generate_amazon_style_html(otp_code, purpose=purpose, email=to_email)
+        msg.attach(MIMEText(text_content, "plain"))
+        msg.attach(MIMEText(html_content, "html"))
 
-            msg.attach(MIMEText(text_content, "plain"))
-            msg.attach(MIMEText(html_content, "html"))
+        with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=12) as server:
+            if settings.SMTP_TLS:
+                server.starttls()
+            server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+            server.sendmail(msg["From"], [normalized_email], msg.as_string())
 
-            with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=10) as server:
-                if settings.SMTP_TLS:
-                    server.starttls()
-                server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
-                server.sendmail(msg["From"], [to_email], msg.as_string())
-
-            logger.info(f"Successfully sent OTP email to {to_email}")
-            return True
-        except Exception as e:
-            logger.error(f"Failed to send email via SMTP to {to_email}: {e}")
-            return False
-
-    return True
+        logger.info(f"Successfully delivered OTP email to {normalized_email}")
+        return True
+    except smtplib.SMTPRecipientsRefused:
+        raise ValueError(f"The recipient address {normalized_email} was rejected by the mail server.")
+    except smtplib.SMTPAuthenticationError:
+        raise RuntimeError("SMTP authentication failed. Please verify SMTP_USER and SMTP_PASSWORD in backend/.env.")
+    except Exception as e:
+        logger.error(f"SMTP delivery failed to {normalized_email}: {e}")
+        raise RuntimeError(f"Failed to deliver email to {normalized_email}: {str(e)}")

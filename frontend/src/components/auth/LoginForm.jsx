@@ -16,7 +16,6 @@ const LoginForm = () => {
   const [password, setPassword] = useState("");
   const [otpCode, setOtpCode] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  const [devOtpNotice, setDevOtpNotice] = useState("");
   const [resendCooldown, setResendCooldown] = useState(0);
 
   // Timer for resend cooldown
@@ -56,14 +55,7 @@ const LoginForm = () => {
       setStep(2);
       setOtpCode("");
       setResendCooldown(30);
-      if (result.devOtp) {
-        setDevOtpNotice(result.devOtp);
-        toast.success(`Verification code sent to ${cleanEmail}! (Dev Code: ${result.devOtp})`, {
-          duration: 10000,
-        });
-      } else {
-        toast.success(`Two-step verification code sent to ${cleanEmail}!`);
-      }
+      toast.success(`Verification code sent to ${cleanEmail}! Please check your email inbox.`);
     } else {
       setErrorMessage(result.message || "Invalid credentials.");
       toast.error(result.message || "Invalid credentials.");
@@ -107,14 +99,7 @@ const LoginForm = () => {
 
     if (result.success) {
       setResendCooldown(30);
-      if (result.devOtp) {
-        setDevOtpNotice(result.devOtp);
-        toast.success(`New verification code sent! (Code: ${result.devOtp})`, {
-          duration: 10000,
-        });
-      } else {
-        toast.success(`A new verification code was sent to ${email}`);
-      }
+      toast.success(`A new verification code was sent to ${email}. Please check your inbox.`);
     } else {
       setErrorMessage(result.message || "Failed to resend code.");
       toast.error(result.message || "Failed to resend code.");
@@ -174,26 +159,19 @@ const LoginForm = () => {
           {/* Demo Credentials Quick-Fill */}
           <div className="rounded-2xl bg-indigo-50/60 p-3.5 border border-indigo-100">
             <p className="text-[11px] font-semibold text-indigo-800 uppercase tracking-wider mb-2">
-              Registered Test Accounts (1-Click Fill):
+              Registered Test Account:
             </p>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => handleQuickFill("subhi@example.com", "password123")}
-                className="rounded-lg bg-white border border-indigo-200 py-1.5 px-2 text-xs font-medium text-indigo-950 shadow-sm hover:bg-indigo-50 transition text-left"
-              >
-                🎓 Subhi Sharma
-                <span className="block text-[10px] text-indigo-500 font-mono">AIML • 3rd Year</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickFill("siddhant@gmail.com", "password123")}
-                className="rounded-lg bg-white border border-indigo-200 py-1.5 px-2 text-xs font-medium text-indigo-950 shadow-sm hover:bg-indigo-50 transition text-left"
-              >
-                🎓 Siddhant
-                <span className="block text-[10px] text-indigo-500 font-mono">CSE • Student</span>
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => handleQuickFill("subhi@example.com", "password123")}
+              className="w-full rounded-lg bg-white border border-indigo-200 py-2 px-3 text-xs font-medium text-indigo-950 shadow-sm hover:bg-indigo-50 transition text-left flex items-center justify-between"
+            >
+              <div>
+                <span className="font-semibold">🎓 Subhi Sharma</span>
+                <span className="block text-[10px] text-indigo-500 font-mono">subhi@example.com</span>
+              </div>
+              <span className="text-[11px] text-indigo-600 font-semibold bg-indigo-50 px-2 py-1 rounded">1-Click Fill</span>
+            </button>
           </div>
 
           <InputField
@@ -299,22 +277,6 @@ const LoginForm = () => {
             </p>
           </div>
 
-          {/* Dev Mode OTP Quick helper */}
-          {devOtpNotice && (
-            <div className="rounded-xl bg-amber-50 px-3.5 py-2.5 border border-amber-200 text-xs text-amber-900 flex items-center justify-between">
-              <div>
-                <span className="font-semibold">Dev OTP: </span>
-                <span className="font-mono text-sm tracking-widest font-bold text-amber-950">{devOtpNotice}</span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setOtpCode(devOtpNotice)}
-                className="text-[11px] font-semibold text-amber-700 bg-white border border-amber-300 rounded px-2 py-0.5 hover:bg-amber-100"
-              >
-                1-Click Paste
-              </button>
-            </div>
-          )}
 
           <div>
             <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
