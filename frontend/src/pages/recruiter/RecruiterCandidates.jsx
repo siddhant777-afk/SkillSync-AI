@@ -51,7 +51,7 @@ const RecruiterCandidates = () => {
       />
 
       {/* Advanced Multi-Sector Filter Bar */}
-      <div className="grid gap-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 min-w-0">
+      <div className="grid gap-3 sm:gap-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-5 shadow-xs grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 min-w-0">
         <div>
           <label className="text-xs font-semibold text-slate-600 dark:text-slate-400">Target Role / Sector</label>
           <select
@@ -143,7 +143,7 @@ const RecruiterCandidates = () => {
           <LoadingSpinner />
         </div>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 min-w-0">
+        <div className="grid gap-6 grid-cols-1 md:grid-cols-2 min-w-0">
           {candidates.map((c) => (
             <article
               key={c.id}

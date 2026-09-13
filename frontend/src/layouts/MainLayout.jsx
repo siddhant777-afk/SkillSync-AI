@@ -6,10 +6,10 @@ const MainLayout = ({ children }) => (
     <div className="flex min-h-screen w-full max-w-full overflow-x-hidden">
       <Sidebar />
       <div className="flex min-w-0 max-w-full flex-1 flex-col overflow-x-hidden">
-        <div className="px-4 pt-4 sm:px-6 sm:pt-6">
+        <div className="px-3 pt-3 sm:px-6 sm:pt-6">
           <Navbar />
         </div>
-        <main className="min-w-0 max-w-full flex-1 px-4 pb-8 pt-5 sm:px-6 sm:pt-6 overflow-x-hidden">
+        <main className="min-w-0 max-w-full flex-1 px-3 pb-8 pt-4 sm:px-6 sm:pt-6 overflow-x-hidden">
           {children}
         </main>
       </div>

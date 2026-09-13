@@ -93,7 +93,7 @@ const Profile = () => {
   const profilePct = user?.profileCompletion ?? 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-full overflow-x-hidden">
       <PageHeader
         eyebrow="Student profile"
         title="Your Career Profile"
@@ -129,7 +129,7 @@ const Profile = () => {
         }
       />
 
-      <div className="grid gap-6 lg:grid-cols-[1.25fr_0.75fr]">
+      <div className="grid gap-6 grid-cols-1 lg:grid-cols-[1.25fr_0.75fr] min-w-0">
         <section className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm transition-colors duration-200 dark:border-slate-800 dark:bg-slate-900">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
             <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-indigo-600 text-2xl font-bold text-white shadow-md shrink-0">
@@ -252,7 +252,7 @@ const Profile = () => {
           </button>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 min-w-0">
           {platforms.map(({ id, name, handle, verified, icon: Icon, iconColor, stats }) => (
             <div
               key={id}

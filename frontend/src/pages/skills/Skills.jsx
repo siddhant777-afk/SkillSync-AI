@@ -86,7 +86,7 @@ const Skills = () => {
         }
       />
 
-      <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] min-w-0">
+      <div className="grid gap-6 grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] min-w-0">
         <section className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs min-w-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">

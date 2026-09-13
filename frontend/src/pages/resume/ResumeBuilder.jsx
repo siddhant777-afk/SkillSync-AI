@@ -206,11 +206,11 @@ const ResumeBuilder = () => {
         />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_1.4fr] min-w-0">
+      <div className="grid gap-6 grid-cols-1 lg:grid-cols-[1fr_1.4fr] min-w-0">
         {/* Left Control Panel: Sections & AI ATS Review */}
         <div className="space-y-6 no-print min-w-0">
           {/* ATS Score & AI Feedback */}
-          <div className="grid gap-4 sm:grid-cols-2 min-w-0">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 min-w-0">
             <section className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs min-w-0 overflow-hidden">
               <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">ATS Pass Score</p>
               <div className="mt-2 flex items-baseline gap-1 min-w-0">
@@ -307,10 +307,11 @@ const ResumeBuilder = () => {
             </span>
           </div>
 
-          <div
-            id="printable-resume"
-            className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-8 md:p-10 shadow-lg text-slate-800 dark:text-slate-200 font-sans space-y-6 overflow-hidden break-words max-w-full"
-          >
+          <div className="overflow-x-auto max-w-full">
+            <div
+              id="printable-resume"
+              className="min-w-[300px] rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-8 md:p-10 shadow-lg text-slate-800 dark:text-slate-200 font-sans space-y-6 overflow-hidden break-words max-w-full"
+            >
             {/* Header / Contacts */}
             <div className="border-b border-slate-200 dark:border-slate-800 pb-5 text-center min-w-0">
               <h1 className="text-2xl font-extrabold uppercase tracking-tight text-slate-900 dark:text-white break-words">
@@ -458,6 +459,7 @@ const ResumeBuilder = () => {
                 </p>
               )}
             </div>
+          </div>
           </div>
         </div>
       </div>

@@ -167,7 +167,7 @@ const Achievements = () => {
           </button>
         </div>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3 min-w-0">
+        <div className="grid gap-6 grid-cols-1 md:grid-cols-2 xl:grid-cols-3 min-w-0">
           {filteredAchievements.map((item) => {
             const catObj = categories.find((c) => c.name.toLowerCase() === (item.category || "").toLowerCase()) || categories[0];
             const Icon = catObj.icon;

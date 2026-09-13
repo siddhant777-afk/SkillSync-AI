@@ -117,9 +117,9 @@ const RegisterStepOne = ({
         />
 
         {/* Verification Status & Trigger Button */}
-        <div className="mt-2.5 flex items-center justify-between">
+        <div className="mt-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           {formData.isVerified ? (
-            <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 border border-emerald-200">
+            <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 border border-emerald-200 self-start">
               <CheckCircle2 size={15} /> Verified Email ✓
             </span>
           ) : (
@@ -127,7 +127,7 @@ const RegisterStepOne = ({
               type="button"
               onClick={handleSendCode}
               disabled={sending || !formData.email || resendCooldown > 0}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition disabled:opacity-50 disabled:cursor-not-allowed self-start"
             >
               <Send size={13} />
               {sending
@@ -157,14 +157,13 @@ const RegisterStepOne = ({
 
         {/* Amazon-Style Dedicated OTP Verification Box */}
         {codeSent && !formData.isVerified && (
-          <div className="mt-3.5 rounded-2xl bg-indigo-50/50 p-4 border border-indigo-200 animate-in fade-in space-y-3">
+          <div className="mt-3.5 rounded-2xl bg-indigo-50/50 p-3.5 sm:p-4 border border-indigo-200 animate-in fade-in space-y-3">
             <div className="flex items-center gap-2 text-xs font-semibold text-indigo-950">
-              <ShieldCheck size={16} className="text-indigo-600" />
-              <span>Two-Step Verification: Enter 6-digit code sent to {formData.email}</span>
+              <ShieldCheck size={16} className="text-indigo-600 shrink-0" />
+              <span className="break-words">Two-Step Verification: Enter 6-digit code sent to {formData.email}</span>
             </div>
 
-
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <input
                 type="text"
                 inputMode="numeric"
@@ -184,7 +183,7 @@ const RegisterStepOne = ({
                 type="button"
                 onClick={handleVerifyCode}
                 disabled={verifying || localCode.length !== 6}
-                className="shrink-0 inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-5 py-2.5 text-xs font-semibold text-white hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                className="shrink-0 inline-flex items-center justify-center gap-1.5 rounded-xl bg-indigo-600 px-5 py-2.5 text-xs font-semibold text-white hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-sm w-full sm:w-auto"
               >
                 {verifying ? (
                   <>

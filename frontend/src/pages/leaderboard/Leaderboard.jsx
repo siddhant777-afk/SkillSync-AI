@@ -56,7 +56,7 @@ const Leaderboard = () => {
       />
 
       {/* Filter and Search Bar */}
-      <div className="grid gap-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs sm:grid-cols-2 lg:grid-cols-4 min-w-0">
+      <div className="grid gap-3 sm:gap-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-5 shadow-xs grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 min-w-0">
         <div>
           <label className="text-xs font-semibold text-slate-600 dark:text-slate-400">College / University</label>
           <select
@@ -122,7 +122,7 @@ const Leaderboard = () => {
         <>
           {/* Top 3 Podium (Gold, Silver, Bronze) */}
           {data.topPodium.length >= 3 && (
-            <div className="grid gap-4 md:grid-cols-3 pt-4 min-w-0">
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-3 pt-4 min-w-0">
               {/* Rank 2 (Silver) */}
               <div className="order-2 md:order-1 rounded-2xl border border-slate-200 dark:border-slate-800 bg-gradient-to-b from-slate-50 to-white dark:from-slate-900 dark:to-slate-850 p-6 shadow-xs flex flex-col items-center text-center relative min-w-0">
                 <div className="absolute -top-3.5 rounded-full bg-slate-300 dark:bg-slate-700 px-3 py-1 text-xs font-bold text-slate-800 dark:text-slate-200 shadow-xs flex items-center gap-1">

@@ -16,15 +16,15 @@ const Navbar = () => {
   const isHome = location.pathname === "/" || location.pathname === "";
 
   return (
-    <header className="flex min-h-16 items-center justify-between rounded-2xl border border-slate-100 bg-white px-4 py-3 shadow-sm transition-colors duration-200 dark:border-slate-800 dark:bg-slate-900 sm:px-6">
-      <div className="flex min-w-0 items-center gap-3">
+    <header className="flex min-h-16 items-center justify-between rounded-2xl border border-slate-100 bg-white px-3 py-2.5 sm:px-6 sm:py-3 shadow-sm transition-colors duration-200 dark:border-slate-800 dark:bg-slate-900">
+      <div className="flex min-w-0 items-center gap-2 sm:gap-3">
         <button
           type="button"
           onClick={toggleSidebar}
           aria-label="Toggle sidebar"
-          className="rounded-xl p-2 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+          className="rounded-xl p-2 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white shrink-0"
         >
-          <Menu size={22} />
+          <Menu size={20} className="sm:w-[22px] sm:h-[22px]" />
         </button>
 
         {!isHome && (
@@ -32,10 +32,10 @@ const Navbar = () => {
             type="button"
             onClick={() => navigate(-1)}
             title="Go back to previous page"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 hover:text-indigo-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-indigo-400"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 hover:text-indigo-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-indigo-400 shrink-0"
           >
             <ArrowLeft size={14} />
-            <span>Back</span>
+            <span className="hidden sm:inline">Back</span>
           </button>
         )}
 
@@ -49,7 +49,7 @@ const Navbar = () => {
         </div>
       </div>
 
-      <div className="flex items-center gap-2 sm:gap-3">
+      <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
         {/* Dark / Light Theme Toggle */}
         <button
           type="button"

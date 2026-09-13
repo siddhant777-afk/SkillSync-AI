@@ -37,7 +37,7 @@ const Recommendations = () => {
         description={`Personalized high-leverage milestones generated from your target role (${careerGoal}), verified skill gaps, and platform velocity.`}
       />
 
-      <div className="grid gap-6 lg:grid-cols-3 min-w-0">
+      <div className="grid gap-6 grid-cols-1 md:grid-cols-3 min-w-0">
         {[
           {
             title: "Target Alignment",

@@ -58,7 +58,7 @@ const Dashboard = () => {
             </div>
             <div className="min-w-0">
               <p className="text-xs sm:text-sm font-bold">Coding Platform IDs Not Verified</p>
-              <p className="text-xs text-amber-700 dark:text-amber-300/80 mt-0.5 truncate">
+              <p className="text-xs text-amber-700 dark:text-amber-300/80 mt-0.5 break-words">
                 Connect and verify your LeetCode and GitHub handles to enable live algorithmic tracking and official contest recognition.
               </p>
             </div>
@@ -66,7 +66,7 @@ const Dashboard = () => {
           <button
             type="button"
             onClick={() => setVerifyModalOpen(true)}
-            className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-amber-600 px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-amber-700 transition shrink-0 self-start sm:self-auto"
+            className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-amber-600 px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-amber-700 transition shrink-0 self-start sm:self-auto w-full sm:w-auto"
           >
             <ShieldCheck size={14} /> Verify IDs Now →
           </button>
@@ -74,7 +74,7 @@ const Dashboard = () => {
       )}
 
       {/* Primary KPI StatCards */}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-3.5 sm:gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 min-w-0">
         <StatCard
           label="Placement Readiness"
           value={`${readiness}/100`}
@@ -105,8 +105,8 @@ const Dashboard = () => {
         />
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-3">
-        <section className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm transition-colors duration-200 dark:border-slate-800 dark:bg-slate-900">
+      <div className="grid gap-6 grid-cols-1 xl:grid-cols-3 min-w-0">
+        <section className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm transition-colors duration-200 dark:border-slate-800 dark:bg-slate-900 min-w-0">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Placement Readiness Score</h2>
@@ -142,17 +142,17 @@ const Dashboard = () => {
           </div>
         </section>
 
-        <div className="xl:col-span-2">
+        <div className="xl:col-span-2 min-w-0">
           <CodingOverviewCard user={user} />
         </div>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-2">
+      <div className="grid gap-6 grid-cols-1 xl:grid-cols-2 min-w-0">
         <SkillsOverviewCard skills={user?.skills || []} />
         <ProgressOverviewCard progress={user?.progress} />
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-3">
+      <div className="grid gap-6 grid-cols-1 md:grid-cols-2 xl:grid-cols-3 min-w-0">
         <RecentAchievementsCard achievements={user?.achievements || []} />
         <AIRecommendationsCard recommendations={user?.recommendations || []} />
         <AISkillGapCard skills={user?.skills || []} gaps={user?.skillGaps || []} />

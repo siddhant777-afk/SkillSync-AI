@@ -114,7 +114,7 @@ const RegisterForm = () => {
   };
 
   return (
-    <div className="w-full max-w-2xl rounded-2xl bg-white p-8 shadow-xl">
+    <div className="w-full max-w-2xl rounded-2xl bg-white p-5 sm:p-7 md:p-8 shadow-xl border border-slate-100">
       <div className="mb-6 flex items-center justify-between border-b border-slate-100 pb-4">
         <Link
           to={ROUTES.LOGIN}
@@ -127,12 +127,12 @@ const RegisterForm = () => {
         </span>
       </div>
 
-      <div className="mb-8 text-center">
-        <h2 className="text-3xl font-bold text-gray-900">Create Your Account</h2>
-        <p className="mt-2 text-sm text-gray-500">Join SkillSync AI and begin your placement journey.</p>
+      <div className="mb-6 sm:mb-8 text-center">
+        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Create Your Account</h2>
+        <p className="mt-1.5 text-xs sm:text-sm text-gray-500">Join SkillSync AI and begin your placement journey.</p>
       </div>
       <ProgressBar currentStep={step} totalSteps={2} />
-      <form onSubmit={handleSubmit} className="mt-8 space-y-8">
+      <form onSubmit={handleSubmit} className="mt-6 sm:mt-8 space-y-6 sm:space-y-8">
         {step === 1 ? (
           <RegisterStepOne
             formData={formData}
@@ -144,41 +144,41 @@ const RegisterForm = () => {
           <RegisterStepTwo formData={formData} errors={errors} handleChange={handleChange} />
         )}
 
-        <div className="flex flex-col-reverse gap-4 pt-4 sm:flex-row sm:justify-between">
+        <div className="flex flex-col-reverse gap-3 sm:gap-4 pt-4 sm:flex-row sm:justify-between sm:items-center">
           {step === 2 ? (
             <button
               type="button"
               onClick={handlePrevious}
               disabled={loading}
-              className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-gray-300 px-6 py-3 font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-60"
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-gray-300 px-5 py-3 text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-60 w-full sm:w-auto"
             >
               <ArrowLeft size={16} /> Previous (Step 1)
             </button>
           ) : (
             <Link
               to={ROUTES.LOGIN}
-              className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-gray-300 px-6 py-3 font-medium text-gray-700 hover:bg-gray-100"
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-gray-300 px-5 py-3 text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-100 w-full sm:w-auto text-center"
             >
               <ArrowLeft size={16} /> Back to Login
             </Link>
           )}
 
           {step === 1 ? (
-            <div className="flex flex-col sm:flex-row gap-2.5">
+            <div className="flex flex-col sm:flex-row gap-2.5 w-full sm:w-auto">
               <button
                 type="button"
                 onClick={handleDirectRegister}
                 disabled={loading}
                 title="Register immediately without filling optional fields - can fill anytime from web profile"
-                className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-5 py-3 text-xs sm:text-sm font-bold text-indigo-700 hover:bg-indigo-100 transition"
+                className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-4 sm:px-5 py-3 text-xs sm:text-sm font-bold text-indigo-700 hover:bg-indigo-100 transition w-full sm:w-auto"
               >
-                <span>Register Directly (Skip Details) ⚡</span>
+                <span>Skip Details & Register ⚡</span>
               </button>
               <button
                 type="button"
                 onClick={handleNext}
                 disabled={loading}
-                className="rounded-xl bg-indigo-600 px-6 py-3 font-semibold text-white hover:bg-indigo-700 transition shadow-xs text-xs sm:text-sm"
+                className="rounded-xl bg-indigo-600 px-6 py-3 font-semibold text-white hover:bg-indigo-700 transition shadow-xs text-xs sm:text-sm w-full sm:w-auto"
               >
                 Next Step →
               </button>
@@ -187,7 +187,7 @@ const RegisterForm = () => {
             <button
               type="submit"
               disabled={loading}
-              className="rounded-xl bg-indigo-600 px-6 py-3 font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+              className="rounded-xl bg-indigo-600 px-6 py-3 font-semibold text-white hover:bg-indigo-700 disabled:opacity-60 text-xs sm:text-sm w-full sm:w-auto"
             >
               {loading ? "Creating Account..." : "Create Account"}
             </button>

@@ -252,7 +252,7 @@ const JobRecommendations = () => {
       />
 
       {/* Top Summary Stats (Live Verified Preparation Metrics) */}
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4 min-w-0">
+      <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 min-w-0">
         <div className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs min-w-0">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Current Readiness</span>
@@ -581,7 +581,7 @@ const JobRecommendations = () => {
           <LoadingSpinner />
         </div>
       ) : (
-        <div className="grid gap-6 lg:grid-cols-[1fr_1.3fr] min-w-0">
+        <div className="grid gap-6 grid-cols-1 lg:grid-cols-[1fr_1.3fr] min-w-0">
           {/* Roles List */}
           <div className="space-y-3 min-w-0">
             {filteredRoles.map((role) => {

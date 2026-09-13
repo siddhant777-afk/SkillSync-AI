@@ -97,7 +97,7 @@ const Projects = () => {
           </button>
         </div>
       ) : (
-        <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3 min-w-0">
+        <div className="grid gap-6 grid-cols-1 md:grid-cols-2 xl:grid-cols-3 min-w-0">
           {projects.map((project) => (
             <article
               key={project.id || project.name}

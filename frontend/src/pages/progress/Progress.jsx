@@ -53,7 +53,7 @@ const Progress = () => {
       />
 
       {/* KPI Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 min-w-0">
+      <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 min-w-0">
         <div className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs min-w-0">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-400 dark:text-slate-500">Readiness Score</span>

@@ -52,19 +52,19 @@ const Settings = () => {
         description="Control your professional profile preferences, notifications, theme appearance, and security parameters."
       />
 
-      <div className="grid gap-6 lg:grid-cols-[0.75fr_1.25fr] min-w-0">
-        <section className="h-fit rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-xs space-y-1 min-w-0">
+      <div className="grid gap-6 grid-cols-1 lg:grid-cols-[0.75fr_1.25fr] min-w-0">
+        <section className="h-fit rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-2 sm:p-4 shadow-xs flex flex-row overflow-x-auto lg:flex-col gap-1 min-w-0">
           {tabs.map(([label, Icon]) => (
             <button
               key={label}
               onClick={() => setActiveTab(label)}
-              className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-semibold transition ${
+              className={`flex items-center gap-2 sm:gap-3 rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-left text-xs sm:text-sm font-semibold transition whitespace-nowrap shrink-0 lg:shrink lg:w-full ${
                 activeTab === label
                   ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 shadow-xs"
                   : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50"
               }`}
             >
-              <Icon size={18} /> {label}
+              <Icon size={16} className="sm:w-[18px] sm:h-[18px]" /> {label}
             </button>
           ))}
         </section>

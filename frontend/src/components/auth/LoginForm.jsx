@@ -100,7 +100,7 @@ const LoginForm = () => {
   };
 
   return (
-    <div className="w-[450px] max-w-full rounded-3xl bg-white p-8 sm:p-10 shadow-xl border border-slate-100">
+    <div className="w-full max-w-md rounded-3xl bg-white p-6 sm:p-8 md:p-10 shadow-xl border border-slate-100">
       {/* Active Session Notification */}
       {isAuthenticated && (
         <div className="mb-6 rounded-2xl bg-indigo-50/90 p-4 border border-indigo-200">

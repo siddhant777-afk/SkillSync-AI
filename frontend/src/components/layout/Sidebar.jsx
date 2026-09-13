@@ -110,11 +110,11 @@ const Sidebar = () => {
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-72 flex-col justify-between border-r border-slate-200 bg-white shadow-sm transition-colors duration-200 dark:border-slate-800 dark:bg-slate-900 lg:static lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-72 max-h-screen flex-col justify-between border-r border-slate-200 bg-white shadow-sm transition-colors duration-200 dark:border-slate-800 dark:bg-slate-900 lg:static lg:translate-x-0 ${
           collapsed ? "-translate-x-full lg:w-20" : "translate-x-0"
         }`}
       >
-        <div>
+        <div className="flex-1 min-h-0 overflow-y-auto">
           <div
             className={`flex h-20 items-center px-5 ${
               collapsed ? "justify-center" : "justify-between"
@@ -166,7 +166,7 @@ const Sidebar = () => {
           </nav>
         </div>
 
-        <div className="border-t border-slate-100 p-3 dark:border-slate-800">
+        <div className="shrink-0 border-t border-slate-100 p-3 dark:border-slate-800">
           <button
             type="button"
             onClick={logout}
