@@ -100,14 +100,14 @@ const LoginForm = () => {
   };
 
   return (
-    <div className="w-full max-w-md rounded-3xl bg-white p-6 sm:p-8 md:p-10 shadow-xl border border-slate-100">
+    <div className="w-full max-w-md rounded-3xl bg-white dark:bg-slate-900 p-6 sm:p-8 md:p-10 shadow-xl border border-slate-200 dark:border-slate-800">
       {/* Active Session Notification */}
       {isAuthenticated && (
-        <div className="mb-6 rounded-2xl bg-indigo-50/90 p-4 border border-indigo-200">
-          <p className="text-xs font-semibold text-indigo-950">
+        <div className="mb-6 rounded-2xl bg-indigo-50/90 dark:bg-indigo-950/60 p-4 border border-indigo-200 dark:border-indigo-800">
+          <p className="text-xs font-semibold text-indigo-950 dark:text-indigo-200">
             Currently active session:
           </p>
-          <p className="text-sm font-bold text-indigo-700 mt-0.5">
+          <p className="text-sm font-bold text-indigo-700 dark:text-indigo-400 mt-0.5">
             {currentUser?.fullName || "Student"} ({currentUser?.email})
           </p>
           <div className="mt-3 flex items-center gap-2">
@@ -120,7 +120,7 @@ const LoginForm = () => {
             <button
               type="button"
               onClick={logout}
-              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 transition"
+              className="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-750 transition"
             >
               Sign Out
             </button>
@@ -130,10 +130,10 @@ const LoginForm = () => {
 
       {/* Error Alert Box */}
       {errorMessage && (
-        <div className="mb-6 flex items-start gap-3 rounded-2xl bg-rose-50 p-4 border border-rose-200 text-rose-800 text-xs leading-relaxed animate-in fade-in">
-          <ShieldAlert size={18} className="shrink-0 text-rose-600 mt-0.5" />
+        <div className="mb-6 flex items-start gap-3 rounded-2xl bg-rose-50 dark:bg-rose-950/50 p-4 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-300 text-xs leading-relaxed animate-in fade-in">
+          <ShieldAlert size={18} className="shrink-0 text-rose-600 dark:text-rose-400 mt-0.5" />
           <div>
-            <p className="font-semibold text-rose-900">There was a problem</p>
+            <p className="font-semibold text-rose-900 dark:text-rose-200">There was a problem</p>
             <p className="mt-0.5">{errorMessage}</p>
           </div>
         </div>
@@ -143,8 +143,8 @@ const LoginForm = () => {
       {step === 1 ? (
         <form onSubmit={handleRequestOtp} className="space-y-4">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900">Sign In</h1>
-            <p className="mt-1.5 text-sm text-slate-500">
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Sign In</h1>
+            <p className="mt-1.5 text-sm text-slate-500 dark:text-slate-400">
               Enter your registered credentials to receive your verification code.
             </p>
           </div>
@@ -221,7 +221,7 @@ const LoginForm = () => {
           </p>
         </form>
       ) : (
-        /* STEP 2: Amazon-Style Two-Step Verification (OTP) */
+        /* STEP 2: Two-Step Verification (OTP) */
         <form onSubmit={handleVerifyOtp} className="space-y-5 animate-in fade-in">
           <button
             type="button"
@@ -229,33 +229,32 @@ const LoginForm = () => {
               setStep(1);
               setErrorMessage("");
             }}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition"
           >
             <ArrowLeft size={14} /> Back to email & password
           </button>
 
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-50 border border-indigo-200 text-indigo-600">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400">
               <ShieldCheck size={24} />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-slate-900">Two-Step Verification</h1>
-              <p className="text-xs text-slate-500">Security checkpoint</p>
+              <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Two-Step Verification</h1>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Security checkpoint</p>
             </div>
           </div>
 
-          <div className="rounded-2xl bg-slate-50 p-4 border border-slate-200/80 text-xs text-slate-600 leading-relaxed">
+          <div className="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4 border border-slate-200/80 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
             <p>
               For added security, please enter the One-Time Password (OTP) that has been sent to:
             </p>
-            <p className="mt-1 font-semibold text-slate-900 text-sm flex items-center gap-1.5">
-              <Mail size={14} className="text-indigo-600" /> {email}
+            <p className="mt-1 font-semibold text-slate-900 dark:text-white text-sm flex items-center gap-1.5">
+              <Mail size={14} className="text-indigo-600 dark:text-indigo-400" /> {email}
             </p>
           </div>
 
-
           <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
               Enter 6-Digit OTP Code
             </label>
             <div className="relative">
@@ -272,10 +271,10 @@ const LoginForm = () => {
                 }}
                 placeholder="••••••"
                 autoFocus
-                className="w-full rounded-2xl border-2 border-indigo-200 bg-white px-4 py-3.5 text-center text-2xl font-mono font-bold tracking-[0.5em] text-slate-900 shadow-inner focus:border-indigo-600 focus:outline-none focus:ring-4 focus:ring-indigo-100"
+                className="w-full rounded-2xl border-2 border-indigo-200 dark:border-indigo-800 bg-white dark:bg-slate-800 px-4 py-3.5 text-center text-2xl font-mono font-bold tracking-[0.5em] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 shadow-inner focus:border-indigo-600 focus:outline-none focus:ring-4 focus:ring-indigo-100 dark:focus:ring-indigo-950"
               />
             </div>
-            <p className="mt-1.5 text-right text-[11px] text-slate-400">
+            <p className="mt-1.5 text-right text-[11px] text-slate-400 dark:text-slate-500">
               Code expires in 10 minutes
             </p>
           </div>
@@ -295,13 +294,13 @@ const LoginForm = () => {
             )}
           </button>
 
-          <div className="pt-2 flex items-center justify-between text-xs border-t border-slate-100">
-            <span className="text-slate-500">Didn't receive the code?</span>
+          <div className="pt-2 flex items-center justify-between text-xs border-t border-slate-100 dark:border-slate-800">
+            <span className="text-slate-500 dark:text-slate-400">Didn't receive the code?</span>
             <button
               type="button"
               onClick={handleResendOtp}
               disabled={resendCooldown > 0}
-              className="inline-flex items-center gap-1 font-semibold text-indigo-600 hover:text-indigo-800 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-1 font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <RefreshCw size={12} className={resendCooldown > 0 ? "animate-spin" : ""} />
               {resendCooldown > 0 ? `Resend code in ${resendCooldown}s` : "Resend OTP"}

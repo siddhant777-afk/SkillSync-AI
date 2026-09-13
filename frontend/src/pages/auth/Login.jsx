@@ -3,7 +3,7 @@ import { APP_CONFIG } from "../../constants/app";
 
 const Login = () => {
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col lg:flex-row">
+    <div className="min-h-screen bg-slate-100 dark:bg-slate-950 flex flex-col lg:flex-row">
       {/* Mobile Top Header (Visible on small & medium screens) */}
       <div className="lg:hidden bg-indigo-600 text-white p-6 sm:p-8 text-center shadow-md">
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">

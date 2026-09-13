@@ -22,7 +22,7 @@ const FormInput = ({
       {/* Label */}
       <label
         htmlFor={name}
-        className="mb-2 block text-sm font-medium text-gray-700"
+        className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
       >
         {label}
         {required && <span className="ml-1 text-red-500">*</span>}
@@ -43,13 +43,13 @@ const FormInput = ({
           className={`w-full rounded-xl border px-4 py-3 text-sm transition-all duration-200 outline-none
             ${
               error
-                ? "border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-200"
-                : "border-gray-300 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-200"
+                ? "border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-200 dark:focus:ring-red-950"
+                : "border-slate-300 dark:border-slate-700 focus:border-indigo-600 dark:focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-950"
             }
             ${
               disabled
-                ? "cursor-not-allowed bg-gray-100 text-gray-500"
-                : "bg-white"
+                ? "cursor-not-allowed bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                : "bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500"
             }
             ${isPassword ? "pr-12" : ""}
           `}
@@ -59,7 +59,7 @@ const FormInput = ({
           <button
             type="button"
             onClick={() => setShowPassword((prev) => !prev)}
-            className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-indigo-600 transition-colors"
+            className="absolute inset-y-0 right-3 flex items-center text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
             tabIndex={-1}
           >
             {showPassword ? (

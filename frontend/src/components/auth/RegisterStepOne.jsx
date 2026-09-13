@@ -119,7 +119,7 @@ const RegisterStepOne = ({
         {/* Verification Status & Trigger Button */}
         <div className="mt-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           {formData.isVerified ? (
-            <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 border border-emerald-200 self-start">
+            <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 px-3 py-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 self-start">
               <CheckCircle2 size={15} /> Verified Email ✓
             </span>
           ) : (
@@ -127,7 +127,7 @@ const RegisterStepOne = ({
               type="button"
               onClick={handleSendCode}
               disabled={sending || !formData.email || resendCooldown > 0}
-              className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition disabled:opacity-50 disabled:cursor-not-allowed self-start"
+              className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 px-3 py-1.5 text-xs font-semibold text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition disabled:opacity-50 disabled:cursor-not-allowed self-start"
             >
               <Send size={13} />
               {sending
@@ -141,7 +141,7 @@ const RegisterStepOne = ({
           )}
 
           {!formData.isVerified && (
-            <span className="text-[11px] text-slate-400">
+            <span className="text-[11px] text-slate-400 dark:text-slate-500">
               * Required before continuing
             </span>
           )}
@@ -149,17 +149,17 @@ const RegisterStepOne = ({
 
         {/* In-line verification error */}
         {verifyError && (
-          <div className="mt-2.5 flex items-center gap-2 rounded-xl bg-rose-50 p-2.5 border border-rose-200 text-xs text-rose-800">
-            <ShieldAlert size={15} className="shrink-0 text-rose-600" />
+          <div className="mt-2.5 flex items-center gap-2 rounded-xl bg-rose-50 dark:bg-rose-950/60 p-2.5 border border-rose-200 dark:border-rose-800 text-xs text-rose-800 dark:text-rose-300">
+            <ShieldAlert size={15} className="shrink-0 text-rose-600 dark:text-rose-400" />
             <span>{verifyError}</span>
           </div>
         )}
 
-        {/* Amazon-Style Dedicated OTP Verification Box */}
+        {/* Dedicated OTP Verification Box */}
         {codeSent && !formData.isVerified && (
-          <div className="mt-3.5 rounded-2xl bg-indigo-50/50 p-3.5 sm:p-4 border border-indigo-200 animate-in fade-in space-y-3">
-            <div className="flex items-center gap-2 text-xs font-semibold text-indigo-950">
-              <ShieldCheck size={16} className="text-indigo-600 shrink-0" />
+          <div className="mt-3.5 rounded-2xl bg-indigo-50/50 dark:bg-indigo-950/40 p-3.5 sm:p-4 border border-indigo-200 dark:border-indigo-800 animate-in fade-in space-y-3">
+            <div className="flex items-center gap-2 text-xs font-semibold text-indigo-950 dark:text-indigo-200">
+              <ShieldCheck size={16} className="text-indigo-600 dark:text-indigo-400 shrink-0" />
               <span className="break-words">Two-Step Verification: Enter 6-digit code sent to {formData.email}</span>
             </div>
 
@@ -177,7 +177,7 @@ const RegisterStepOne = ({
                   setFormData((prev) => ({ ...prev, verificationCode: val }));
                   setVerifyError("");
                 }}
-                className="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-center text-lg font-mono font-bold tracking-widest outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 bg-white"
+                className="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white px-4 py-2.5 text-center text-lg font-mono font-bold tracking-widest outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-950"
               />
               <button
                 type="button"
