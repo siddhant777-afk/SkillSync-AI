@@ -147,4 +147,9 @@ def send_otp_email(to_email: str, otp_code: str, purpose: str = "login") -> bool
         return True
     except Exception as tls_err:
         logger.error(f"Both SMTP ports failed to deliver email to {normalized_email}: {tls_err}")
-        raise RuntimeError(f"Could not send email to {normalized_email}. Please verify your email address.")
+        raise RuntimeError(
+            f"Could not send email to {normalized_email}. "
+            f"[Host={settings.SMTP_HOST}, User={settings.SMTP_USER}, "
+            f"SSL_err={type(ssl_err).__name__}: {ssl_err}, "
+            f"TLS_err={type(tls_err).__name__}: {tls_err}]"
+        )
