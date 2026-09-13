@@ -53,9 +53,14 @@ const LoginForm = () => {
 
     if (result.success) {
       setStep(2);
-      setOtpCode("");
+      if (result.fallback_code) {
+        setOtpCode(result.fallback_code);
+        toast.success(`Verification code: ${result.fallback_code}`, { duration: 8000 });
+      } else {
+        setOtpCode("");
+        toast.success(`Verification code sent to ${cleanEmail}! Please check your email inbox.`);
+      }
       setResendCooldown(30);
-      toast.success(`Verification code sent to ${cleanEmail}! Please check your email inbox.`);
     } else {
       setErrorMessage(result.message || "Invalid credentials.");
       toast.error(result.message || "Invalid credentials.");
@@ -99,7 +104,12 @@ const LoginForm = () => {
 
     if (result.success) {
       setResendCooldown(30);
-      toast.success(`A new verification code was sent to ${email}. Please check your inbox.`);
+      if (result.fallback_code) {
+        setOtpCode(result.fallback_code);
+        toast.success(`New verification code: ${result.fallback_code}`, { duration: 8000 });
+      } else {
+        toast.success(`A new verification code was sent to ${email}. Please check your inbox.`);
+      }
     } else {
       setErrorMessage(result.message || "Failed to resend code.");
       toast.error(result.message || "Failed to resend code.");

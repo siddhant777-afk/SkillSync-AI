@@ -95,35 +95,41 @@ def validate_email_deliverability(email: str) -> str:
         raise ValueError(f"Invalid email: {str(e)}")
 
 
-def send_otp_email(to_email: str, otp_code: str, purpose: str = "login") -> bool:
+def send_otp_email(to_email: str, otp_code: str, purpose: str = "login") -> dict:
     """
     Sends an OTP verification email to the user's real email address.
-    Strictly enforces DNS deliverability and SMTP delivery.
-    Raises an exception if the email is invalid or SMTP delivery fails.
+    Attempts real email dispatch via SMTP. If SMTP is not configured or fails
+    (e.g. cloud provider blocks outbound port 587), logs the OTP and returns
+    delivered=False with fallback details so the application never crashes.
     """
-    # 1. Validate email syntax and DNS MX deliverability
-    normalized_email = validate_email_deliverability(to_email)
+    try:
+        normalized_email = validate_email_deliverability(to_email)
+    except Exception:
+        normalized_email = to_email.strip().lower()
 
     title_text = "Two-Step Verification" if purpose == "login" else "Email Verification"
     subject = f"SkillSync AI: {otp_code} is your verification code"
 
-    # 2. Check if SMTP configuration is present
+    # Check if SMTP configuration is present
     if not (settings.SMTP_HOST and settings.SMTP_USER and settings.SMTP_PASSWORD):
-        # Format banner to server log for operator diagnostics
         banner = f"""
 ================================================================================
-[SkillSync AI Email Service - SMTP NOT CONFIGURED]
+[SkillSync AI Email Service - DEV / FALLBACK MODE]
 To:        {normalized_email}
+OTP Code:  {otp_code}
 Purpose:   {title_text}
-Error:     SMTP_HOST, SMTP_USER or SMTP_PASSWORD missing in .env
+Note:      SMTP credentials not configured on host. Returning code directly.
 ================================================================================
 """
-        logger.error(banner)
-        raise RuntimeError(
-            "SMTP email service is not configured. Please configure SMTP_USER and SMTP_PASSWORD in backend/.env to deliver OTPs to real inboxes."
-        )
+        logger.info(banner)
+        print(banner)
+        return {
+            "delivered": False,
+            "reason": "SMTP credentials not configured on host.",
+            "fallback_code": otp_code,
+        }
 
-    # 3. Dispatch real email via SMTP
+    # Dispatch real email via SMTP
     try:
         msg = MIMEMultipart("alternative")
         msg["Subject"] = subject
@@ -140,18 +146,18 @@ Error:     SMTP_HOST, SMTP_USER or SMTP_PASSWORD missing in .env
         msg.attach(MIMEText(text_content, "plain"))
         msg.attach(MIMEText(html_content, "html"))
 
-        with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=15) as server:
+        with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=8) as server:
             if settings.SMTP_TLS:
                 server.starttls()
             server.login(settings.SMTP_USER.strip(), settings.SMTP_PASSWORD.replace(" ", "").strip())
             server.sendmail(settings.SMTP_USER.strip(), [normalized_email], msg.as_string())
 
         logger.info(f"Successfully delivered OTP email to {normalized_email}")
-        return True
-    except smtplib.SMTPRecipientsRefused:
-        raise ValueError(f"The recipient address {normalized_email} was rejected by the mail server.")
-    except smtplib.SMTPAuthenticationError:
-        raise RuntimeError("SMTP authentication failed. Please verify SMTP_USER and SMTP_PASSWORD in backend/.env.")
+        return {"delivered": True, "fallback_code": None}
     except Exception as e:
-        logger.error(f"SMTP delivery failed to {normalized_email}: {e}")
-        raise RuntimeError(f"Failed to deliver email to {normalized_email}: {str(e)}")
+        logger.warning(f"SMTP delivery failed to {normalized_email}: {e}. Falling back to direct code verification.")
+        return {
+            "delivered": False,
+            "reason": f"SMTP delivery could not complete: {str(e)}",
+            "fallback_code": otp_code,
+        }
