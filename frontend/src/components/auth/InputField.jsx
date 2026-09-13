@@ -3,57 +3,52 @@ import { useState } from "react";
 
 const InputField = ({
   label,
-  type = "text",
+  type,
   placeholder,
   value,
   onChange,
-  required = false,
-  autoComplete,
-  error,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
+
   const isPassword = type === "password";
 
   return (
-    <div className="w-full">
-      <label className="block text-sm font-semibold text-slate-800 mb-1.5">
+    <div className="mb-5">
+
+      <label className="block text-sm font-semibold mb-2">
         {label}
-        {required && <span className="ml-1 text-rose-500">*</span>}
       </label>
 
       <div className="relative">
+
         <input
-          type={isPassword ? (showPassword ? "text" : "password") : type}
+          type={
+            isPassword
+              ? (showPassword ? "text" : "password")
+              : type
+          }
           value={value}
           onChange={onChange}
           placeholder={placeholder}
-          required={required}
-          autoComplete={autoComplete}
-          className={`w-full rounded-xl border bg-white px-4 py-3 text-sm text-slate-900 font-medium placeholder:text-slate-400 outline-none transition duration-150 shadow-xs
-            ${error
-              ? "border-rose-500 focus:border-rose-600 focus:ring-4 focus:ring-rose-100"
-              : "border-slate-300 hover:border-slate-400 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-100"
-            }
-            ${isPassword ? "pr-11" : ""}
-          `}
+          className="w-full border rounded-xl px-4 py-3 outline-none focus:border-indigo-500"
         />
 
         {isPassword && (
+
           <button
             type="button"
-            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-700 transition rounded-lg"
-            onClick={() => setShowPassword(!showPassword)}
-            tabIndex={-1}
-            aria-label={showPassword ? "Hide password" : "Show password"}
+            className="absolute right-4 top-3"
+            onClick={() =>
+              setShowPassword(!showPassword)
+            }
           >
-            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            {showPassword ? <EyeOff size={20}/> : <Eye size={20}/>}
           </button>
+
         )}
+
       </div>
 
-      {error && (
-        <p className="mt-1 text-xs text-rose-600 font-medium">{error}</p>
-      )}
     </div>
   );
 };

@@ -52,8 +52,7 @@ export const AuthProvider = ({ children }) => {
         otpRequired: true,
         email: data.email,
         message: data.message,
-        delivered: data.delivered,
-        code: data.code,
+        devOtp: data.dev_otp,
       };
     } catch (err) {
       const errorMsg =

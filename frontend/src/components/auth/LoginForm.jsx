@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, KeyRound, Mail, RefreshCw, ShieldAlert, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowLeft, KeyRound, Mail, RefreshCw, ShieldAlert, ShieldCheck } from "lucide-react";
 import InputField from "./InputField";
 import { useAuth } from "../../hooks/useAuth";
 import { ROUTES } from "../../constants/routes";
@@ -17,7 +17,6 @@ const LoginForm = () => {
   const [otpCode, setOtpCode] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [resendCooldown, setResendCooldown] = useState(0);
-  const [hostCodeNotice, setHostCodeNotice] = useState("");
 
   // Timer for resend cooldown
   useEffect(() => {
@@ -49,13 +48,7 @@ const LoginForm = () => {
       setStep(2);
       setOtpCode("");
       setResendCooldown(30);
-      if (result.code) {
-        setHostCodeNotice(result.code);
-        toast.success(`Verification code generated: ${result.code}`, { duration: 6000 });
-      } else {
-        setHostCodeNotice("");
-        toast.success(`Verification code sent to ${cleanEmail}! Please check your email inbox.`);
-      }
+      toast.success(`Verification code sent to ${cleanEmail}! Please check your email inbox.`);
     } else {
       setErrorMessage(result.message || "Invalid credentials.");
       toast.error(result.message || "Invalid credentials.");
@@ -99,13 +92,7 @@ const LoginForm = () => {
 
     if (result.success) {
       setResendCooldown(30);
-      if (result.code) {
-        setHostCodeNotice(result.code);
-        toast.success(`New verification code: ${result.code}`, { duration: 6000 });
-      } else {
-        setHostCodeNotice("");
-        toast.success(`A new verification code was sent to ${email}. Please check your inbox.`);
-      }
+      toast.success(`A new verification code was sent to ${email}. Please check your inbox.`);
     } else {
       setErrorMessage(result.message || "Failed to resend code.");
       toast.error(result.message || "Failed to resend code.");
@@ -113,10 +100,10 @@ const LoginForm = () => {
   };
 
   return (
-    <div className="w-full max-w-md rounded-3xl bg-white p-8 sm:p-10 shadow-xl shadow-slate-200/60 border border-slate-200/80">
+    <div className="w-[450px] max-w-full rounded-3xl bg-white p-8 sm:p-10 shadow-xl border border-slate-100">
       {/* Active Session Notification */}
       {isAuthenticated && (
-        <div className="mb-6 rounded-2xl bg-indigo-50 p-4 border border-indigo-200">
+        <div className="mb-6 rounded-2xl bg-indigo-50/90 p-4 border border-indigo-200">
           <p className="text-xs font-semibold text-indigo-950">
             Currently active session:
           </p>
@@ -265,33 +252,6 @@ const LoginForm = () => {
               <Mail size={14} className="text-indigo-600" /> {email}
             </p>
           </div>
-
-          {hostCodeNotice && (
-            <div className="rounded-2xl bg-amber-50/90 p-4 border border-amber-200 text-amber-950 text-xs animate-in fade-in space-y-2">
-              <div className="flex items-center gap-1.5 font-bold text-amber-900">
-                <Sparkles size={14} className="text-amber-600 shrink-0" />
-                <span>Cloud Host Verification Code:</span>
-              </div>
-              <p className="text-amber-800 text-[11px] leading-relaxed">
-                Outbound mail ports are firewalled on Render free tier. Enter this 6-digit code below:
-              </p>
-              <div className="flex items-center justify-between bg-white px-3 py-2 rounded-xl border border-amber-300">
-                <span className="font-mono text-base font-bold tracking-widest text-amber-950">
-                  {hostCodeNotice}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setOtpCode(hostCodeNotice);
-                    toast.success("Code inserted!");
-                  }}
-                  className="rounded-lg bg-amber-100 hover:bg-amber-200 px-2.5 py-1 text-[11px] font-semibold text-amber-900 transition"
-                >
-                  Insert Code ⚡
-                </button>
-              </div>
-            </div>
-          )}
 
 
           <div>

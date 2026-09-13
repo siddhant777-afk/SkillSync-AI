@@ -114,7 +114,7 @@ const RegisterForm = () => {
   };
 
   return (
-    <div className="w-full max-w-2xl rounded-3xl bg-white p-6 sm:p-10 shadow-xl shadow-slate-200/60 border border-slate-200/80">
+    <div className="w-full max-w-2xl rounded-2xl bg-white p-8 shadow-xl">
       <div className="mb-6 flex items-center justify-between border-b border-slate-100 pb-4">
         <Link
           to={ROUTES.LOGIN}
@@ -122,14 +122,14 @@ const RegisterForm = () => {
         >
           <ArrowLeft size={14} /> Back to Login
         </Link>
-        <span className="rounded-full bg-indigo-50 border border-indigo-100 px-3 py-1 text-xs font-bold text-indigo-700">
+        <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600">
           Step {step} of 2
         </span>
       </div>
 
       <div className="mb-8 text-center">
-        <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">Create Your Account</h2>
-        <p className="mt-1.5 text-xs sm:text-sm font-medium text-slate-500">Join SkillSync AI and begin your placement journey.</p>
+        <h2 className="text-3xl font-bold text-gray-900">Create Your Account</h2>
+        <p className="mt-2 text-sm text-gray-500">Join SkillSync AI and begin your placement journey.</p>
       </div>
       <ProgressBar currentStep={step} totalSteps={2} />
       <form onSubmit={handleSubmit} className="mt-8 space-y-8">
@@ -150,14 +150,14 @@ const RegisterForm = () => {
               type="button"
               onClick={handlePrevious}
               disabled={loading}
-              className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-300 bg-white px-5 py-3 text-xs sm:text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:border-slate-400 transition disabled:opacity-60"
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-gray-300 px-6 py-3 font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-60"
             >
               <ArrowLeft size={16} /> Previous (Step 1)
             </button>
           ) : (
             <Link
               to={ROUTES.LOGIN}
-              className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-300 bg-white px-5 py-3 text-xs sm:text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:border-slate-400 transition"
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-gray-300 px-6 py-3 font-medium text-gray-700 hover:bg-gray-100"
             >
               <ArrowLeft size={16} /> Back to Login
             </Link>
@@ -170,7 +170,7 @@ const RegisterForm = () => {
                 onClick={handleDirectRegister}
                 disabled={loading}
                 title="Register immediately without filling optional fields - can fill anytime from web profile"
-                className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-5 py-3 text-xs sm:text-sm font-bold text-indigo-700 hover:bg-indigo-100 transition shadow-2xs"
+                className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-5 py-3 text-xs sm:text-sm font-bold text-indigo-700 hover:bg-indigo-100 transition"
               >
                 <span>Register Directly (Skip Details) ⚡</span>
               </button>
@@ -178,7 +178,7 @@ const RegisterForm = () => {
                 type="button"
                 onClick={handleNext}
                 disabled={loading}
-                className="rounded-xl bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 px-6 py-3 font-semibold text-white transition shadow-sm text-xs sm:text-sm"
+                className="rounded-xl bg-indigo-600 px-6 py-3 font-semibold text-white hover:bg-indigo-700 transition shadow-xs text-xs sm:text-sm"
               >
                 Next Step →
               </button>
@@ -187,7 +187,7 @@ const RegisterForm = () => {
             <button
               type="submit"
               disabled={loading}
-              className="rounded-xl bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 px-7 py-3.5 font-bold text-white transition shadow-md shadow-indigo-100 disabled:opacity-60 text-sm"
+              className="rounded-xl bg-indigo-600 px-6 py-3 font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
             >
               {loading ? "Creating Account..." : "Create Account"}
             </button>

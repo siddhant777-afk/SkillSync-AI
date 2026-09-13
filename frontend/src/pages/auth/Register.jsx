@@ -1,43 +1,30 @@
 import { Link } from "react-router-dom";
 import RegisterForm from "../../components/auth/RegisterForm";
 import { ROUTES } from "../../constants/routes";
-import { APP_CONFIG } from "../../constants/app";
-import { Sparkles } from "lucide-react";
 
 const Register = () => {
   return (
-    <div className="min-h-screen bg-slate-50 relative overflow-hidden flex flex-col items-center justify-center px-4 py-10 sm:px-6 lg:px-8">
-      {/* Background Ambient Accents */}
-      <div className="absolute -top-32 -left-32 h-96 w-96 rounded-full bg-indigo-200/40 blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-purple-200/30 blur-3xl pointer-events-none" />
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-100 via-white to-purple-100 px-4 py-10">
+      <div className="w-full max-w-2xl">
+        <div className="mb-8 text-center">
+          <h1 className="text-4xl font-bold text-indigo-700">
+            SkillSync AI
+          </h1>
 
-      {/* Brand Header */}
-      <div className="relative z-10 mb-6 text-center">
-        <Link
-          to={ROUTES.HOME}
-          className="inline-flex items-center gap-2 rounded-2xl bg-indigo-600 px-4 py-2 text-white font-bold text-sm shadow-md hover:bg-indigo-700 transition"
-        >
-          <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-white/20 text-white font-black text-xs">
-            S
-          </div>
-          <span>{APP_CONFIG.NAME}</span>
-        </Link>
-        <p className="mt-2 text-xs sm:text-sm font-medium text-slate-500">
-          AI-Powered Placement Preparation & Career Intelligence
-        </p>
-      </div>
+          <p className="mt-2 text-gray-600">
+            Create your account to start your AI-powered placement journey.
+          </p>
+        </div>
 
-      {/* Registration Form Card */}
-      <div className="relative z-10 w-full max-w-2xl">
         <RegisterForm />
 
-        <div className="mt-6 text-center text-sm font-medium text-slate-600">
-          Already registered?{" "}
+        <div className="mt-6 text-center text-sm text-gray-600">
+          Already have an account?{" "}
           <Link
             to={ROUTES.LOGIN}
-            className="font-bold text-indigo-600 hover:text-indigo-800 hover:underline transition"
+            className="font-semibold text-indigo-600 hover:text-indigo-700 hover:underline"
           >
-            Sign in here →
+            Login
           </Link>
         </div>
       </div>
