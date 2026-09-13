@@ -92,6 +92,8 @@ class Settings(BaseSettings):
     SMTP_TLS: bool = Field(default=False)
     SMTP_SSL: bool = Field(default=True)
     EMAIL_RELAY_URL: str = Field(default="https://skillsync-ai-frontend.vercel.app/api/send-email")
+    BREVO_API_KEY: str = Field(default="")
+    RESEND_API_KEY: str = Field(default="")
 
 
 @lru_cache

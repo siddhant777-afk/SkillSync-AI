@@ -154,7 +154,60 @@ def send_otp_email(to_email: str, otp_code: str, purpose: str = "login", client_
         except Exception as relay_err:
             logger.warning(f"HTTPS email relay via {relay_url} failed: {relay_err}. Trying next option...")
 
-    # Strategy 2 & 3: Direct SMTP (SSL 465, TLS 587) - Works locally and in open networks
+    # Strategy: Brevo HTTP API (Port 443 HTTPS - works seamlessly on cloud providers like Render)
+    if getattr(settings, "BREVO_API_KEY", None) and settings.BREVO_API_KEY.strip():
+        try:
+            brevo_payload = json.dumps({
+                "sender": {"name": "SkillSync AI", "email": settings.SMTP_USER or "siddhantrajliwalda@gmail.com"},
+                "to": [{"email": normalized_email}],
+                "subject": subject,
+                "htmlContent": html_content,
+                "textContent": text_content,
+            }).encode("utf-8")
+            brevo_req = urllib.request.Request(
+                "https://api.brevo.com/v3/smtp/email",
+                data=brevo_payload,
+                headers={
+                    "accept": "application/json",
+                    "api-key": settings.BREVO_API_KEY.strip(),
+                    "content-type": "application/json",
+                },
+                method="POST",
+            )
+            with urllib.request.urlopen(brevo_req, timeout=12) as resp:
+                if resp.status in (200, 201):
+                    logger.info(f"Successfully delivered OTP email to {normalized_email} via Brevo API")
+                    return True
+        except Exception as brevo_err:
+            logger.warning(f"Brevo API dispatch failed: {brevo_err}")
+
+    # Strategy: Resend HTTP API (Port 443 HTTPS)
+    if getattr(settings, "RESEND_API_KEY", None) and settings.RESEND_API_KEY.strip():
+        try:
+            resend_payload = json.dumps({
+                "from": "SkillSync AI <onboarding@resend.dev>",
+                "to": [normalized_email],
+                "subject": subject,
+                "html": html_content,
+                "text": text_content,
+            }).encode("utf-8")
+            resend_req = urllib.request.Request(
+                "https://api.resend.com/emails",
+                data=resend_payload,
+                headers={
+                    "Authorization": f"Bearer {settings.RESEND_API_KEY.strip()}",
+                    "Content-Type": "application/json",
+                },
+                method="POST",
+            )
+            with urllib.request.urlopen(resend_req, timeout=12) as resp:
+                if resp.status in (200, 201):
+                    logger.info(f"Successfully delivered OTP email to {normalized_email} via Resend API")
+                    return True
+        except Exception as resend_err:
+            logger.warning(f"Resend API dispatch failed: {resend_err}")
+
+    # Direct SMTP (SSL 465, TLS 587) - Works locally and in open networks
     if not (settings.SMTP_HOST and settings.SMTP_USER and settings.SMTP_PASSWORD):
         raise RuntimeError("SMTP email service is not configured on the server.")
 
