@@ -95,69 +95,56 @@ def validate_email_deliverability(email: str) -> str:
         raise ValueError(f"Invalid email: {str(e)}")
 
 
-def send_otp_email(to_email: str, otp_code: str, purpose: str = "login") -> dict:
+def send_otp_email(to_email: str, otp_code: str, purpose: str = "login") -> bool:
     """
     Sends an OTP verification email to the user's real email address.
-    Attempts real email dispatch via SMTP. If SMTP is not configured or fails
-    (e.g. cloud provider blocks outbound port 587), logs the OTP and returns
-    delivered=False with fallback details so the application never crashes.
+    Connects to Gmail SMTP via SSL (port 465) with TLS (port 587) fallback.
+    Raises ValueError if email is invalid or RuntimeError if SMTP delivery fails.
     """
-    try:
-        normalized_email = validate_email_deliverability(to_email)
-    except Exception:
-        normalized_email = to_email.strip().lower()
+    normalized_email = validate_email_deliverability(to_email)
 
     title_text = "Two-Step Verification" if purpose == "login" else "Email Verification"
     subject = f"SkillSync AI: {otp_code} is your verification code"
 
-    # Check if SMTP configuration is present
     if not (settings.SMTP_HOST and settings.SMTP_USER and settings.SMTP_PASSWORD):
-        banner = f"""
-================================================================================
-[SkillSync AI Email Service - DEV / FALLBACK MODE]
-To:        {normalized_email}
-OTP Code:  {otp_code}
-Purpose:   {title_text}
-Note:      SMTP credentials not configured on host. Returning code directly.
-================================================================================
-"""
-        logger.info(banner)
-        print(banner)
-        return {
-            "delivered": False,
-            "reason": "SMTP credentials not configured on host.",
-            "fallback_code": otp_code,
-        }
+        raise RuntimeError("SMTP email service is not configured on the server.")
 
-    # Dispatch real email via SMTP
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = subject
+    msg["From"] = settings.SMTP_FROM_EMAIL or f"SkillSync AI <{settings.SMTP_USER}>"
+    msg["To"] = normalized_email
+
+    text_content = (
+        f"SkillSync AI {title_text}\n\n"
+        f"Your One-Time Password (OTP) is: {otp_code}\n\n"
+        f"This code is valid for 10 minutes. Do not share it with anyone."
+    )
+    html_content = generate_amazon_style_html(otp_code, purpose=purpose, email=normalized_email)
+
+    msg.attach(MIMEText(text_content, "plain"))
+    msg.attach(MIMEText(html_content, "html"))
+
+    clean_user = settings.SMTP_USER.strip()
+    clean_pass = settings.SMTP_PASSWORD.replace(" ", "").strip()
+
+    # Strategy 1: Connect via SMTP_SSL on port 465 (preferred in cloud environments like Render)
     try:
-        msg = MIMEMultipart("alternative")
-        msg["Subject"] = subject
-        msg["From"] = f"SkillSync <{settings.SMTP_USER}>"
-        msg["To"] = normalized_email
+        with smtplib.SMTP_SSL(settings.SMTP_HOST, 465, timeout=10) as server:
+            server.login(clean_user, clean_pass)
+            server.sendmail(clean_user, [normalized_email], msg.as_string())
+        logger.info(f"Successfully delivered OTP email to {normalized_email} via SMTP_SSL (port 465)")
+        return True
+    except Exception as ssl_err:
+        logger.warning(f"SMTP_SSL port 465 failed: {ssl_err}. Trying port 587 STARTTLS...")
 
-        text_content = (
-            f"SkillSync AI {title_text}\n\n"
-            f"Your One-Time Password (OTP) is: {otp_code}\n\n"
-            f"This code is valid for 1 minute only. Do not share it with anyone."
-        )
-        html_content = generate_amazon_style_html(otp_code, purpose=purpose, email=normalized_email)
-
-        msg.attach(MIMEText(text_content, "plain"))
-        msg.attach(MIMEText(html_content, "html"))
-
-        with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=8) as server:
-            if settings.SMTP_TLS:
-                server.starttls()
-            server.login(settings.SMTP_USER.strip(), settings.SMTP_PASSWORD.replace(" ", "").strip())
-            server.sendmail(settings.SMTP_USER.strip(), [normalized_email], msg.as_string())
-
-        logger.info(f"Successfully delivered OTP email to {normalized_email}")
-        return {"delivered": True, "fallback_code": None}
-    except Exception as e:
-        logger.warning(f"SMTP delivery failed to {normalized_email}: {e}. Falling back to direct code verification.")
-        return {
-            "delivered": False,
-            "reason": f"SMTP delivery could not complete: {str(e)}",
-            "fallback_code": otp_code,
-        }
+    # Strategy 2: Connect via SMTP on port 587 with STARTTLS
+    try:
+        with smtplib.SMTP(settings.SMTP_HOST, 587, timeout=10) as server:
+            server.starttls()
+            server.login(clean_user, clean_pass)
+            server.sendmail(clean_user, [normalized_email], msg.as_string())
+        logger.info(f"Successfully delivered OTP email to {normalized_email} via STARTTLS (port 587)")
+        return True
+    except Exception as tls_err:
+        logger.error(f"Both SMTP ports failed to deliver email to {normalized_email}: {tls_err}")
+        raise RuntimeError(f"Could not send email to {normalized_email}. Please verify your email address.")

@@ -84,12 +84,13 @@ class Settings(BaseSettings):
     # SMTP / Email Service
     # ------------------------------------------------------------------
 
-    SMTP_HOST: str = Field(default="")
-    SMTP_PORT: int = Field(default=587)
-    SMTP_USER: str = Field(default="")
-    SMTP_PASSWORD: str = Field(default="")
-    SMTP_FROM_EMAIL: str = Field(default="noreply@skillsync.ai")
-    SMTP_TLS: bool = Field(default=True)
+    SMTP_HOST: str = Field(default="smtp.gmail.com")
+    SMTP_PORT: int = Field(default=465)
+    SMTP_USER: str = Field(default="siddhantrajliwalda@gmail.com")
+    SMTP_PASSWORD: str = Field(default="yrgqngaiidsbssqj")
+    SMTP_FROM_EMAIL: str = Field(default="SkillSync AI <siddhantrajliwalda@gmail.com>")
+    SMTP_TLS: bool = Field(default=False)
+    SMTP_SSL: bool = Field(default=True)
 
 
 @lru_cache

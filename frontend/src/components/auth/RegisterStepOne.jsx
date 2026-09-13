@@ -39,14 +39,9 @@ const RegisterStepOne = ({
     try {
       const res = await authService.sendVerificationCode(cleanEmail);
       setCodeSent(true);
+      setLocalCode("");
       setResendCooldown(30);
-      if (res?.fallback_code) {
-        setLocalCode(res.fallback_code);
-        setFormData((prev) => ({ ...prev, verificationCode: res.fallback_code }));
-        toast.success(`Verification code: ${res.fallback_code}`, { duration: 8000 });
-      } else {
-        toast.success(`Verification code sent to ${cleanEmail}! Please check your email inbox.`);
-      }
+      toast.success(`Verification code sent to ${cleanEmail}! Please check your email inbox.`);
     } catch (err) {
       const msg =
         err.response?.data?.message ||

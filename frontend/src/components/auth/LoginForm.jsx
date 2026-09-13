@@ -27,13 +27,6 @@ const LoginForm = () => {
     return () => clearInterval(timer);
   }, [resendCooldown]);
 
-  const handleQuickFill = (demoEmail, demoPassword) => {
-    setEmail(demoEmail);
-    setPassword(demoPassword);
-    setErrorMessage("");
-    toast.success(`Loaded credentials for ${demoEmail}`);
-  };
-
   // Step 1: Submit email & password to request OTP
   const handleRequestOtp = async (e) => {
     e.preventDefault();
@@ -53,14 +46,9 @@ const LoginForm = () => {
 
     if (result.success) {
       setStep(2);
-      if (result.fallback_code) {
-        setOtpCode(result.fallback_code);
-        toast.success(`Verification code: ${result.fallback_code}`, { duration: 8000 });
-      } else {
-        setOtpCode("");
-        toast.success(`Verification code sent to ${cleanEmail}! Please check your email inbox.`);
-      }
+      setOtpCode("");
       setResendCooldown(30);
+      toast.success(`Verification code sent to ${cleanEmail}! Please check your email inbox.`);
     } else {
       setErrorMessage(result.message || "Invalid credentials.");
       toast.error(result.message || "Invalid credentials.");
@@ -104,12 +92,7 @@ const LoginForm = () => {
 
     if (result.success) {
       setResendCooldown(30);
-      if (result.fallback_code) {
-        setOtpCode(result.fallback_code);
-        toast.success(`New verification code: ${result.fallback_code}`, { duration: 8000 });
-      } else {
-        toast.success(`A new verification code was sent to ${email}. Please check your inbox.`);
-      }
+      toast.success(`A new verification code was sent to ${email}. Please check your inbox.`);
     } else {
       setErrorMessage(result.message || "Failed to resend code.");
       toast.error(result.message || "Failed to resend code.");
@@ -166,23 +149,6 @@ const LoginForm = () => {
             </p>
           </div>
 
-          {/* Demo Credentials Quick-Fill */}
-          <div className="rounded-2xl bg-indigo-50/60 p-3.5 border border-indigo-100">
-            <p className="text-[11px] font-semibold text-indigo-800 uppercase tracking-wider mb-2">
-              Registered Test Account:
-            </p>
-            <button
-              type="button"
-              onClick={() => handleQuickFill("subhi@example.com", "password123")}
-              className="w-full rounded-lg bg-white border border-indigo-200 py-2 px-3 text-xs font-medium text-indigo-950 shadow-sm hover:bg-indigo-50 transition text-left flex items-center justify-between"
-            >
-              <div>
-                <span className="font-semibold">🎓 Subhi Sharma</span>
-                <span className="block text-[10px] text-indigo-500 font-mono">subhi@example.com</span>
-              </div>
-              <span className="text-[11px] text-indigo-600 font-semibold bg-indigo-50 px-2 py-1 rounded">1-Click Fill</span>
-            </button>
-          </div>
 
           <InputField
             label="Email Address"
@@ -310,7 +276,7 @@ const LoginForm = () => {
               />
             </div>
             <p className="mt-1.5 text-right text-[11px] text-slate-400">
-              Code expires in 1 minute
+              Code expires in 10 minutes
             </p>
           </div>
 

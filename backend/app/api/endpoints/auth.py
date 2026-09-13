@@ -64,26 +64,25 @@ def send_verification_code(data: SendVerificationCodeRequest, db: Session = Depe
 
     code = f"{random.randint(100000, 999999)}"
 
-    # Attempt real email dispatch via SMTP with fallback
-    res = send_otp_email(to_email=email, otp_code=code, purpose="register")
+    # Send real verification email via Gmail SMTP
+    try:
+        send_otp_email(to_email=email, otp_code=code, purpose="register")
+    except (ValueError, RuntimeError) as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
 
-    expires_at = time.time() + 300  # 5 minutes
+    expires_at = time.time() + 600  # 10 minutes
     PENDING_REGISTRATION_OTPS[email] = {
         "code": code,
         "expires_at": expires_at,
     }
 
-    if res.get("delivered"):
-        return {
-            "success": True,
-            "message": f"Verification code sent to {email}. Please check your email inbox.",
-        }
-    else:
-        return {
-            "success": True,
-            "message": f"Verification code: {code} (sent to {email})",
-            "fallback_code": code,
-        }
+    return {
+        "success": True,
+        "message": f"Verification code sent to {email}. Please check your email inbox.",
+    }
 
 
 @router.post("/verify-email")
@@ -253,31 +252,28 @@ def login_request_otp(data: LoginRequestOtp, db: Session = Depends(get_db)):
 
     code = f"{random.randint(100000, 999999)}"
 
-    # Attempt real email dispatch via SMTP with fallback
-    res = send_otp_email(to_email=email_clean, otp_code=code, purpose="login")
+    # Send real verification email via Gmail SMTP
+    try:
+        send_otp_email(to_email=email_clean, otp_code=code, purpose="login")
+    except (ValueError, RuntimeError) as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
 
-    expires_at = time.time() + 300  # 5 minutes
+    expires_at = time.time() + 600  # 10 minutes
     PENDING_LOGIN_OTPS[email_clean] = {
         "code": code,
         "user_id": user.id,
         "expires_at": expires_at,
     }
 
-    if res.get("delivered"):
-        return {
-            "success": True,
-            "otp_required": True,
-            "email": user.email,
-            "message": f"Two-step verification code sent to {user.email}. Please check your inbox.",
-        }
-    else:
-        return {
-            "success": True,
-            "otp_required": True,
-            "email": user.email,
-            "message": f"Two-step verification code: {code}",
-            "fallback_code": code,
-        }
+    return {
+        "success": True,
+        "otp_required": True,
+        "email": user.email,
+        "message": f"Two-step verification code sent to {user.email}. Please check your inbox.",
+    }
 
 
 @router.post("/login-verify-otp", response_model=TokenResponse)
