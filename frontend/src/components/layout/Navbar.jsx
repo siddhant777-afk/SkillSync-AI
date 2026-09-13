@@ -5,6 +5,7 @@ import {
   BarChart3,
   BrainCircuit,
   Briefcase,
+  ChevronDown,
   Compass,
   FileText,
   FolderKanban,
@@ -158,22 +159,23 @@ const Navbar = () => {
               type="button"
               onClick={() => setMobileMenuOpen((prev) => !prev)}
               aria-label="Toggle navigation menu"
-              className="xl:hidden rounded-xl p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+              className="md:hidden rounded-xl p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
             >
               {mobileMenuOpen ? <X size={22} /> : <MoreHorizontal size={22} />}
             </button>
           </div>
         </div>
 
-        {/* Bottom Row: Desktop Horizontal Navigation Bar with Three Dots (...) More Menu */}
-        <nav className="hidden xl:flex items-center justify-between border-t border-slate-100 dark:border-slate-800/80 py-1.5">
-          <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
+        {/* Bottom Row: Desktop & Laptop Navigation Bar with Unclipped More (...) Menu */}
+        <nav className="hidden md:flex items-center justify-between border-t border-slate-100 dark:border-slate-800/80 py-1.5 gap-2 relative">
+          {/* Scrollable primary links container */}
+          <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5 min-w-0 flex-1">
             {PRIMARY_NAV.map(({ title, icon: Icon, path }) => (
               <NavLink
                 key={title}
                 to={path}
                 className={({ isActive }) =>
-                  `inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition whitespace-nowrap ${
+                  `inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition whitespace-nowrap shrink-0 ${
                     isActive
                       ? "bg-indigo-600 text-white shadow-2xs"
                       : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
@@ -184,73 +186,92 @@ const Navbar = () => {
                 <span>{title}</span>
               </NavLink>
             ))}
-
-            {/* Three Dots (...) More Menu Button */}
-            <div className="relative" ref={moreRef}>
-              <button
-                type="button"
-                onClick={() => setMoreOpen((prev) => !prev)}
-                className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition whitespace-nowrap ${
-                  isOverflowActive || moreOpen
-                    ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800"
-                    : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-                }`}
-                title="View more pages"
-              >
-                <MoreHorizontal size={17} />
-                <span>More</span>
-              </button>
-
-              {/* Three Dots Dropdown Panel */}
-              {moreOpen && (
-                <div className="absolute left-0 mt-2 w-72 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2 shadow-xl z-50 animate-in fade-in zoom-in-95">
-                  <div className="px-3 py-1.5 border-b border-slate-100 dark:border-slate-800">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                      Explore More Intelligence
-                    </p>
-                  </div>
-                  <div className="space-y-1 mt-1">
-                    {OVERFLOW_NAV.map(({ title, icon: Icon, path, desc }) => (
-                      <NavLink
-                        key={title}
-                        to={path}
-                        onClick={() => setMoreOpen(false)}
-                        className={({ isActive }) =>
-                          `flex items-start gap-3 rounded-xl p-2.5 text-xs transition ${
-                            isActive
-                              ? "bg-indigo-50 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300 font-bold"
-                              : "hover:bg-slate-50 dark:hover:bg-slate-850 text-slate-700 dark:text-slate-200"
-                          }`
-                        }
-                      >
-                        <div className="mt-0.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 p-1.5 text-indigo-600 dark:text-indigo-400 shrink-0">
-                          <Icon size={15} />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="font-bold truncate">{title}</p>
-                          <p className="text-[10px] text-slate-400 dark:text-slate-500 line-clamp-1">{desc}</p>
-                        </div>
-                      </NavLink>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
           </div>
 
-          <div className="flex items-center gap-2 text-[11px] font-medium text-slate-400 dark:text-slate-500">
+          {/* Three Dots (...) More Menu - PLACED OUTSIDE overflow container so it is NEVER CLIPPED */}
+          <div className="relative shrink-0" ref={moreRef}>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setMoreOpen((prev) => !prev);
+              }}
+              className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition whitespace-nowrap shadow-2xs cursor-pointer ${
+                isOverflowActive || moreOpen
+                  ? "bg-indigo-600 text-white shadow-xs"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-indigo-50 dark:hover:bg-indigo-950/60 hover:text-indigo-600 dark:hover:text-indigo-300 border border-slate-200 dark:border-slate-700"
+              }`}
+              title="Explore all remaining modules"
+            >
+              <MoreHorizontal size={17} />
+              <span>More Modules</span>
+              <ChevronDown size={14} className={`transition-transform duration-200 ${moreOpen ? "rotate-180" : ""}`} />
+            </button>
+
+            {/* Click-outside backdrop overlay */}
+            {moreOpen && (
+              <div
+                className="fixed inset-0 z-40 bg-transparent"
+                onClick={() => setMoreOpen(false)}
+              />
+            )}
+
+            {/* Floating Dropdown Panel with High Z-Index */}
+            {moreOpen && (
+              <div
+                className="absolute right-0 top-full mt-2 w-80 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-2.5 shadow-2xl z-50 animate-in fade-in zoom-in-95"
+                style={{ filter: "drop-shadow(0 20px 25px rgb(0 0 0 / 0.15))" }}
+              >
+                <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    Remaining Platform Modules ({OVERFLOW_NAV.length})
+                  </p>
+                  <span className="text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950 px-1.5 py-0.5 rounded">
+                    Quick Access
+                  </span>
+                </div>
+
+                <div className="space-y-1 mt-1.5 max-h-[60vh] overflow-y-auto">
+                  {OVERFLOW_NAV.map(({ title, icon: Icon, path, desc }) => (
+                    <NavLink
+                      key={title}
+                      to={path}
+                      onClick={() => setMoreOpen(false)}
+                      className={({ isActive }) =>
+                        `flex items-start gap-3 rounded-xl p-2.5 text-xs transition ${
+                          isActive
+                            ? "bg-indigo-50 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 font-bold border border-indigo-200 dark:border-indigo-800/80"
+                            : "hover:bg-slate-50 dark:hover:bg-slate-850 text-slate-700 dark:text-slate-200"
+                        }`
+                      }
+                    >
+                      <div className="mt-0.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 p-2 text-indigo-600 dark:text-indigo-400 shrink-0">
+                        <Icon size={16} />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-bold text-slate-900 dark:text-white truncate">{title}</p>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1">{desc}</p>
+                      </div>
+                    </NavLink>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="hidden lg:flex items-center gap-2 text-[11px] font-medium text-slate-400 dark:text-slate-500 shrink-0 pl-2">
             <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
             <span>AI Telemetry Active</span>
           </div>
         </nav>
       </div>
 
-      {/* Mobile / Tablet Full Navigation Drawer (When Three Dots / Menu is Tapped) */}
+      {/* Mobile Full Navigation Drawer (When Three Dots / Menu is Tapped on Mobile) */}
       {mobileMenuOpen && (
-        <div className="xl:hidden border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-4 space-y-3 shadow-lg max-h-[80vh] overflow-y-auto">
+        <div className="md:hidden border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-4 space-y-3 shadow-lg max-h-[80vh] overflow-y-auto">
           <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
             <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              Navigation Menu
+              All Platform Modules ({ALL_NAV.length})
             </span>
             <button
               type="button"
@@ -298,3 +319,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+
