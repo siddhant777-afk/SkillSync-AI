@@ -127,6 +127,9 @@ def send_otp_email(to_email: str, otp_code: str, purpose: str = "login") -> bool
     clean_user = settings.SMTP_USER.strip()
     clean_pass = settings.SMTP_PASSWORD.replace(" ", "").strip()
 
+    ssl_err_info = None
+    tls_err_info = None
+
     # Strategy 1: Connect via SMTP_SSL on port 465 (preferred in cloud environments like Render)
     try:
         with smtplib.SMTP_SSL(settings.SMTP_HOST, 465, timeout=10) as server:
@@ -135,6 +138,7 @@ def send_otp_email(to_email: str, otp_code: str, purpose: str = "login") -> bool
         logger.info(f"Successfully delivered OTP email to {normalized_email} via SMTP_SSL (port 465)")
         return True
     except Exception as ssl_err:
+        ssl_err_info = f"{type(ssl_err).__name__}: {ssl_err}"
         logger.warning(f"SMTP_SSL port 465 failed: {ssl_err}. Trying port 587 STARTTLS...")
 
     # Strategy 2: Connect via SMTP on port 587 with STARTTLS
@@ -146,10 +150,10 @@ def send_otp_email(to_email: str, otp_code: str, purpose: str = "login") -> bool
         logger.info(f"Successfully delivered OTP email to {normalized_email} via STARTTLS (port 587)")
         return True
     except Exception as tls_err:
+        tls_err_info = f"{type(tls_err).__name__}: {tls_err}"
         logger.error(f"Both SMTP ports failed to deliver email to {normalized_email}: {tls_err}")
         raise RuntimeError(
             f"Could not send email to {normalized_email}. "
             f"[Host={settings.SMTP_HOST}, User={settings.SMTP_USER}, "
-            f"SSL_err={type(ssl_err).__name__}: {ssl_err}, "
-            f"TLS_err={type(tls_err).__name__}: {tls_err}]"
+            f"SSL_err={ssl_err_info}, TLS_err={tls_err_info}]"
         )
