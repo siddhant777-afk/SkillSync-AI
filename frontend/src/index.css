@@ -32,7 +32,15 @@ body {
   min-width: 320px;
   background: #f1f5f9;
   overflow-x: hidden;
-  word-break: break-word;
+  overflow-wrap: break-word;
+  word-break: normal;
+  hyphens: none;
+  -webkit-hyphens: none;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  text-wrap: balance;
+  overflow-wrap: break-word;
 }
 
 html.dark body {

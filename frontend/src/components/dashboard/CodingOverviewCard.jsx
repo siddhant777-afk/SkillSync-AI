@@ -19,6 +19,7 @@ import { Link } from "react-router-dom";
 const CodingOverviewCard = ({ user }) => {
   const { syncAccounts, isSyncing } = useUser();
   const [showAllRepos, setShowAllRepos] = useState(false);
+  const [activeTab, setActiveTab] = useState("all");
 
   // LeetCode metrics
   const lcSolved = user?.leetcode?.solved ?? 0;
@@ -288,165 +289,392 @@ const CodingOverviewCard = ({ user }) => {
         </div>
       )}
 
-      {/* LeetCode Ground-Truth Difficulty & Topic Breakdown */}
-      {lcSolved > 0 ? (
-        <div className="rounded-xl bg-slate-50/70 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 p-5 space-y-4 min-w-0">
-          {/* Header row */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+      {/* VERIFIED MULTI-PLATFORM DEEP DIVE & BREAKDOWN EXPLORER */}
+      <div className="rounded-xl bg-slate-50/70 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800 p-5 space-y-5 min-w-0">
+        {/* Header with Multi-Platform Tab Bar */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-slate-200/80 dark:border-slate-700/80">
+          <div>
             <div className="flex items-center gap-2">
-              <BrainCircuit size={18} className="text-indigo-600 dark:text-indigo-400 shrink-0" />
+              <BrainCircuit size={19} className="text-indigo-600 dark:text-indigo-400 shrink-0" />
               <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-800 dark:text-white">
-                LeetCode Verified Problem Types & Difficulty Breakdown
+                Multi-Platform Deep Dive & Topic Mastery
               </h3>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1 text-xs font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 px-3 py-1 rounded-md border border-indigo-100 dark:border-indigo-800">
-                <Flame size={13} className="text-amber-500" /> Algorithmic Depth: {algorithmicDepth}/100
-              </span>
-            </div>
-          </div>
-
-          {/* 1. Exact Difficulty Distribution (Easy + Medium + Hard = Total Solved) */}
-          <div className="rounded-xl bg-white dark:bg-slate-900 p-4 border border-slate-100 dark:border-slate-800 space-y-3">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
-                Difficulty Distribution: {lcEasy} Easy + {lcMed} Medium + {lcHard} Hard = {lcSolved} Solved
-              </span>
-              <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                <ShieldCheck size={13} /> 100% Mutually Exclusive Live Data
-              </span>
-            </div>
-
-            {/* Stacked Progress Bar */}
-            <div className="h-3 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800 flex">
-              <div
-                style={{ width: `${easyPct}%` }}
-                className="bg-emerald-500 transition-all duration-500"
-                title={`Easy: ${lcEasy} (${easyPct}%)`}
-              />
-              <div
-                style={{ width: `${medPct}%` }}
-                className="bg-amber-500 transition-all duration-500"
-                title={`Medium: ${lcMed} (${medPct}%)`}
-              />
-              <div
-                style={{ width: `${hardPct}%` }}
-                className="bg-rose-500 transition-all duration-500"
-                title={`Hard: ${lcHard} (${hardPct}%)`}
-              />
-            </div>
-
-            {/* Badges */}
-            <div className="grid grid-cols-3 gap-2 pt-1 text-center">
-              <div className="rounded-lg bg-emerald-50/60 dark:bg-emerald-950/30 p-2 border border-emerald-100 dark:border-emerald-900/40">
-                <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300">Easy</span>
-                <p className="text-base sm:text-lg font-black text-emerald-700 dark:text-emerald-400 mt-0.5">
-                  {lcEasy} <span className="text-[10px] font-medium text-emerald-600/70 dark:text-emerald-400/70">({easyPct}%)</span>
-                </p>
-              </div>
-              <div className="rounded-lg bg-amber-50/60 dark:bg-amber-950/30 p-2 border border-amber-100 dark:border-amber-900/40">
-                <span className="text-[11px] font-bold text-amber-700 dark:text-amber-300">Medium</span>
-                <p className="text-base sm:text-lg font-black text-amber-700 dark:text-amber-400 mt-0.5">
-                  {lcMed} <span className="text-[10px] font-medium text-amber-600/70 dark:text-amber-400/70">({medPct}%)</span>
-                </p>
-              </div>
-              <div className="rounded-lg bg-rose-50/60 dark:bg-rose-950/30 p-2 border border-rose-100 dark:border-rose-900/40">
-                <span className="text-[11px] font-bold text-rose-700 dark:text-rose-300">Hard</span>
-                <p className="text-base sm:text-lg font-black text-rose-700 dark:text-rose-400 mt-0.5">
-                  {lcHard} <span className="text-[10px] font-medium text-rose-600/70 dark:text-rose-400/70">({hardPct}%)</span>
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* 2. Normalized Macro Category Breakdown (Sum strictly equals lcSolved) */}
-          <div className="grid gap-3 grid-cols-1 sm:grid-cols-3 text-center min-w-0">
-            <div className="rounded-xl bg-white dark:bg-slate-900 p-3.5 border border-slate-100 dark:border-slate-800">
-              <p className="text-xs font-semibold text-slate-500 dark:text-slate-300">Fundamentals (Arrays & Math)</p>
-              <p className="mt-1 text-xl font-black text-slate-900 dark:text-white whitespace-nowrap">
-                {topicCounts.fundamentals} <span className="text-xs font-normal text-slate-400 dark:text-slate-400">problems</span>
-              </p>
-              <p className="text-[10px] text-slate-400 dark:text-slate-400 mt-0.5">
-                {Math.round((topicCounts.fundamentals / totalDiff) * 100)}% of solved problems
-              </p>
-            </div>
-
-            <div className="rounded-xl bg-white dark:bg-slate-900 p-3.5 border border-slate-100 dark:border-slate-800">
-              <p className="text-xs font-semibold text-slate-500 dark:text-slate-300">Core DSA (Trees & Search)</p>
-              <p className="mt-1 text-xl font-black text-slate-900 dark:text-white whitespace-nowrap">
-                {topicCounts.core_dsa} <span className="text-xs font-normal text-slate-400 dark:text-slate-400">problems</span>
-              </p>
-              <p className="text-[10px] text-slate-400 dark:text-slate-400 mt-0.5">
-                {Math.round((topicCounts.core_dsa / totalDiff) * 100)}% of solved problems
-              </p>
-            </div>
-
-            <div className="rounded-xl bg-purple-50/50 dark:bg-purple-950/30 p-3.5 border border-purple-100 dark:border-purple-900/40">
-              <p className="text-xs font-bold text-purple-700 dark:text-purple-300">Advanced Topics</p>
-              <p className="mt-1 text-xl font-black text-purple-700 dark:text-purple-300 whitespace-nowrap">
-                {advancedCount} <span className="text-xs font-normal text-purple-400 dark:text-purple-400">problems</span>
-              </p>
-              <p className="text-[10px] text-purple-600/80 dark:text-purple-300/80 mt-0.5">
-                {Math.round((advancedCount / totalDiff) * 100)}% of solved problems
-              </p>
-            </div>
-          </div>
-
-          {/* 3. Verified Specific Live Topic Question Counts */}
-          <div className="rounded-xl bg-white dark:bg-slate-900 p-3.5 border border-slate-100 dark:border-slate-800">
-            <p className="text-xs font-bold text-slate-700 dark:text-slate-200 mb-2.5 flex items-center gap-1.5">
-              <BarChart2 size={14} className="text-indigo-600 dark:text-indigo-400" />
-              Specific Topic Question Counts (Verified Tag Attachments):
+            <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+              Verified ground-truth metrics across all connected platforms with equal depth.
             </p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-center">
-              <div className="rounded-lg bg-slate-50 dark:bg-slate-800/60 p-2 border border-slate-100 dark:border-slate-700">
-                <span className="text-[11px] font-bold text-slate-500 dark:text-slate-300 block truncate">Dynamic Prog.</span>
-                <span className="text-sm font-black text-purple-600 dark:text-purple-400">{topicCounts.dp_specific || 16}</span>
-                <span className="text-[10px] text-slate-400 dark:text-slate-400 block">problems</span>
+          </div>
+
+          {/* Platform Tab Buttons */}
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <button
+              type="button"
+              onClick={() => setActiveTab("all")}
+              className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition whitespace-nowrap ${
+                activeTab === "all"
+                  ? "bg-indigo-600 text-white shadow-2xs"
+                  : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-750 hover:bg-slate-100 dark:hover:bg-slate-800"
+              }`}
+            >
+              🌐 All Platforms
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("leetcode")}
+              className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition whitespace-nowrap ${
+                activeTab === "leetcode"
+                  ? "bg-amber-600 text-white shadow-2xs"
+                  : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-750 hover:bg-slate-100 dark:hover:bg-slate-800"
+              }`}
+            >
+              <SiLeetcode className="text-amber-500" /> LeetCode
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("codeforces")}
+              className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition whitespace-nowrap ${
+                activeTab === "codeforces"
+                  ? "bg-blue-600 text-white shadow-2xs"
+                  : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-750 hover:bg-slate-100 dark:hover:bg-slate-800"
+              }`}
+            >
+              <SiCodeforces className="text-blue-500" /> Codeforces
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("codechef")}
+              className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition whitespace-nowrap ${
+                activeTab === "codechef"
+                  ? "bg-orange-600 text-white shadow-2xs"
+                  : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-750 hover:bg-slate-100 dark:hover:bg-slate-800"
+              }`}
+            >
+              <SiCodechef className="text-orange-500" /> CodeChef
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("github")}
+              className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition whitespace-nowrap ${
+                activeTab === "github"
+                  ? "bg-slate-800 text-white shadow-2xs"
+                  : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-750 hover:bg-slate-100 dark:hover:bg-slate-800"
+              }`}
+            >
+              <FaGithub className="text-slate-700 dark:text-slate-300" /> GitHub
+            </button>
+          </div>
+        </div>
+
+        {/* TAB 1: ALL PLATFORMS BALANCED 4-WAY GRID */}
+        {activeTab === "all" && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 min-w-0">
+            {/* LeetCode Card */}
+            <div className="rounded-xl bg-white dark:bg-slate-900 p-4 border border-slate-200 dark:border-slate-800 space-y-3 min-w-0">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <SiLeetcode className="text-amber-500 text-base" />
+                  <span className="text-xs font-bold text-slate-900 dark:text-white">LeetCode Breakdown</span>
+                </div>
+                <span className="text-[10px] font-bold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 px-2 py-0.5 rounded border border-amber-200 dark:border-amber-800">
+                  {lcContestRating > 0 ? `${lcContestRating} pts (${lcContestBadge || "Rated"})` : `${lcSolved} Solved`}
+                </span>
               </div>
-              <div className="rounded-lg bg-slate-50 dark:bg-slate-800/60 p-2 border border-slate-100 dark:border-slate-700">
-                <span className="text-[11px] font-bold text-slate-500 dark:text-slate-300 block truncate">Trees & Binary</span>
-                <span className="text-sm font-black text-indigo-600 dark:text-indigo-400">{topicCounts.tree_problems || 26}</span>
-                <span className="text-[10px] text-slate-400 dark:text-slate-400 block">problems</span>
+
+              {/* Stacked difficulty bar */}
+              <div className="space-y-1">
+                <div className="flex items-center justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-300">
+                  <span>Distribution ({lcSolved} total)</span>
+                  <span>{easyPct}% Easy · {medPct}% Med · {hardPct}% Hard</span>
+                </div>
+                <div className="h-2.5 w-full rounded-full bg-slate-100 dark:bg-slate-800 flex overflow-hidden">
+                  <div style={{ width: `${easyPct}%` }} className="bg-emerald-500" title={`Easy: ${lcEasy}`} />
+                  <div style={{ width: `${medPct}%` }} className="bg-amber-500" title={`Medium: ${lcMed}`} />
+                  <div style={{ width: `${hardPct}%` }} className="bg-rose-500" title={`Hard: ${lcHard}`} />
+                </div>
               </div>
-              <div className="rounded-lg bg-slate-50 dark:bg-slate-800/60 p-2 border border-slate-100 dark:border-slate-700">
-                <span className="text-[11px] font-bold text-slate-500 dark:text-slate-300 block truncate">Hash Tables</span>
-                <span className="text-sm font-black text-blue-600 dark:text-blue-400">{topicCounts.hash_problems || 46}</span>
-                <span className="text-[10px] text-slate-400 dark:text-slate-400 block">problems</span>
+
+              <div className="grid grid-cols-3 gap-2 text-center text-xs pt-1">
+                <div className="rounded-lg bg-slate-50 dark:bg-slate-850 p-2 border border-slate-100 dark:border-slate-750">
+                  <span className="text-[10px] font-bold text-emerald-600">Easy</span>
+                  <p className="font-black text-slate-900 dark:text-white">{lcEasy}</p>
+                </div>
+                <div className="rounded-lg bg-slate-50 dark:bg-slate-850 p-2 border border-slate-100 dark:border-slate-750">
+                  <span className="text-[10px] font-bold text-amber-600">Medium</span>
+                  <p className="font-black text-slate-900 dark:text-white">{lcMed}</p>
+                </div>
+                <div className="rounded-lg bg-slate-50 dark:bg-slate-850 p-2 border border-slate-100 dark:border-slate-750">
+                  <span className="text-[10px] font-bold text-rose-600">Hard</span>
+                  <p className="font-black text-slate-900 dark:text-white">{lcHard}</p>
+                </div>
               </div>
-              <div className="rounded-lg bg-slate-50 dark:bg-slate-800/60 p-2 border border-slate-100 dark:border-slate-700">
-                <span className="text-[11px] font-bold text-slate-500 dark:text-slate-300 block truncate">Binary Search</span>
-                <span className="text-sm font-black text-emerald-600 dark:text-emerald-400">{topicCounts.binary_search || 31}</span>
-                <span className="text-[10px] text-slate-400 dark:text-slate-400 block">problems</span>
+            </div>
+
+            {/* Codeforces Card */}
+            <div className="rounded-xl bg-white dark:bg-slate-900 p-4 border border-slate-200 dark:border-slate-800 space-y-3 min-w-0">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <SiCodeforces className="text-blue-500 text-base" />
+                  <span className="text-xs font-bold text-slate-900 dark:text-white">Codeforces Competitive Telemetry</span>
+                </div>
+                <span className="text-[10px] font-bold text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 rounded border border-blue-200 dark:border-blue-800">
+                  {cfTitle}
+                </span>
               </div>
-              <div className="rounded-lg bg-slate-50 dark:bg-slate-800/60 p-2 border border-slate-100 dark:border-slate-700">
-                <span className="text-[11px] font-bold text-slate-500 dark:text-slate-300 block truncate">Arrays & Linear</span>
-                <span className="text-sm font-black text-amber-600 dark:text-amber-400">{topicCounts.arrays || 127}</span>
-                <span className="text-[10px] text-slate-400 dark:text-slate-400 block">problems</span>
+
+              <div className="grid grid-cols-2 gap-2.5 pt-1">
+                <div className="rounded-lg bg-blue-50/60 dark:bg-slate-850 p-3 border border-blue-100 dark:border-slate-750 text-center">
+                  <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Contest Rating</p>
+                  <p className="text-lg font-black text-blue-700 dark:text-blue-400 mt-0.5">
+                    {cfRating > 0 ? `${cfRating} pts` : "Unrated"}
+                  </p>
+                  <p className="text-[10px] text-slate-400 mt-0.5">{cfTitle}</p>
+                </div>
+
+                <div className="rounded-lg bg-slate-50 dark:bg-slate-850 p-3 border border-slate-100 dark:border-slate-750 text-center">
+                  <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Problems Solved</p>
+                  <p className="text-lg font-black text-slate-900 dark:text-white mt-0.5">
+                    {cfSolved} <span className="text-xs font-normal text-slate-400">solved</span>
+                  </p>
+                  <p className="text-[10px] text-slate-400 mt-0.5">Competitive Archive</p>
+                </div>
               </div>
-              <div className="rounded-lg bg-slate-50 dark:bg-slate-800/60 p-2 border border-slate-100 dark:border-slate-700">
-                <span className="text-[11px] font-bold text-slate-500 dark:text-slate-300 block truncate">Two Pointers</span>
-                <span className="text-sm font-black text-rose-600 dark:text-rose-400">{topicCounts.two_pointers || 44}</span>
-                <span className="text-[10px] text-slate-400 dark:text-slate-400 block">problems</span>
+
+              <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center justify-between pt-1">
+                <span>Platform Rating Tier: <strong className="text-slate-800 dark:text-slate-200">{cfTitle}</strong></span>
+                <span className="text-blue-600 dark:text-blue-400 font-semibold">Active Sync</span>
+              </div>
+            </div>
+
+            {/* CodeChef Card */}
+            <div className="rounded-xl bg-white dark:bg-slate-900 p-4 border border-slate-200 dark:border-slate-800 space-y-3 min-w-0">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <SiCodechef className="text-orange-500 text-base" />
+                  <span className="text-xs font-bold text-slate-900 dark:text-white">CodeChef Contest Telemetry</span>
+                </div>
+                <span className="text-[10px] font-bold text-orange-700 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/60 px-2 py-0.5 rounded border border-orange-200 dark:border-orange-800">
+                  {ccStars || (ccRating > 0 ? "Rated" : "Active")}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2.5 pt-1">
+                <div className="rounded-lg bg-orange-50/60 dark:bg-slate-850 p-3 border border-orange-100 dark:border-slate-750 text-center">
+                  <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Contest Rating</p>
+                  <p className="text-lg font-black text-orange-700 dark:text-orange-400 mt-0.5">
+                    {ccRating > 0 ? `${ccRating} pts` : "Unrated"}
+                  </p>
+                  <p className="text-[10px] text-slate-400 mt-0.5">{ccStars || "Division Coder"}</p>
+                </div>
+
+                <div className="rounded-lg bg-slate-50 dark:bg-slate-850 p-3 border border-slate-100 dark:border-slate-750 text-center">
+                  <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Problems Solved</p>
+                  <p className="text-lg font-black text-slate-900 dark:text-white mt-0.5">
+                    {ccSolved} <span className="text-xs font-normal text-slate-400">solved</span>
+                  </p>
+                  <p className="text-[10px] text-slate-400 mt-0.5">Practice & Star Contests</p>
+                </div>
+              </div>
+
+              <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center justify-between pt-1">
+                <span>Star Classification: <strong className="text-slate-800 dark:text-slate-200">{ccStars || "Unrated"}</strong></span>
+                <span className="text-orange-600 dark:text-orange-400 font-semibold">Active Sync</span>
+              </div>
+            </div>
+
+            {/* GitHub Codebase Card */}
+            <div className="rounded-xl bg-white dark:bg-slate-900 p-4 border border-slate-200 dark:border-slate-800 space-y-3 min-w-0">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <FaGithub className="text-slate-900 dark:text-white text-base" />
+                  <span className="text-xs font-bold text-slate-900 dark:text-white">GitHub Real Code Contributions</span>
+                </div>
+                <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
+                  Verified Commits
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2.5 pt-1">
+                <div className="rounded-lg bg-slate-100 dark:bg-slate-850 p-3 border border-slate-200 dark:border-slate-750 text-center">
+                  <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Commits</p>
+                  <p className="text-lg font-black text-slate-900 dark:text-white mt-0.5">
+                    {ghCommits.toLocaleString()}
+                  </p>
+                  <p className="text-[10px] text-slate-400 mt-0.5">Verified Git Push Events</p>
+                </div>
+
+                <div className="rounded-lg bg-slate-100 dark:bg-slate-850 p-3 border border-slate-200 dark:border-slate-750 text-center">
+                  <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Public Repositories</p>
+                  <p className="text-lg font-black text-indigo-600 dark:text-indigo-400 mt-0.5">
+                    {ghRepos} <span className="text-xs font-normal text-slate-400">repos</span>
+                  </p>
+                  <p className="text-[10px] text-slate-400 mt-0.5">{ghStars} Stars Accrued</p>
+                </div>
+              </div>
+
+              <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center justify-between pt-1">
+                <span>Public Repos: <strong className="text-slate-800 dark:text-slate-200">{ghRepos} repositories</strong></span>
+                <button
+                  type="button"
+                  onClick={() => setShowAllRepos((prev) => !prev)}
+                  className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline"
+                >
+                  View Code Projects ({ghReposList.length}) →
+                </button>
               </div>
             </div>
           </div>
-        </div>
-      ) : (
-        <div className="rounded-xl bg-slate-50/70 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 p-6 text-center">
-          <BrainCircuit size={28} className="mx-auto text-slate-300 dark:text-slate-600 mb-2" />
-          <p className="text-xs font-semibold text-slate-700 dark:text-slate-200">No LeetCode Activity Synced (0 Problems)</p>
-          <p className="text-[11px] text-slate-400 dark:text-slate-400 mt-1 max-w-sm mx-auto">
-            Connect and verify your LeetCode handle in Profile to analyze difficulty distribution, algorithmic depth, and topic mastery.
-          </p>
-          <Link
-            to="/profile"
-            className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
-          >
-            Connect LeetCode in Profile →
-          </Link>
-        </div>
-      )}
+        )}
+
+        {/* TAB 2: LEETCODE FOCUSED DEEP DIVE */}
+        {activeTab === "leetcode" && (
+          <div className="space-y-4">
+            <div className="rounded-xl bg-white dark:bg-slate-900 p-4 border border-slate-200 dark:border-slate-800 space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                  Difficulty Distribution: {lcEasy} Easy + {lcMed} Medium + {lcHard} Hard = {lcSolved} Solved
+                </span>
+                <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                  <ShieldCheck size={13} /> 100% Mutually Exclusive Live Data
+                </span>
+              </div>
+              <div className="h-3 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800 flex">
+                <div style={{ width: `${easyPct}%` }} className="bg-emerald-500" title={`Easy: ${lcEasy}`} />
+                <div style={{ width: `${medPct}%` }} className="bg-amber-500" title={`Medium: ${lcMed}`} />
+                <div style={{ width: `${hardPct}%` }} className="bg-rose-500" title={`Hard: ${lcHard}`} />
+              </div>
+              <div className="grid grid-cols-3 gap-2 pt-1 text-center">
+                <div className="rounded-lg bg-emerald-50/60 dark:bg-emerald-950/30 p-2 border border-emerald-100 dark:border-emerald-900/40">
+                  <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300">Easy</span>
+                  <p className="text-base font-black text-emerald-700 dark:text-emerald-400">{lcEasy} ({easyPct}%)</p>
+                </div>
+                <div className="rounded-lg bg-amber-50/60 dark:bg-amber-950/30 p-2 border border-amber-100 dark:border-amber-900/40">
+                  <span className="text-[11px] font-bold text-amber-700 dark:text-amber-300">Medium</span>
+                  <p className="text-base font-black text-amber-700 dark:text-amber-400">{lcMed} ({medPct}%)</p>
+                </div>
+                <div className="rounded-lg bg-rose-50/60 dark:bg-rose-950/30 p-2 border border-rose-100 dark:border-rose-900/40">
+                  <span className="text-[11px] font-bold text-rose-700 dark:text-rose-300">Hard</span>
+                  <p className="text-base font-black text-rose-700 dark:text-rose-400">{lcHard} ({hardPct}%)</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Macro Categories */}
+            <div className="grid gap-3 grid-cols-1 sm:grid-cols-3 text-center">
+              <div className="rounded-xl bg-white dark:bg-slate-900 p-3.5 border border-slate-200 dark:border-slate-800">
+                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Fundamentals</p>
+                <p className="mt-1 text-xl font-black text-slate-900 dark:text-white">{topicCounts.fundamentals} problems</p>
+              </div>
+              <div className="rounded-xl bg-white dark:bg-slate-900 p-3.5 border border-slate-200 dark:border-slate-800">
+                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Core DSA</p>
+                <p className="mt-1 text-xl font-black text-slate-900 dark:text-white">{topicCounts.core_dsa} problems</p>
+              </div>
+              <div className="rounded-xl bg-purple-50/50 dark:bg-purple-950/30 p-3.5 border border-purple-100 dark:border-purple-900/40">
+                <p className="text-xs font-bold text-purple-700 dark:text-purple-300">Advanced Topics</p>
+                <p className="mt-1 text-xl font-black text-purple-700 dark:text-purple-300">{advancedCount} problems</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 3: CODEFORCES FOCUSED DEEP DIVE */}
+        {activeTab === "codeforces" && (
+          <div className="rounded-xl bg-white dark:bg-slate-900 p-5 border border-slate-200 dark:border-slate-800 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <SiCodeforces className="text-blue-500 text-xl" />
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white">Codeforces Competitive Standing</h4>
+                  <p className="text-xs text-slate-500">Official Division contest benchmarks</p>
+                </div>
+              </div>
+              <span className="text-xs font-bold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950 px-3 py-1 rounded-full border border-blue-200 dark:border-blue-800">
+                {cfTitle}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
+              <div className="rounded-xl bg-slate-50 dark:bg-slate-850 p-4 border border-slate-200 dark:border-slate-750">
+                <span className="text-xs font-semibold text-slate-500">Current Rating</span>
+                <p className="text-2xl font-black text-blue-600 dark:text-blue-400 mt-1">{cfRating > 0 ? `${cfRating} pts` : "Unrated"}</p>
+              </div>
+              <div className="rounded-xl bg-slate-50 dark:bg-slate-850 p-4 border border-slate-200 dark:border-slate-750">
+                <span className="text-xs font-semibold text-slate-500">Max Peak Rating</span>
+                <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">{cfRating > 0 ? `${cfRating} pts` : "Unrated"}</p>
+              </div>
+              <div className="rounded-xl bg-slate-50 dark:bg-slate-850 p-4 border border-slate-200 dark:border-slate-750">
+                <span className="text-xs font-semibold text-slate-500">Verified Solved</span>
+                <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">{cfSolved} problems</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 4: CODECHEF FOCUSED DEEP DIVE */}
+        {activeTab === "codechef" && (
+          <div className="rounded-xl bg-white dark:bg-slate-900 p-5 border border-slate-200 dark:border-slate-800 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <SiCodechef className="text-orange-500 text-xl" />
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white">CodeChef Star Division Telemetry</h4>
+                  <p className="text-xs text-slate-500">Global rated contest standing</p>
+                </div>
+              </div>
+              <span className="text-xs font-bold text-orange-700 dark:text-orange-300 bg-orange-50 dark:bg-orange-950 px-3 py-1 rounded-full border border-orange-200 dark:border-orange-800">
+                {ccStars || "Rated Division"}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
+              <div className="rounded-xl bg-slate-50 dark:bg-slate-850 p-4 border border-slate-200 dark:border-slate-750">
+                <span className="text-xs font-semibold text-slate-500">Contest Rating</span>
+                <p className="text-2xl font-black text-orange-600 dark:text-orange-400 mt-1">{ccRating > 0 ? `${ccRating} pts` : "Unrated"}</p>
+              </div>
+              <div className="rounded-xl bg-slate-50 dark:bg-slate-850 p-4 border border-slate-200 dark:border-slate-750">
+                <span className="text-xs font-semibold text-slate-500">Star Classification</span>
+                <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">{ccStars || "1★ - 7★ Scale"}</p>
+              </div>
+              <div className="rounded-xl bg-slate-50 dark:bg-slate-850 p-4 border border-slate-200 dark:border-slate-750">
+                <span className="text-xs font-semibold text-slate-500">Problems Solved</span>
+                <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">{ccSolved} solved</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 5: GITHUB FOCUSED DEEP DIVE */}
+        {activeTab === "github" && (
+          <div className="rounded-xl bg-white dark:bg-slate-900 p-5 border border-slate-200 dark:border-slate-800 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <FaGithub className="text-slate-900 dark:text-white text-xl" />
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white">GitHub Real Code Contributions</h4>
+                  <p className="text-xs text-slate-500">Commits, repositories, and open source projects</p>
+                </div>
+              </div>
+              <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950 px-3 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">
+                {ghCommits} Commits
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
+              <div className="rounded-xl bg-slate-50 dark:bg-slate-850 p-4 border border-slate-200 dark:border-slate-750">
+                <span className="text-xs font-semibold text-slate-500">Verified Commits</span>
+                <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">{ghCommits.toLocaleString()}</p>
+              </div>
+              <div className="rounded-xl bg-slate-50 dark:bg-slate-850 p-4 border border-slate-200 dark:border-slate-750">
+                <span className="text-xs font-semibold text-slate-500">Public Repositories</span>
+                <p className="text-2xl font-black text-indigo-600 dark:text-indigo-400 mt-1">{ghRepos} repos</p>
+              </div>
+              <div className="rounded-xl bg-slate-50 dark:bg-slate-850 p-4 border border-slate-200 dark:border-slate-750">
+                <span className="text-xs font-semibold text-slate-500">Total Stars Accrued</span>
+                <p className="text-2xl font-black text-amber-500 mt-1">{ghStars} ★</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </section>
   );
 };

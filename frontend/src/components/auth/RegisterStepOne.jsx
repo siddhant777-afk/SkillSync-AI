@@ -253,7 +253,7 @@ const RegisterStepOne = ({
           <button
             type="button"
             onClick={() => setFormData((prev) => ({ ...prev, college: "GL Bajaj Institute of Technology and Management" }))}
-            className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 rounded-lg px-2 py-0.5 border border-indigo-200 dark:border-indigo-800 transition"
+            className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 rounded-lg px-2 py-0.5 border border-indigo-200 dark:border-indigo-800 transition max-w-full text-left truncate"
           >
             + GL Bajaj Institute of Technology and Management
           </button>
