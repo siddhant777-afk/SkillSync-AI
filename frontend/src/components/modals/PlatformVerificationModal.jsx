@@ -30,7 +30,7 @@ const PLATFORM_CONFIGS = [
       "Open your profile settings at leetcode.com/profile/.",
       "Under Privacy Settings, ensure your profile visibility is set to Public.",
       "Enter your exact LeetCode username (not your email).",
-      "Click 'Verify & Extract Live Stats' to sync your total problems, DP depth, and rank.",
+      "Click 'Verify & Extract Live Stats' to sync your total problems, advanced topics depth, and contest rating.",
     ],
   },
   {

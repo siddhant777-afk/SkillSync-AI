@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link2, Mail, MapPin, Pencil, Target, RefreshCw, ShieldCheck, CheckCircle2, AlertCircle } from "lucide-react";
+import { Link2, Mail, MapPin, Pencil, Target, RefreshCw, ShieldCheck, CheckCircle2, AlertCircle, Star, GitBranch, ExternalLink } from "lucide-react";
 import { FaGithub, FaKaggle } from "react-icons/fa";
 import { SiCodechef, SiCodeforces, SiLeetcode } from "react-icons/si";
 
@@ -12,6 +12,12 @@ const Profile = () => {
   const { user, updateProfile, updateCodingProfiles, syncAccounts, isSyncing, refetch } = useUser();
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [verificationModalOpen, setVerificationModalOpen] = useState(false);
+  const [showAllRepos, setShowAllRepos] = useState(false);
+
+  const ghReposList =
+    user?.github?.repositories_list ||
+    user?.codingProfiles?.github?.repositories_list ||
+    [];
 
   const handleSaveProfile = async (formData) => {
     await updateProfile({
@@ -50,7 +56,9 @@ const Profile = () => {
       verified: lcVerified,
       icon: SiLeetcode,
       iconColor: "text-amber-500",
-      stats: lcUser ? `${user?.leetcode?.solved ?? 0} solved · ${user?.leetcode?.rank || "Unranked"}` : "0 activity recorded",
+      stats: lcUser
+        ? `${user?.leetcode?.solved ?? 0} solved · Contest: ${user?.leetcode?.contest_rating ? `${user?.leetcode?.contest_rating} pts (${user?.leetcode?.contest_badge || user?.leetcode?.rank})` : (user?.leetcode?.rank || "Unrated")}`
+        : "0 activity recorded",
     },
     {
       id: "github",
@@ -59,7 +67,9 @@ const Profile = () => {
       verified: ghVerified,
       icon: FaGithub,
       iconColor: "text-slate-900 dark:text-white",
-      stats: ghUser ? `${user?.github?.contributions ?? 0} contribs · ${user?.github?.repositories ?? 0} repos` : "0 activity recorded",
+      stats: ghUser
+        ? `${user?.github?.commits ?? user?.github?.contributions ?? 0} commits · ${user?.github?.repositories ?? 0} repos`
+        : "0 activity recorded",
     },
     {
       id: "codeforces",
@@ -68,7 +78,9 @@ const Profile = () => {
       verified: cfVerified,
       icon: SiCodeforces,
       iconColor: "text-blue-600 dark:text-blue-400",
-      stats: cfUser ? `Rating: ${user?.codeforces?.rating ?? 0} (${user?.codeforces?.title || "Unrated"})` : "0 activity recorded",
+      stats: cfUser
+        ? `Contest: ${user?.codeforces?.rating ?? 0} (${user?.codeforces?.title || "Unrated"}) · ${user?.codeforces?.solved ?? 0} solved`
+        : "0 activity recorded",
     },
     {
       id: "codechef",
@@ -77,7 +89,9 @@ const Profile = () => {
       verified: ccVerified,
       icon: SiCodechef,
       iconColor: "text-amber-700 dark:text-amber-500",
-      stats: ccUser ? `Rating: ${user?.codechef?.rating ?? 0} (${user?.codechef?.title || "Unrated"})` : "0 activity recorded",
+      stats: ccUser
+        ? `Contest: ${user?.codechef?.rating ?? 0} (${user?.codechef?.stars || user?.codechef?.title || "Unrated"}) · ${user?.codechef?.solved ?? 0} solved`
+        : "0 activity recorded",
     },
     {
       id: "kaggle",
@@ -86,7 +100,7 @@ const Profile = () => {
       verified: kgVerified,
       icon: FaKaggle,
       iconColor: "text-sky-500",
-      stats: kgUser ? `${user?.kaggle?.notebooks ?? 0} notebooks` : "0 activity recorded",
+      stats: kgUser ? `${user?.kaggle?.notebooks ?? 0} notebooks · ${user?.kaggle?.tier || "Contributor"}` : "0 activity recorded",
     },
   ];
 
@@ -303,6 +317,72 @@ const Profile = () => {
           ))}
         </div>
       </section>
+
+      {/* Verified GitHub Repositories Showcase */}
+      {ghReposList && ghReposList.length > 0 && (
+        <section className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm transition-colors duration-200 dark:border-slate-800 dark:bg-slate-900">
+          <div className="mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <FaGithub size={20} className="text-slate-900 dark:text-white" />
+              <div>
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+                  Verified GitHub Repositories & Projects
+                </h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Extracted live with verified commit history and open-source project links ({ghReposList.length} total)
+                </p>
+              </div>
+            </div>
+            {ghReposList.length > 6 && (
+              <button
+                type="button"
+                onClick={() => setShowAllRepos((prev) => !prev)}
+                className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline self-start sm:self-auto"
+              >
+                {showAllRepos ? "Show Fewer" : `View All (${ghReposList.length}) →`}
+              </button>
+            )}
+          </div>
+
+          <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 min-w-0">
+            {(showAllRepos ? ghReposList : ghReposList.slice(0, 6)).map((repo) => (
+              <a
+                key={repo.name}
+                href={repo.html_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex flex-col justify-between rounded-xl bg-slate-50/50 dark:bg-slate-850/40 p-4 border border-slate-100 dark:border-slate-800 hover:border-indigo-400 dark:hover:border-indigo-500 transition shadow-2xs hover:shadow-xs min-w-0"
+              >
+                <div>
+                  <div className="flex items-center justify-between gap-1.5">
+                    <span className="text-sm font-bold text-slate-900 dark:text-white truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
+                      {repo.name}
+                    </span>
+                    <ExternalLink size={13} className="text-slate-400 group-hover:text-indigo-500 shrink-0" />
+                  </div>
+                  <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400 line-clamp-2 min-h-[32px]">
+                    {repo.description || "Open source project on GitHub"}
+                  </p>
+                </div>
+
+                <div className="mt-3.5 pt-2.5 border-t border-slate-200/60 dark:border-slate-800 flex items-center justify-between text-xs text-slate-400">
+                  <span className="font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded text-[11px]">
+                    {repo.language || "Code"}
+                  </span>
+                  <div className="flex items-center gap-3">
+                    <span className="flex items-center gap-1 font-medium text-amber-600 dark:text-amber-400">
+                      <Star size={12} /> {repo.stars}
+                    </span>
+                    <span className="flex items-center gap-1 font-medium text-slate-400">
+                      <GitBranch size={12} /> {repo.forks}
+                    </span>
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Profile Edit Modal */}
       <EditProfileModal

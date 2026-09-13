@@ -3,6 +3,18 @@
 // SkillSync AI
 // ===============================
 
+export const COLLEGE_OPTIONS = [
+  { label: "GL Bajaj Institute of Technology and Management", value: "GL Bajaj Institute of Technology and Management" },
+  { label: "Delhi Technological University (DTU)", value: "Delhi Technological University (DTU)" },
+  { label: "IIT Delhi", value: "IIT Delhi" },
+  { label: "BITS Pilani", value: "BITS Pilani" },
+  { label: "IIIT Hyderabad", value: "IIIT Hyderabad" },
+  { label: "NIT Trichy", value: "NIT Trichy" },
+  { label: "IIT Bombay", value: "IIT Bombay" },
+  { label: "Netaji Subhas University of Technology (NSUT)", value: "Netaji Subhas University of Technology (NSUT)" },
+  { label: "Other / Autonomous College", value: "Other" },
+];
+
 export const BRANCH_OPTIONS = [
   { label: "Computer Science Engineering", value: "CSE" },
   { label: "Artificial Intelligence & Machine Learning", value: "AIML" },

@@ -151,7 +151,7 @@ const JobRecommendations = () => {
         "Target Benchmark": selectedRole.minDsa || 150,
       },
       {
-        metric: "DP & Advanced",
+        metric: "Advanced Topics",
         "Your Preparation": studentDp,
         "Target Benchmark": selectedRole.minDp || 25,
       },
@@ -193,7 +193,7 @@ const JobRecommendations = () => {
         fullMark: 100,
       },
       {
-        subject: "DP & Graph Depth",
+        subject: "Advanced Topics",
         Student: Math.min(100, Math.round((studentDp / (selectedRole.minDp || 25)) * 100)),
         Benchmark: 100,
         fullMark: 100,
@@ -232,7 +232,7 @@ const JobRecommendations = () => {
       <PageHeader
         eyebrow="Placement Intelligence"
         title="Real-Time Job Match & Skill Gap Radar"
-        description="Dynamic career role matching computed live against your verified DSA depth (DP vs basics), technical skills across sectors, and projects."
+        description="Dynamic career role matching computed live against your verified DSA depth, advanced topics mastery, technical skills across sectors, and projects."
         action={
           <div className="flex flex-wrap items-center gap-2.5">
             <button
@@ -279,13 +279,13 @@ const JobRecommendations = () => {
 
         <div className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs min-w-0">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">DP & Advanced Depth</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Advanced Topics Depth</span>
             <BrainCircuit size={18} className="text-purple-600 dark:text-purple-400" />
           </div>
           <p className="mt-2 text-2xl sm:text-3xl font-black text-purple-600 dark:text-purple-400 whitespace-nowrap">
             {data?.dpSolved ?? user?.leetcode?.topic_counts?.dp_specific ?? 16}
           </p>
-          <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 truncate">Dynamic programming / Graphs</p>
+          <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 truncate">Advanced algorithmic topics</p>
         </div>
 
         <div className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs min-w-0">
@@ -470,7 +470,7 @@ const JobRecommendations = () => {
                 Candidate Preparation vs {selectedRole.title} Benchmark
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Real-time gap comparison using your live LeetCode stats, DP problems, and verified skills.
+                Real-time gap comparison using your live LeetCode stats, advanced topics problems, and verified skills.
               </p>
             </div>
 
@@ -770,7 +770,7 @@ const JobRecommendations = () => {
               <tr>
                 <th className="py-3 px-4">Role & Sector</th>
                 <th className="py-3 px-4">Match Alignment</th>
-                <th className="py-3 px-4">Threshold (DSA / DP)</th>
+                <th className="py-3 px-4">Threshold (DSA / Advanced)</th>
                 <th className="py-3 px-4">Verified Skills</th>
                 <th className="py-3 px-4">Missing Skills (Gaps)</th>
                 <th className="py-3 px-4">Top Companies</th>
@@ -820,7 +820,7 @@ const JobRecommendations = () => {
 
                     <td className="py-3.5 px-4 whitespace-nowrap">
                       <span className="font-semibold text-slate-700 dark:text-slate-300">
-                        {r.minDsa}+ DSA / {r.minDp}+ DP
+                        {r.minDsa}+ DSA / {r.minDp}+ Adv
                       </span>
                     </td>
 

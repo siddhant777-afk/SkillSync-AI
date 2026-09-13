@@ -47,7 +47,7 @@ const Leaderboard = () => {
       <PageHeader
         eyebrow="Inter-College Competition"
         title="Student Leaderboard & Rankings"
-        description="Real-time multi-college rankings evaluated by verified algorithmic problem solving, DP vs basics topic depth, and competitive contest ratings."
+        description="Real-time multi-college rankings evaluated by verified algorithmic problem solving, advanced topics depth, and competitive contest ratings."
         action={
           <div className="inline-flex items-center gap-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 px-3.5 py-2 text-xs font-semibold text-indigo-700 dark:text-indigo-300 shadow-xs">
             <Sparkles size={15} /> Verified Platform Benchmarks
@@ -93,7 +93,7 @@ const Leaderboard = () => {
             className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-850 px-3.5 py-2.5 text-sm font-medium text-indigo-700 dark:text-indigo-300 outline-none focus:border-indigo-500"
           >
             <option value="dsa">🔥 Total DSA Solved</option>
-            <option value="dp_advanced">🧠 DP & Advanced Depth</option>
+            <option value="advanced_topics">🧠 Advanced Topics Depth</option>
             <option value="contest">🏆 Contest Rating (Codeforces)</option>
             <option value="readiness">⚡ Placement Readiness</option>
           </select>
@@ -142,7 +142,7 @@ const Leaderboard = () => {
                     <p className="text-sm sm:text-base font-extrabold text-slate-800 dark:text-slate-200 whitespace-nowrap">{data.topPodium[1].leetcodeSolved}</p>
                   </div>
                   <div className="rounded-xl bg-white dark:bg-slate-900 p-2 border border-slate-100 dark:border-slate-800 min-w-0">
-                    <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold uppercase truncate">DP / Adv</p>
+                    <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold uppercase truncate">Adv Topics</p>
                     <p className="text-sm sm:text-base font-extrabold text-indigo-600 dark:text-indigo-400 whitespace-nowrap">{data.topPodium[1].dpSolved}</p>
                   </div>
                 </div>
@@ -170,7 +170,7 @@ const Leaderboard = () => {
                     <p className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white whitespace-nowrap">{data.topPodium[0].leetcodeSolved}</p>
                   </div>
                   <div className="rounded-xl bg-amber-50/80 dark:bg-slate-900 p-2 border border-amber-100 dark:border-slate-800 min-w-0">
-                    <p className="text-[10px] text-amber-700 dark:text-amber-400 font-bold uppercase truncate">DP / Adv</p>
+                    <p className="text-[10px] text-amber-700 dark:text-amber-400 font-bold uppercase truncate">Adv Topics</p>
                     <p className="text-sm sm:text-base font-extrabold text-indigo-600 dark:text-indigo-400 whitespace-nowrap">{data.topPodium[0].dpSolved}</p>
                   </div>
                   <div className="rounded-xl bg-amber-50/80 dark:bg-slate-900 p-2 border border-amber-100 dark:border-slate-800 min-w-0">
@@ -202,7 +202,7 @@ const Leaderboard = () => {
                     <p className="text-sm sm:text-base font-extrabold text-slate-800 dark:text-slate-200 whitespace-nowrap">{data.topPodium[2].leetcodeSolved}</p>
                   </div>
                   <div className="rounded-xl bg-white dark:bg-slate-900 p-2 border border-slate-100 dark:border-slate-800 min-w-0">
-                    <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold uppercase truncate">DP / Adv</p>
+                    <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold uppercase truncate">Adv Topics</p>
                     <p className="text-sm sm:text-base font-extrabold text-indigo-600 dark:text-indigo-400 whitespace-nowrap">{data.topPodium[2].dpSolved}</p>
                   </div>
                 </div>
@@ -222,7 +222,7 @@ const Leaderboard = () => {
                     <th className="px-5 py-4">Rank</th>
                     <th className="px-5 py-4">Student & College</th>
                     <th className="px-5 py-4 text-center">DSA Solved</th>
-                    <th className="px-5 py-4 text-center">DP / Advanced</th>
+                    <th className="px-5 py-4 text-center">Advanced Topics</th>
                     <th className="px-5 py-4 text-center">Contest Rating</th>
                     <th className="px-5 py-4 text-center">Placement Score</th>
                     <th className="px-5 py-4 text-right">Status</th>

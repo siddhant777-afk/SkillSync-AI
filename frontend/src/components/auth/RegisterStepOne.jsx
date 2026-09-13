@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import FormInput from "./FormInput";
 import FormSelect from "./FormSelect";
-import { BRANCH_OPTIONS, YEAR_OPTIONS } from "../../data/registerOptions";
+import { BRANCH_OPTIONS, COLLEGE_OPTIONS, YEAR_OPTIONS } from "../../data/registerOptions";
 import authService from "../../services/authService";
 import { CheckCircle2, Mail, RefreshCw, Send, ShieldAlert, ShieldCheck } from "lucide-react";
 import toast from "react-hot-toast";
@@ -228,14 +228,38 @@ const RegisterStepOne = ({
         />
       </div>
 
-      <FormInput
-        label="College / Institution (Optional)"
-        name="college"
-        value={formData.college}
-        onChange={handleChange}
-        placeholder="e.g. GL Bajaj Institute of Technology (can fill later from web)"
-        error={errors.college}
-      />
+      <div>
+        <label className="block text-xs font-semibold text-slate-700 dark:text-slate-200 mb-1.5">
+          College / Institution (Optional)
+        </label>
+        <div className="relative">
+          <input
+            type="text"
+            name="college"
+            list="college-options-list"
+            value={formData.college}
+            onChange={handleChange}
+            placeholder="Select or type your college..."
+            className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-xs sm:text-sm text-slate-900 dark:text-white outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition"
+          />
+          <datalist id="college-options-list">
+            {COLLEGE_OPTIONS.map((c) => (
+              <option key={c.value} value={c.label} />
+            ))}
+          </datalist>
+        </div>
+        <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+          <span className="text-[11px] text-slate-400">Featured:</span>
+          <button
+            type="button"
+            onClick={() => setFormData((prev) => ({ ...prev, college: "GL Bajaj Institute of Technology and Management" }))}
+            className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 rounded-lg px-2 py-0.5 border border-indigo-200 dark:border-indigo-800 transition"
+          >
+            + GL Bajaj Institute of Technology and Management
+          </button>
+        </div>
+        {errors.college && <p className="mt-1 text-xs text-rose-500">{errors.college}</p>}
+      </div>
 
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
         <FormSelect

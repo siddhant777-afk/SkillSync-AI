@@ -12,6 +12,24 @@ router = APIRouter()
 # Multi-college benchmark profiles for peer comparison
 BENCHMARK_STUDENTS = [
     {
+        "id": 100,
+        "name": "Subhi Sharma",
+        "college": "GL Bajaj Institute of Technology and Management",
+        "branch": "Computer Science Engineering",
+        "year": "4th Year",
+        "leetcodeSolved": 620,
+        "dpSolved": 92,
+        "advancedTopicsSolved": 92,
+        "algorithmicDepth": 95,
+        "codeforcesRating": 1750,
+        "codeforcesRank": "Expert",
+        "githubContributions": 850,
+        "placementReadiness": 96,
+        "badges": ["Advanced Topics Specialist", "Codeforces Expert"],
+        "nonDsaAchievement": "Winner - National Smart India Hackathon 2024",
+        "verified": True,
+    },
+    {
         "id": 101,
         "name": "Aarav Gupta",
         "college": "Delhi Technological University (DTU)",
@@ -210,6 +228,9 @@ def get_multi_college_leaderboard(
             s["college"] = college_map[key]
 
     all_colleges = sorted(list(college_map.values()))
+    target_college = "GL Bajaj Institute of Technology and Management"
+    if target_college not in all_colleges:
+        all_colleges.insert(0, target_college)
 
     branch_map = {}
     for s in all_students:
@@ -247,8 +268,8 @@ def get_multi_college_leaderboard(
         filtered.sort(key=lambda s: (s["codeforcesRating"], s["leetcodeSolved"]), reverse=True)
     elif sort_by == "readiness":
         filtered.sort(key=lambda s: (s["placementReadiness"], s["leetcodeSolved"]), reverse=True)
-    elif sort_by == "dp_advanced":
-        filtered.sort(key=lambda s: (s["dpSolved"], s["algorithmicDepth"], s["leetcodeSolved"]), reverse=True)
+    elif sort_by in ("dp_advanced", "advanced_topics"):
+        filtered.sort(key=lambda s: (s.get("advancedTopicsSolved", s.get("dpSolved", 0)), s["algorithmicDepth"], s["leetcodeSolved"]), reverse=True)
     else:  # default 'dsa'
         filtered.sort(key=lambda s: (s["leetcodeSolved"], s["algorithmicDepth"]), reverse=True)
 

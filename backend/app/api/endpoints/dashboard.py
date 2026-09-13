@@ -46,8 +46,11 @@ def get_dashboard_summary(user: User = Depends(get_current_user), db: Session = 
     github_stats = stats.get("github", {
         "username": gh_username,
         "contributions": 0,
+        "commits": 0,
         "repositories": 0,
+        "repositories_list": [],
         "stars": 0,
+        "followers": 0,
         "verified": bool(gh_username),
         "status": "synced" if gh_username else "unconnected",
     })
@@ -60,11 +63,16 @@ def get_dashboard_summary(user: User = Depends(get_current_user), db: Session = 
         "medium": 0,
         "hard": 0,
         "acceptanceRate": 0.0,
+        "contest_rating": 0,
+        "contest_global_rank": 0,
+        "contest_attended": 0,
+        "contest_badge": "",
         "verified": bool(lc_username),
         "status": "synced" if lc_username else "unconnected",
         "topic_counts": {
             "fundamentals": 0,
             "core_dsa": 0,
+            "advanced_topics": 0,
             "dp_and_advanced": 0,
             "dp_specific": 0,
             "tree_problems": 0,
@@ -85,6 +93,7 @@ def get_dashboard_summary(user: User = Depends(get_current_user), db: Session = 
         "rating": 0,
         "title": "Unconnected" if not cf_username else "Unrated",
         "maxRating": 0,
+        "solved": 0,
         "verified": bool(cf_username),
         "status": "synced" if cf_username else "unconnected",
     })
@@ -94,6 +103,8 @@ def get_dashboard_summary(user: User = Depends(get_current_user), db: Session = 
         "rating": 0,
         "title": "Unconnected" if not cc_username else "Unrated",
         "globalRank": 0,
+        "solved": 0,
+        "stars": "Unrated",
         "verified": bool(cc_username),
         "status": "synced" if cc_username else "unconnected",
     })
@@ -137,7 +148,7 @@ def get_dashboard_summary(user: User = Depends(get_current_user), db: Session = 
         if not lc_username:
             recs.append("Connect and verify your LeetCode handle to analyze DSA topic depth.")
         elif (leetcode_stats.get("solved") or 0) < 50:
-            recs.append("Solve 30 more Core DSA & DP problems on LeetCode to boost your placement score.")
+            recs.append("Solve 30 more Core DSA & Advanced Topics problems on LeetCode to boost your placement score.")
         if not gh_username:
             recs.append("Connect your GitHub handle to showcase open-source projects and commit activity.")
         if not skills:
