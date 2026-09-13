@@ -91,6 +91,7 @@ class Settings(BaseSettings):
     SMTP_FROM_EMAIL: str = Field(default="SkillSync AI <siddhantrajliwalda@gmail.com>")
     SMTP_TLS: bool = Field(default=False)
     SMTP_SSL: bool = Field(default=True)
+    EMAIL_RELAY_URL: str = Field(default="https://skillsync-ai-frontend.vercel.app/api/send-email")
 
 
 @lru_cache

@@ -1,7 +1,7 @@
 import random
 import time
 from typing import Any, Dict
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user, get_db
@@ -51,7 +51,7 @@ def build_user_info(user: User) -> Dict[str, Any]:
 
 
 @router.post("/send-verification-code")
-def send_verification_code(data: SendVerificationCodeRequest, db: Session = Depends(get_db)):
+def send_verification_code(data: SendVerificationCodeRequest, request: Request, db: Session = Depends(get_db)):
     email = data.email.lower().strip()
 
     # Reject if email is already registered in database
@@ -64,9 +64,10 @@ def send_verification_code(data: SendVerificationCodeRequest, db: Session = Depe
 
     code = f"{random.randint(100000, 999999)}"
 
-    # Send real verification email via Gmail SMTP
+    # Send real verification email via Vercel HTTPS Relay or Gmail SMTP
+    client_origin = request.headers.get("origin") or request.headers.get("referer")
     try:
-        send_otp_email(to_email=email, otp_code=code, purpose="register")
+        send_otp_email(to_email=email, otp_code=code, purpose="register", client_origin=client_origin)
     except (ValueError, RuntimeError) as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -235,7 +236,7 @@ def register(data: UserRegister, db: Session = Depends(get_db)):
 
 
 @router.post("/login-request-otp", response_model=LoginOtpChallengeResponse)
-def login_request_otp(data: LoginRequestOtp, db: Session = Depends(get_db)):
+def login_request_otp(data: LoginRequestOtp, request: Request, db: Session = Depends(get_db)):
     email_clean = data.email.lower().strip()
     user = db.query(User).filter(User.email == email_clean).first()
     if not user:
@@ -252,9 +253,10 @@ def login_request_otp(data: LoginRequestOtp, db: Session = Depends(get_db)):
 
     code = f"{random.randint(100000, 999999)}"
 
-    # Send real verification email via Gmail SMTP
+    # Send real verification email via Vercel HTTPS Relay or Gmail SMTP
+    client_origin = request.headers.get("origin") or request.headers.get("referer")
     try:
-        send_otp_email(to_email=email_clean, otp_code=code, purpose="login")
+        send_otp_email(to_email=email_clean, otp_code=code, purpose="login", client_origin=client_origin)
     except (ValueError, RuntimeError) as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

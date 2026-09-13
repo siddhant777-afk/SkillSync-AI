@@ -1,5 +1,7 @@
+import json
 import logging
 import smtplib
+import urllib.request
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
@@ -95,24 +97,17 @@ def validate_email_deliverability(email: str) -> str:
         raise ValueError(f"Invalid email: {str(e)}")
 
 
-def send_otp_email(to_email: str, otp_code: str, purpose: str = "login") -> bool:
+def send_otp_email(to_email: str, otp_code: str, purpose: str = "login", client_origin: str = None) -> bool:
     """
     Sends an OTP verification email to the user's real email address.
-    Connects to Gmail SMTP via SSL (port 465) with TLS (port 587) fallback.
-    Raises ValueError if email is invalid or RuntimeError if SMTP delivery fails.
+    1. Attempts dispatch via the HTTPS Vercel email relay (port 443, bypasses Render SMTP port blocks).
+    2. Falls back to direct SMTP via SSL (port 465) and STARTTLS (port 587) when running locally or if relay is unavailable.
+    Raises ValueError if email is invalid or RuntimeError if delivery fails.
     """
     normalized_email = validate_email_deliverability(to_email)
 
     title_text = "Two-Step Verification" if purpose == "login" else "Email Verification"
     subject = f"SkillSync AI: {otp_code} is your verification code"
-
-    if not (settings.SMTP_HOST and settings.SMTP_USER and settings.SMTP_PASSWORD):
-        raise RuntimeError("SMTP email service is not configured on the server.")
-
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = subject
-    msg["From"] = settings.SMTP_FROM_EMAIL or f"SkillSync AI <{settings.SMTP_USER}>"
-    msg["To"] = normalized_email
 
     text_content = (
         f"SkillSync AI {title_text}\n\n"
@@ -121,6 +116,52 @@ def send_otp_email(to_email: str, otp_code: str, purpose: str = "login") -> bool
     )
     html_content = generate_amazon_style_html(otp_code, purpose=purpose, email=normalized_email)
 
+    # Strategy 1: Dispatch via Vercel HTTPS Email Relay over port 443 (Render cloud firewall allows port 443)
+    relay_urls = []
+    if client_origin and "localhost" not in client_origin and "127.0.0.1" not in client_origin:
+        relay_urls.append(f"{client_origin.rstrip('/')}/api/send-email")
+    if getattr(settings, "EMAIL_RELAY_URL", None):
+        if settings.EMAIL_RELAY_URL not in relay_urls:
+            relay_urls.append(settings.EMAIL_RELAY_URL)
+    # Default Vercel production deployment URL fallback
+    default_relay = "https://skillsync-ai-frontend.vercel.app/api/send-email"
+    if default_relay not in relay_urls:
+        relay_urls.append(default_relay)
+
+    for relay_url in relay_urls:
+        try:
+            req_data = json.dumps({
+                "to": normalized_email,
+                "subject": subject,
+                "text": text_content,
+                "html": html_content,
+                "secret": "skillsync-relay-secret-2026",
+            }).encode("utf-8")
+            req = urllib.request.Request(
+                relay_url,
+                data=req_data,
+                headers={
+                    "Content-Type": "application/json",
+                    "x-relay-secret": "skillsync-relay-secret-2026",
+                    "User-Agent": "SkillSync-Backend/1.0",
+                },
+                method="POST",
+            )
+            with urllib.request.urlopen(req, timeout=12) as response:
+                if response.status == 200:
+                    logger.info(f"Successfully delivered OTP email to {normalized_email} via HTTPS Relay ({relay_url})")
+                    return True
+        except Exception as relay_err:
+            logger.warning(f"HTTPS email relay via {relay_url} failed: {relay_err}. Trying next option...")
+
+    # Strategy 2 & 3: Direct SMTP (SSL 465, TLS 587) - Works locally and in open networks
+    if not (settings.SMTP_HOST and settings.SMTP_USER and settings.SMTP_PASSWORD):
+        raise RuntimeError("SMTP email service is not configured on the server.")
+
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = subject
+    msg["From"] = settings.SMTP_FROM_EMAIL or f"SkillSync AI <{settings.SMTP_USER}>"
+    msg["To"] = normalized_email
     msg.attach(MIMEText(text_content, "plain"))
     msg.attach(MIMEText(html_content, "html"))
 
@@ -130,7 +171,7 @@ def send_otp_email(to_email: str, otp_code: str, purpose: str = "login") -> bool
     ssl_err_info = None
     tls_err_info = None
 
-    # Strategy 1: Connect via SMTP_SSL on port 465 (preferred in cloud environments like Render)
+    # Strategy 2: Connect via SMTP_SSL on port 465
     try:
         with smtplib.SMTP_SSL(settings.SMTP_HOST, 465, timeout=10) as server:
             server.login(clean_user, clean_pass)
@@ -141,7 +182,7 @@ def send_otp_email(to_email: str, otp_code: str, purpose: str = "login") -> bool
         ssl_err_info = f"{type(ssl_err).__name__}: {ssl_err}"
         logger.warning(f"SMTP_SSL port 465 failed: {ssl_err}. Trying port 587 STARTTLS...")
 
-    # Strategy 2: Connect via SMTP on port 587 with STARTTLS
+    # Strategy 3: Connect via SMTP on port 587 with STARTTLS
     try:
         with smtplib.SMTP(settings.SMTP_HOST, 587, timeout=10) as server:
             server.starttls()
@@ -153,7 +194,6 @@ def send_otp_email(to_email: str, otp_code: str, purpose: str = "login") -> bool
         tls_err_info = f"{type(tls_err).__name__}: {tls_err}"
         logger.error(f"Both SMTP ports failed to deliver email to {normalized_email}: {tls_err}")
         raise RuntimeError(
-            f"Could not send email to {normalized_email}. "
-            f"[Host={settings.SMTP_HOST}, User={settings.SMTP_USER}, "
-            f"SSL_err={ssl_err_info}, TLS_err={tls_err_info}]"
+            f"Could not deliver verification email to {normalized_email}. "
+            f"Please ensure your email address is correct and can receive mail."
         )
