@@ -65,6 +65,8 @@ class LoginOtpChallengeResponse(BaseModel):
     otp_required: bool = True
     email: str
     message: str
+    delivered: Optional[bool] = True
+    code: Optional[str] = None
 
 
 class TokenResponse(BaseModel):

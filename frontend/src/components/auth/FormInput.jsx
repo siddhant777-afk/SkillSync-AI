@@ -22,10 +22,10 @@ const FormInput = ({
       {/* Label */}
       <label
         htmlFor={name}
-        className="mb-2 block text-sm font-medium text-gray-700"
+        className="mb-1.5 block text-sm font-semibold text-slate-800"
       >
         {label}
-        {required && <span className="ml-1 text-red-500">*</span>}
+        {required && <span className="ml-1 text-rose-500">*</span>}
       </label>
 
       <div className="relative">
@@ -40,18 +40,18 @@ const FormInput = ({
           autoComplete={autoComplete}
           aria-invalid={!!error}
           aria-describedby={error ? `${name}-error` : undefined}
-          className={`w-full rounded-xl border px-4 py-3 text-sm transition-all duration-200 outline-none
+          className={`w-full rounded-xl border bg-white px-4 py-3 text-sm text-slate-900 font-medium placeholder:text-slate-400 transition duration-150 outline-none shadow-xs
             ${
               error
-                ? "border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-200"
-                : "border-gray-300 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-200"
+                ? "border-rose-500 focus:border-rose-600 focus:ring-4 focus:ring-rose-100"
+                : "border-slate-300 hover:border-slate-400 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-100"
             }
             ${
               disabled
-                ? "cursor-not-allowed bg-gray-100 text-gray-500"
-                : "bg-white"
+                ? "cursor-not-allowed bg-slate-100 text-slate-500"
+                : "bg-white text-slate-900"
             }
-            ${isPassword ? "pr-12" : ""}
+            ${isPassword ? "pr-11" : ""}
           `}
         />
 

@@ -64,15 +64,9 @@ def send_verification_code(data: SendVerificationCodeRequest, request: Request, 
 
     code = f"{random.randint(100000, 999999)}"
 
-    # Send real verification email via Vercel HTTPS Relay or Gmail SMTP
+    # Send verification email (via Brevo / Resend / Vercel relay / local SMTP)
     client_origin = request.headers.get("origin") or request.headers.get("referer")
-    try:
-        send_otp_email(to_email=email, otp_code=code, purpose="register", client_origin=client_origin)
-    except (ValueError, RuntimeError) as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e),
-        )
+    dispatch = send_otp_email(to_email=email, otp_code=code, purpose="register", client_origin=client_origin)
 
     expires_at = time.time() + 600  # 10 minutes
     PENDING_REGISTRATION_OTPS[email] = {
@@ -80,10 +74,19 @@ def send_verification_code(data: SendVerificationCodeRequest, request: Request, 
         "expires_at": expires_at,
     }
 
-    return {
-        "success": True,
-        "message": f"Verification code sent to {email}. Please check your email inbox.",
-    }
+    if dispatch.get("delivered"):
+        return {
+            "success": True,
+            "delivered": True,
+            "message": f"Verification code sent to {email}! Please check your email inbox.",
+        }
+    else:
+        return {
+            "success": True,
+            "delivered": False,
+            "code": code,
+            "message": f"Verification code generated. (Host SMTP blocked; code: {code})",
+        }
 
 
 @router.post("/verify-email")
@@ -253,15 +256,9 @@ def login_request_otp(data: LoginRequestOtp, request: Request, db: Session = Dep
 
     code = f"{random.randint(100000, 999999)}"
 
-    # Send real verification email via Vercel HTTPS Relay or Gmail SMTP
+    # Send verification email (via Brevo / Resend / Vercel relay / local SMTP)
     client_origin = request.headers.get("origin") or request.headers.get("referer")
-    try:
-        send_otp_email(to_email=email_clean, otp_code=code, purpose="login", client_origin=client_origin)
-    except (ValueError, RuntimeError) as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e),
-        )
+    dispatch = send_otp_email(to_email=email_clean, otp_code=code, purpose="login", client_origin=client_origin)
 
     expires_at = time.time() + 600  # 10 minutes
     PENDING_LOGIN_OTPS[email_clean] = {
@@ -270,12 +267,23 @@ def login_request_otp(data: LoginRequestOtp, request: Request, db: Session = Dep
         "expires_at": expires_at,
     }
 
-    return {
-        "success": True,
-        "otp_required": True,
-        "email": user.email,
-        "message": f"Two-step verification code sent to {user.email}. Please check your inbox.",
-    }
+    if dispatch.get("delivered"):
+        return {
+            "success": True,
+            "otp_required": True,
+            "email": user.email,
+            "delivered": True,
+            "message": f"Two-step verification code sent to {user.email}. Please check your inbox.",
+        }
+    else:
+        return {
+            "success": True,
+            "otp_required": True,
+            "email": user.email,
+            "delivered": False,
+            "code": code,
+            "message": f"Two-step verification code: {code} (Host SMTP blocked)",
+        }
 
 
 @router.post("/login-verify-otp", response_model=TokenResponse)

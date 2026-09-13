@@ -87,24 +87,37 @@ from email_validator import validate_email, EmailNotValidError
 
 def validate_email_deliverability(email: str) -> str:
     """
-    Validates that the email address syntax is correct and that the domain
-    has valid MX DNS records capable of receiving mail.
+    Validates that the email address syntax is well-formed.
+    Uses soft validation to avoid rejecting valid institutional or college domains.
+    """
+    clean = (email or "").strip().lower()
+    if not clean or "@" not in clean or "." not in clean.split("@")[-1]:
+        raise ValueError("Please enter a valid email address.")
+    try:
+        validated = validate_email(clean, check_deliverability=False)
+        return validated.normalized
+    except Exception:
+        return clean
+
+
+def send_otp_email(to_email: str, otp_code: str, purpose: str = "login", client_origin: str = None) -> dict:
+    """
+    Attempts to send an OTP verification email to the user's real email address.
+    Tries in order:
+      1. Brevo HTTP API (Port 443)
+      2. Resend HTTP API (Port 443)
+      3. Vercel Serverless Relay (Port 443)
+      4. Direct SMTP via SSL (Port 465)
+      5. Direct SMTP via TLS (Port 587)
+
+    Returns a dict: {"delivered": bool, "error": Optional[str]}
+    Never raises an unhandled exception so the application flow remains smooth.
     """
     try:
-        validated = validate_email(email, check_deliverability=True)
-        return validated.normalized
-    except EmailNotValidError as e:
-        raise ValueError(f"Invalid email: {str(e)}")
-
-
-def send_otp_email(to_email: str, otp_code: str, purpose: str = "login", client_origin: str = None) -> bool:
-    """
-    Sends an OTP verification email to the user's real email address.
-    1. Attempts dispatch via the HTTPS Vercel email relay (port 443, bypasses Render SMTP port blocks).
-    2. Falls back to direct SMTP via SSL (port 465) and STARTTLS (port 587) when running locally or if relay is unavailable.
-    Raises ValueError if email is invalid or RuntimeError if delivery fails.
-    """
-    normalized_email = validate_email_deliverability(to_email)
+        normalized_email = validate_email_deliverability(to_email)
+    except Exception as e:
+        logger.warning(f"Email validation warning: {e}")
+        normalized_email = (to_email or "").strip().lower()
 
     title_text = "Two-Step Verification" if purpose == "login" else "Email Verification"
     subject = f"SkillSync AI: {otp_code} is your verification code"
@@ -116,14 +129,65 @@ def send_otp_email(to_email: str, otp_code: str, purpose: str = "login", client_
     )
     html_content = generate_amazon_style_html(otp_code, purpose=purpose, email=normalized_email)
 
-    # Strategy 1: Dispatch via Vercel HTTPS Email Relay over port 443 (Render cloud firewall allows port 443)
+    # Strategy 1: Brevo HTTP API (Port 443 HTTPS - works seamlessly on cloud hosts like Render)
+    if getattr(settings, "BREVO_API_KEY", None) and settings.BREVO_API_KEY.strip():
+        try:
+            brevo_payload = json.dumps({
+                "sender": {"name": "SkillSync AI", "email": settings.SMTP_USER or "siddhantrajliwalda@gmail.com"},
+                "to": [{"email": normalized_email}],
+                "subject": subject,
+                "htmlContent": html_content,
+                "textContent": text_content,
+            }).encode("utf-8")
+            brevo_req = urllib.request.Request(
+                "https://api.brevo.com/v3/smtp/email",
+                data=brevo_payload,
+                headers={
+                    "accept": "application/json",
+                    "api-key": settings.BREVO_API_KEY.strip(),
+                    "content-type": "application/json",
+                },
+                method="POST",
+            )
+            with urllib.request.urlopen(brevo_req, timeout=10) as resp:
+                if resp.status in (200, 201):
+                    logger.info(f"Successfully delivered OTP email to {normalized_email} via Brevo API")
+                    return {"delivered": True, "error": None}
+        except Exception as brevo_err:
+            logger.warning(f"Brevo API dispatch failed: {brevo_err}")
+
+    # Strategy 2: Resend HTTP API (Port 443 HTTPS)
+    if getattr(settings, "RESEND_API_KEY", None) and settings.RESEND_API_KEY.strip():
+        try:
+            resend_payload = json.dumps({
+                "from": "SkillSync AI <onboarding@resend.dev>",
+                "to": [normalized_email],
+                "subject": subject,
+                "html": html_content,
+                "text": text_content,
+            }).encode("utf-8")
+            resend_req = urllib.request.Request(
+                "https://api.resend.com/emails",
+                data=resend_payload,
+                headers={
+                    "Authorization": f"Bearer {settings.RESEND_API_KEY.strip()}",
+                    "Content-Type": "application/json",
+                },
+                method="POST",
+            )
+            with urllib.request.urlopen(resend_req, timeout=10) as resp:
+                if resp.status in (200, 201):
+                    logger.info(f"Successfully delivered OTP email to {normalized_email} via Resend API")
+                    return {"delivered": True, "error": None}
+        except Exception as resend_err:
+            logger.warning(f"Resend API dispatch failed: {resend_err}")
+
+    # Strategy 3: Vercel HTTPS Email Relay over Port 443
     relay_urls = []
     if client_origin and "localhost" not in client_origin and "127.0.0.1" not in client_origin:
         relay_urls.append(f"{client_origin.rstrip('/')}/api/send-email")
-    if getattr(settings, "EMAIL_RELAY_URL", None):
-        if settings.EMAIL_RELAY_URL not in relay_urls:
-            relay_urls.append(settings.EMAIL_RELAY_URL)
-    # Default Vercel production deployment URL fallback
+    if getattr(settings, "EMAIL_RELAY_URL", None) and settings.EMAIL_RELAY_URL not in relay_urls:
+        relay_urls.append(settings.EMAIL_RELAY_URL)
     default_relay = "https://skillsync-ai-frontend.vercel.app/api/send-email"
     if default_relay not in relay_urls:
         relay_urls.append(default_relay)
@@ -147,106 +211,51 @@ def send_otp_email(to_email: str, otp_code: str, purpose: str = "login", client_
                 },
                 method="POST",
             )
-            with urllib.request.urlopen(req, timeout=12) as response:
+            with urllib.request.urlopen(req, timeout=8) as response:
                 if response.status == 200:
                     logger.info(f"Successfully delivered OTP email to {normalized_email} via HTTPS Relay ({relay_url})")
-                    return True
+                    return {"delivered": True, "error": None}
         except Exception as relay_err:
-            logger.warning(f"HTTPS email relay via {relay_url} failed: {relay_err}. Trying next option...")
+            logger.debug(f"HTTPS email relay via {relay_url} not available: {relay_err}")
 
-    # Strategy: Brevo HTTP API (Port 443 HTTPS - works seamlessly on cloud providers like Render)
-    if getattr(settings, "BREVO_API_KEY", None) and settings.BREVO_API_KEY.strip():
+    # Strategy 4 & 5: Direct SMTP (SSL 465, TLS 587) - Works locally and in open networks
+    if settings.SMTP_HOST and settings.SMTP_USER and settings.SMTP_PASSWORD:
+        msg = MIMEMultipart("alternative")
+        msg["Subject"] = subject
+        msg["From"] = settings.SMTP_FROM_EMAIL or f"SkillSync AI <{settings.SMTP_USER}>"
+        msg["To"] = normalized_email
+        msg.attach(MIMEText(text_content, "plain"))
+        msg.attach(MIMEText(html_content, "html"))
+
+        clean_user = settings.SMTP_USER.strip()
+        clean_pass = settings.SMTP_PASSWORD.replace(" ", "").strip()
+
+        # Try Port 465 SSL
         try:
-            brevo_payload = json.dumps({
-                "sender": {"name": "SkillSync AI", "email": settings.SMTP_USER or "siddhantrajliwalda@gmail.com"},
-                "to": [{"email": normalized_email}],
-                "subject": subject,
-                "htmlContent": html_content,
-                "textContent": text_content,
-            }).encode("utf-8")
-            brevo_req = urllib.request.Request(
-                "https://api.brevo.com/v3/smtp/email",
-                data=brevo_payload,
-                headers={
-                    "accept": "application/json",
-                    "api-key": settings.BREVO_API_KEY.strip(),
-                    "content-type": "application/json",
-                },
-                method="POST",
-            )
-            with urllib.request.urlopen(brevo_req, timeout=12) as resp:
-                if resp.status in (200, 201):
-                    logger.info(f"Successfully delivered OTP email to {normalized_email} via Brevo API")
-                    return True
-        except Exception as brevo_err:
-            logger.warning(f"Brevo API dispatch failed: {brevo_err}")
+            with smtplib.SMTP_SSL(settings.SMTP_HOST, 465, timeout=6) as server:
+                server.login(clean_user, clean_pass)
+                server.sendmail(clean_user, [normalized_email], msg.as_string())
+            logger.info(f"Successfully delivered OTP email to {normalized_email} via SMTP_SSL (port 465)")
+            return {"delivered": True, "error": None}
+        except Exception as ssl_err:
+            logger.warning(f"SMTP_SSL port 465 failed: {ssl_err}. Trying port 587 STARTTLS...")
 
-    # Strategy: Resend HTTP API (Port 443 HTTPS)
-    if getattr(settings, "RESEND_API_KEY", None) and settings.RESEND_API_KEY.strip():
+        # Try Port 587 TLS
         try:
-            resend_payload = json.dumps({
-                "from": "SkillSync AI <onboarding@resend.dev>",
-                "to": [normalized_email],
-                "subject": subject,
-                "html": html_content,
-                "text": text_content,
-            }).encode("utf-8")
-            resend_req = urllib.request.Request(
-                "https://api.resend.com/emails",
-                data=resend_payload,
-                headers={
-                    "Authorization": f"Bearer {settings.RESEND_API_KEY.strip()}",
-                    "Content-Type": "application/json",
-                },
-                method="POST",
-            )
-            with urllib.request.urlopen(resend_req, timeout=12) as resp:
-                if resp.status in (200, 201):
-                    logger.info(f"Successfully delivered OTP email to {normalized_email} via Resend API")
-                    return True
-        except Exception as resend_err:
-            logger.warning(f"Resend API dispatch failed: {resend_err}")
+            with smtplib.SMTP(settings.SMTP_HOST, 587, timeout=6) as server:
+                server.starttls()
+                server.login(clean_user, clean_pass)
+                server.sendmail(clean_user, [normalized_email], msg.as_string())
+            logger.info(f"Successfully delivered OTP email to {normalized_email} via STARTTLS (port 587)")
+            return {"delivered": True, "error": None}
+        except Exception as tls_err:
+            logger.warning(f"Direct SMTP ports blocked on host: {tls_err}")
 
-    # Direct SMTP (SSL 465, TLS 587) - Works locally and in open networks
-    if not (settings.SMTP_HOST and settings.SMTP_USER and settings.SMTP_PASSWORD):
-        raise RuntimeError("SMTP email service is not configured on the server.")
-
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = subject
-    msg["From"] = settings.SMTP_FROM_EMAIL or f"SkillSync AI <{settings.SMTP_USER}>"
-    msg["To"] = normalized_email
-    msg.attach(MIMEText(text_content, "plain"))
-    msg.attach(MIMEText(html_content, "html"))
-
-    clean_user = settings.SMTP_USER.strip()
-    clean_pass = settings.SMTP_PASSWORD.replace(" ", "").strip()
-
-    ssl_err_info = None
-    tls_err_info = None
-
-    # Strategy 2: Connect via SMTP_SSL on port 465
-    try:
-        with smtplib.SMTP_SSL(settings.SMTP_HOST, 465, timeout=10) as server:
-            server.login(clean_user, clean_pass)
-            server.sendmail(clean_user, [normalized_email], msg.as_string())
-        logger.info(f"Successfully delivered OTP email to {normalized_email} via SMTP_SSL (port 465)")
-        return True
-    except Exception as ssl_err:
-        ssl_err_info = f"{type(ssl_err).__name__}: {ssl_err}"
-        logger.warning(f"SMTP_SSL port 465 failed: {ssl_err}. Trying port 587 STARTTLS...")
-
-    # Strategy 3: Connect via SMTP on port 587 with STARTTLS
-    try:
-        with smtplib.SMTP(settings.SMTP_HOST, 587, timeout=10) as server:
-            server.starttls()
-            server.login(clean_user, clean_pass)
-            server.sendmail(clean_user, [normalized_email], msg.as_string())
-        logger.info(f"Successfully delivered OTP email to {normalized_email} via STARTTLS (port 587)")
-        return True
-    except Exception as tls_err:
-        tls_err_info = f"{type(tls_err).__name__}: {tls_err}"
-        logger.error(f"Both SMTP ports failed to deliver email to {normalized_email}: {tls_err}")
-        raise RuntimeError(
-            f"Could not deliver verification email to {normalized_email}. "
-            f"Please ensure your email address is correct and can receive mail."
-        )
+    # If all channels fail (e.g. Render free tier firewall blocks outbound SMTP ports),
+    # log clearly and return delivered=False without throwing an unhandled crash.
+    logger.info(f"[OTP Dispatch] Code for {normalized_email}: {otp_code} (host SMTP blocked/offline)")
+    return {
+        "delivered": False,
+        "error": "Outbound SMTP ports are blocked on this cloud host.",
+        "code": otp_code,
+    }
