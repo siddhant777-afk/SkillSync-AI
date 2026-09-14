@@ -17,6 +17,18 @@ const LoginForm = () => {
   const [otpCode, setOtpCode] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [slowServerNotice, setSlowServerNotice] = useState(false);
+
+  // Monitor loading to show cold-start message if server takes >3.5s
+  useEffect(() => {
+    let timer;
+    if (loading) {
+      timer = setTimeout(() => setSlowServerNotice(true), 3500);
+    } else {
+      setSlowServerNotice(false);
+    }
+    return () => clearTimeout(timer);
+  }, [loading]);
 
   // Timer for resend cooldown
   useEffect(() => {
@@ -206,6 +218,17 @@ const LoginForm = () => {
             )}
           </button>
 
+          {slowServerNotice && (
+            <div className="rounded-xl bg-amber-50 dark:bg-amber-950/40 p-2.5 border border-amber-200 dark:border-amber-800 text-center animate-in fade-in">
+              <p className="text-xs font-semibold text-amber-800 dark:text-amber-300">
+                ⚡ Server waking up from standby (free tier)...
+              </p>
+              <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-0.5">
+                Connecting to cloud database. Please hold on a moment!
+              </p>
+            </div>
+          )}
+
           <p className="pt-2 text-center text-xs text-slate-400">
             Protected by Amazon-style Two-Step Verification.
           </p>
@@ -293,6 +316,17 @@ const LoginForm = () => {
               <span>Verify & Sign In</span>
             )}
           </button>
+
+          {slowServerNotice && (
+            <div className="rounded-xl bg-amber-50 dark:bg-amber-950/40 p-2.5 border border-amber-200 dark:border-amber-800 text-center animate-in fade-in">
+              <p className="text-xs font-semibold text-amber-800 dark:text-amber-300">
+                ⚡ Server waking up from standby (free tier)...
+              </p>
+              <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-0.5">
+                Verifying your OTP with database. Please hold on!
+              </p>
+            </div>
+          )}
 
           <div className="pt-2 flex items-center justify-between text-xs border-t border-slate-100 dark:border-slate-800">
             <span className="text-slate-500 dark:text-slate-400">Didn't receive the code?</span>

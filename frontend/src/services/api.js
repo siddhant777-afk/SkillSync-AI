@@ -3,11 +3,21 @@ import { STORAGE_KEYS } from "../constants/storage";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || (import.meta.env.PROD ? "https://skillsync-ai-1-o7w6.onrender.com" : "http://127.0.0.1:8000"),
-  timeout: 15000,
+  timeout: 75000,
   headers: {
     "Content-Type": "application/json",
   },
 });
+
+export const warmUpBackend = async () => {
+  try {
+    const base = import.meta.env.VITE_API_BASE_URL || (import.meta.env.PROD ? "https://skillsync-ai-1-o7w6.onrender.com" : "http://127.0.0.1:8000");
+    await fetch(`${base}/health`, { method: "GET", mode: "cors" });
+  } catch {
+    // Non-blocking background pre-warm
+  }
+};
+
 
 api.interceptors.request.use(
   (config) => {
