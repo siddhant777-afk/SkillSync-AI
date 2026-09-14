@@ -9,112 +9,8 @@ from app.models.user import User
 
 router = APIRouter()
 
-# Multi-college benchmark profiles for peer comparison
-BENCHMARK_STUDENTS = [
-    {
-        "id": 100,
-        "name": "Subhi Sharma",
-        "college": "GL Bajaj Institute of Technology and Management",
-        "branch": "Computer Science Engineering",
-        "year": "4th Year",
-        "leetcodeSolved": 620,
-        "dpSolved": 92,
-        "advancedTopicsSolved": 92,
-        "algorithmicDepth": 95,
-        "codeforcesRating": 1750,
-        "codeforcesRank": "Expert",
-        "githubContributions": 850,
-        "placementReadiness": 96,
-        "badges": ["Advanced Topics Specialist", "Codeforces Expert"],
-        "nonDsaAchievement": "Winner - National Smart India Hackathon 2024",
-        "verified": True,
-    },
-    {
-        "id": 101,
-        "name": "Aarav Gupta",
-        "college": "Delhi Technological University (DTU)",
-        "branch": "Computer Science",
-        "year": "4th Year",
-        "leetcodeSolved": 580,
-        "dpSolved": 85,
-        "algorithmicDepth": 92,
-        "codeforcesRating": 1720,
-        "codeforcesRank": "Expert",
-        "githubContributions": 740,
-        "placementReadiness": 94,
-        "badges": ["DP & Graph Specialist", "Codeforces Expert"],
-        "nonDsaAchievement": "1st Place - Smart India Hackathon 2024",
-        "verified": True,
-    },
-    {
-        "id": 102,
-        "name": "Priya Mehra",
-        "college": "IIT Delhi",
-        "branch": "Information Technology",
-        "year": "3rd Year",
-        "leetcodeSolved": 490,
-        "dpSolved": 72,
-        "algorithmicDepth": 88,
-        "codeforcesRating": 1650,
-        "codeforcesRank": "Specialist",
-        "githubContributions": 510,
-        "placementReadiness": 91,
-        "badges": ["DP Specialist", "Open Source Contributor"],
-        "nonDsaAchievement": "Published IEEE Paper on Graph Neural Networks",
-        "verified": True,
-    },
-    {
-        "id": 103,
-        "name": "Rohan Deshmukh",
-        "college": "BITS Pilani",
-        "branch": "Computer Science",
-        "year": "4th Year",
-        "leetcodeSolved": 410,
-        "dpSolved": 55,
-        "algorithmicDepth": 82,
-        "codeforcesRating": 1580,
-        "codeforcesRank": "Specialist",
-        "githubContributions": 620,
-        "placementReadiness": 87,
-        "badges": ["Core DSA Expert", "Kaggle Bronze"],
-        "nonDsaAchievement": "AWS Certified Solutions Architect",
-        "verified": True,
-    },
-    {
-        "id": 104,
-        "name": "Ananya Sen",
-        "college": "IIIT Hyderabad",
-        "branch": "AIML",
-        "year": "3rd Year",
-        "leetcodeSolved": 340,
-        "dpSolved": 48,
-        "algorithmicDepth": 79,
-        "codeforcesRating": 1520,
-        "codeforcesRank": "Pupil",
-        "githubContributions": 380,
-        "placementReadiness": 84,
-        "badges": ["AI/ML Specialist", "DP Practitioner"],
-        "nonDsaAchievement": "Core Developer - PyTorch NLP Community",
-        "verified": True,
-    },
-    {
-        "id": 105,
-        "name": "Karan Malhotra",
-        "college": "NIT Trichy",
-        "branch": "Electronics & Communication",
-        "year": "3rd Year",
-        "leetcodeSolved": 280,
-        "dpSolved": 32,
-        "algorithmicDepth": 68,
-        "codeforcesRating": 1410,
-        "codeforcesRank": "Pupil",
-        "githubContributions": 290,
-        "placementReadiness": 78,
-        "badges": ["Core Algorithms", "Hackathon Winner"],
-        "nonDsaAchievement": "Winner - Google Solution Challenge 2024",
-        "verified": True,
-    },
-]
+
+
 
 
 @router.get("")
@@ -189,29 +85,6 @@ def get_multi_college_leaderboard(
             "isCurrentUser": u.id == user.id,
         })
 
-    # 2. Append benchmark students ONLY for testing account (subhi@example.com)
-    # Real verified users strictly see real registered students from PostgreSQL!
-    if user and user.email and user.email.lower().strip() == "subhi@example.com":
-        for b in BENCHMARK_STUDENTS:
-            all_students.append({
-                "id": b["id"],
-                "name": b["name"],
-                "college": normalize_college_name(b["college"]),
-                "branch": normalize_branch_name(b["branch"]),
-                "year": b["year"],
-                "leetcodeSolved": b["leetcodeSolved"],
-                "dpSolved": b["dpSolved"],
-                "dpAndAdvanced": int(b["dpSolved"] * 1.5),
-                "algorithmicDepth": b["algorithmicDepth"],
-                "codeforcesRating": b["codeforcesRating"],
-                "codeforcesRank": b["codeforcesRank"],
-                "githubContributions": b["githubContributions"],
-                "placementReadiness": b["placementReadiness"],
-                "badges": b["badges"],
-                "nonDsaAchievement": b["nonDsaAchievement"],
-                "verified": b["verified"],
-                "isCurrentUser": False,
-            })
 
     # Group colleges and branches case-insensitively so differing casing maps to a single canonical name
     college_map = {}

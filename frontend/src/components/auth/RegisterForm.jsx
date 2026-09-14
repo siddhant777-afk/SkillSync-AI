@@ -20,7 +20,7 @@ const RegisterForm = () => {
     email: "",
     password: "",
     confirmPassword: "",
-    college: "",
+    college: "GL Bajaj Institute of Technology and Management",
     branch: "",
     year: "",
     careerGoal: "",

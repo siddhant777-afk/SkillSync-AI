@@ -5,6 +5,7 @@ from app.api.deps import get_current_user, get_db
 from app.models.project import Project
 from app.models.user import User
 from app.schemas import ProjectCreate, ProjectUpdate
+from app.services.profile_service import update_user_profile_completion
 
 router = APIRouter()
 
@@ -51,6 +52,7 @@ def create_project(data: ProjectCreate, user: User = Depends(get_current_user), 
     db.add(project)
     db.commit()
     db.refresh(project)
+    update_user_profile_completion(user, db)
 
     return {
         "id": project.id,
@@ -106,4 +108,5 @@ def delete_project(
 
     db.delete(project)
     db.commit()
+    update_user_profile_completion(user, db)
     return {"success": True, "message": "Project deleted successfully"}

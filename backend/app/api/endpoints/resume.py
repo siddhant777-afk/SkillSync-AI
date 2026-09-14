@@ -6,6 +6,7 @@ from app.models.resume import ResumeData
 from app.models.user import User
 from app.schemas import AIResumeReviewRequest, ResumeUpdate
 from app.services.ai_service import AIService
+from app.services.profile_service import update_user_profile_completion
 
 
 def calculate_ats_score(resume: ResumeData, user: User) -> int:
@@ -203,6 +204,7 @@ def auto_fill_from_profile(user: User = Depends(get_current_user), db: Session =
 
     db.commit()
     db.refresh(resume)
+    update_user_profile_completion(user, db)
 
     return {
         "success": True,
@@ -253,6 +255,7 @@ def update_resume(
 
     resume.ats_score = calculate_ats_score(resume, user)
     db.commit()
+    update_user_profile_completion(user, db)
     return {"success": True, "message": "Resume updated successfully.", "ats_score": resume.ats_score}
 
 

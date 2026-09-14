@@ -9,6 +9,7 @@ from app.models.achievement import Achievement
 from app.models.recommendation import Recommendation
 from app.models.user import User
 from app.services.live_jobs_service import LiveJobsService
+from app.services.profile_service import update_user_profile_completion
 
 router = APIRouter()
 
@@ -280,6 +281,7 @@ def create_achievement(
     db.add(new_achievement)
     db.commit()
     db.refresh(new_achievement)
+    update_user_profile_completion(user, db)
     return {
         "id": new_achievement.id,
         "title": new_achievement.title,
@@ -307,6 +309,7 @@ def delete_achievement(
 
     db.delete(ach)
     db.commit()
+    update_user_profile_completion(user, db)
     return {"message": "Achievement removed successfully"}
 
 

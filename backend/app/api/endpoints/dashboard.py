@@ -9,6 +9,7 @@ from app.models.project import Project
 from app.models.recommendation import Recommendation
 from app.models.skill import Skill, SkillGap
 from app.models.user import User
+from app.services.profile_service import update_user_profile_completion
 from app.services.sync_service import PlatformSyncService
 
 router = APIRouter()
@@ -272,6 +273,7 @@ def get_dashboard_summary(user: User = Depends(get_current_user), db: Session = 
     ]
 
     initials = "".join([p[0] for p in user.full_name.split() if p]).upper() or "SS"
+    completion_score = update_user_profile_completion(user, db)
 
     return {
         "id": user.id,
@@ -282,7 +284,7 @@ def get_dashboard_summary(user: User = Depends(get_current_user), db: Session = 
         "branch": profile.branch if profile and profile.branch else "",
         "college": profile.college if profile and profile.college else "",
         "placementReadiness": readiness,
-        "profileCompletion": profile.profile_completion if profile and profile.profile_completion is not None else 0,
+        "profileCompletion": completion_score,
         "careerGoal": profile.career_goal if profile and profile.career_goal else "",
         "github": github_stats,
         "leetcode": leetcode_stats,
@@ -311,13 +313,14 @@ def get_progress_analytics(user: User = Depends(get_current_user), db: Session =
     gh_contribs = gh.get("contributions", 0)
     projects_count = len(user.projects)
     readiness = profile.placement_readiness if profile and profile.placement_readiness is not None else 0
+    completion_score = update_user_profile_completion(user, db)
 
     return {
         "placementReadiness": readiness,
         "problemsSolved": lc_solved,
         "githubContributions": gh_contribs,
         "projectsCount": projects_count,
-        "profileCompletion": profile.profile_completion if profile and profile.profile_completion is not None else 0,
+        "profileCompletion": completion_score,
         "history": {
             "months": ["Dec", "Jan", "Feb", "Mar", "Apr", "May"],
             "leetcode": [0, 0, max(0, int(lc_solved * 0.3)), max(0, int(lc_solved * 0.6)), max(0, int(lc_solved * 0.8)), lc_solved],

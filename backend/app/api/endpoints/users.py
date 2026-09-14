@@ -13,6 +13,7 @@ from app.models.user import User
 from app.schemas import ConnectedAccountsUpdate, ProfileUpdate
 from app.core.normalizer import normalize_college_name, normalize_branch_name
 from app.services.ai_service import AIService
+from app.services.profile_service import update_user_profile_completion
 from app.services.sync_service import PlatformSyncService
 
 router = APIRouter()
@@ -83,7 +84,7 @@ def get_user_profile(user: User = Depends(get_current_user), db: Session = Depen
         "bio": profile.bio if profile and profile.bio else "",
         "careerGoal": profile.career_goal if profile and profile.career_goal else "",
         "placementReadiness": profile.placement_readiness if profile and profile.placement_readiness is not None else 0,
-        "profileCompletion": profile.profile_completion if profile and profile.profile_completion is not None else 0,
+        "profileCompletion": update_user_profile_completion(user, db),
         "github": github_stats,
         "leetcode": leetcode_stats,
         "codeforces": codeforces_stats,
@@ -127,6 +128,7 @@ def update_user_profile(
         profile.target_company_type = data.target_company_type
 
     db.commit()
+    update_user_profile_completion(user, db)
     return {"success": True, "message": "Profile updated successfully."}
 
 
@@ -162,6 +164,7 @@ def update_coding_profiles(
     accounts.linkedin_url = data.linkedin_url or ""
 
     db.commit()
+    update_user_profile_completion(user, db)
     return {"success": True, "message": "Coding accounts updated successfully."}
 
 
@@ -190,6 +193,7 @@ async def sync_user_accounts(user: User = Depends(get_current_user), db: Session
             db.add(SkillGap(user_id=user.id, name=g["name"], priority=g["priority"], category=g["category"], reason=g["reason"]))
 
     db.commit()
+    update_user_profile_completion(user, db)
 
     return {
         "success": True,
@@ -212,6 +216,7 @@ def update_settings(
         profile.career_goal = data["careerGoal"]
 
     db.commit()
+    update_user_profile_completion(user, db)
     return {"success": True, "message": "Settings saved successfully."}
 
 

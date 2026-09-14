@@ -11,6 +11,7 @@ from app.models.profile import ConnectedAccounts, StudentProfile, PlatformStats
 from app.models.resume import ResumeData
 from app.models.skill import Skill, SkillGap
 from app.models.user import User
+from app.services.profile_service import update_user_profile_completion
 from app.schemas import (
     ForgotPasswordRequest,
     ForgotPasswordReset,
@@ -178,13 +179,6 @@ def register(data: UserRegister, db: Session = Depends(get_db)):
     clean_branch = normalize_branch_name(data.branch)
     clean_year = (data.year or "").strip()
 
-    # Calculate initial completion based on filled fields
-    completion_score = 20
-    if clean_college: completion_score += 15
-    if clean_branch: completion_score += 15
-    if clean_year: completion_score += 10
-    if career_goal: completion_score += 10
-
     profile = StudentProfile(
         user_id=user.id,
         year=clean_year,
@@ -192,7 +186,7 @@ def register(data: UserRegister, db: Session = Depends(get_db)):
         college=clean_college,
         career_goal=career_goal,
         placement_readiness=0,
-        profile_completion=min(100, completion_score),
+        profile_completion=0,
     )
     db.add(profile)
 
@@ -231,6 +225,7 @@ def register(data: UserRegister, db: Session = Depends(get_db)):
     )
     db.add(resume)
     db.commit()
+    update_user_profile_completion(user, db)
 
     access_token = create_access_token(user.id)
     refresh_token = create_refresh_token(user.id)

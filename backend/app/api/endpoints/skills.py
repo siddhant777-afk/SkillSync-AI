@@ -5,6 +5,7 @@ from app.api.deps import get_current_user, get_db
 from app.models.skill import Skill, SkillGap
 from app.models.user import User
 from app.schemas import SkillCreate, SkillUpdate
+from app.services.profile_service import update_user_profile_completion
 
 router = APIRouter()
 
@@ -79,6 +80,7 @@ def add_skill(data: SkillCreate, user: User = Depends(get_current_user), db: Ses
 
     db.commit()
     db.refresh(skill)
+    update_user_profile_completion(user, db)
 
     return {
         "id": skill.id,
@@ -127,4 +129,5 @@ def delete_skill(
 
     db.delete(skill)
     db.commit()
+    update_user_profile_completion(user, db)
     return {"success": True, "message": "Skill deleted successfully"}

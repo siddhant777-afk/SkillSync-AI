@@ -238,12 +238,12 @@ const Dashboard = () => {
                   4. Academic & Skill Alignment
                 </span>
                 <span className="text-xs font-black text-purple-600 dark:text-purple-400">
-                  {user?.profileCompletion ?? 85}%
+                  {user?.profileCompletion ?? 0}%
                 </span>
               </div>
               <div className="h-2 w-full rounded-full bg-slate-200 dark:bg-slate-750 overflow-hidden">
                 <div
-                  style={{ width: `${user?.profileCompletion ?? 85}%` }}
+                  style={{ width: `${user?.profileCompletion ?? 0}%` }}
                   className="h-full rounded-full bg-purple-500 transition-all duration-500"
                 />
               </div>

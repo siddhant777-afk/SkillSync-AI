@@ -68,31 +68,19 @@ const EditProfileModal = ({ isOpen, onClose }) => {
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
-              <label className="text-xs font-semibold text-slate-600 dark:text-slate-400">College / University</label>
-              <input
-                type="text"
-                list="edit-college-options"
-                value={formData.college}
+              <label className="text-xs font-semibold text-slate-600 dark:text-slate-400">College / Institution</label>
+              <select
+                value={formData.college || "GL Bajaj Institute of Technology and Management"}
                 onChange={(e) => setFormData({ ...formData, college: e.target.value })}
                 required
-                placeholder="e.g. GL Bajaj Institute of Technology and Management"
                 className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-850 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900/30"
-              />
-              <datalist id="edit-college-options">
+              >
                 {COLLEGE_OPTIONS.map((c) => (
-                  <option key={c.value} value={c.label} />
+                  <option key={c.value} value={c.value}>
+                    {c.label}
+                  </option>
                 ))}
-              </datalist>
-              <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                <span className="text-[10px] text-slate-400">Featured:</span>
-                <button
-                  type="button"
-                  onClick={() => setFormData({ ...formData, college: "GL Bajaj Institute of Technology and Management" })}
-                  className="text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 rounded px-1.5 py-0.5 border border-indigo-200 dark:border-indigo-800 transition"
-                >
-                  + GL Bajaj Institute of Technology and Management
-                </button>
-              </div>
+              </select>
             </div>
 
             <div>
