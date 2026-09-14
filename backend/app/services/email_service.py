@@ -15,12 +15,16 @@ def generate_amazon_style_html(otp_code: str, purpose: str = "login", email: str
     Generates an Amazon-style responsive HTML email for OTP verification.
     """
     action_text = (
-        "complete your Two-Step Verification sign-in"
+        "reset your SkillSync AI account password"
+        if purpose == "reset"
+        else "complete your Two-Step Verification sign-in"
         if purpose == "login"
         else "verify your email and create your SkillSync AI account"
     )
     title_text = (
-        "Two-Step Verification"
+        "Reset Your Password"
+        if purpose == "reset"
+        else "Two-Step Verification"
         if purpose == "login"
         else "Verify your email address"
     )
@@ -119,8 +123,8 @@ def send_otp_email(to_email: str, otp_code: str, purpose: str = "login", client_
         logger.warning(f"Email validation warning: {e}")
         normalized_email = (to_email or "").strip().lower()
 
-    title_text = "Two-Step Verification" if purpose == "login" else "Email Verification"
-    subject = f"SkillSync AI: {otp_code} is your verification code"
+    title_text = "Password Reset" if purpose == "reset" else "Two-Step Verification" if purpose == "login" else "Email Verification"
+    subject = f"SkillSync AI: {otp_code} is your password reset code" if purpose == "reset" else f"SkillSync AI: {otp_code} is your verification code"
 
     text_content = (
         f"SkillSync AI {title_text}\n\n"

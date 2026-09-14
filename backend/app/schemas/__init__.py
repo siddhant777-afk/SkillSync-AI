@@ -76,6 +76,16 @@ class TokenResponse(BaseModel):
     user: Dict[str, Any]
 
 
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+
+class ForgotPasswordReset(BaseModel):
+    email: EmailStr
+    code: str
+    new_password: str = Field(min_length=6)
+
+
 # ==========================================
 # Profile & Accounts Schemas
 # ==========================================

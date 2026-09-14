@@ -172,6 +172,38 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const forgotPasswordRequestOtp = async (email) => {
+    setLoading(true);
+    try {
+      const data = await authService.forgotPasswordRequestOtp(email);
+      return { success: true, message: data.message };
+    } catch (err) {
+      const errorMsg =
+        err.response?.data?.detail ||
+        err.response?.data?.message ||
+        "Failed to send reset code. Please check your email and try again.";
+      return { success: false, message: errorMsg };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const forgotPasswordVerifyAndReset = async ({ email, code, new_password }) => {
+    setLoading(true);
+    try {
+      const data = await authService.forgotPasswordVerifyAndReset({ email, code, new_password });
+      return { success: true, message: data.message };
+    } catch (err) {
+      const errorMsg =
+        err.response?.data?.detail ||
+        err.response?.data?.message ||
+        "Invalid reset code or password. Please try again.";
+      return { success: false, message: errorMsg };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const logout = () => {
     try {
       authService.logout().catch(() => {});
@@ -192,6 +224,8 @@ export const AuthProvider = ({ children }) => {
       login,
       requestLoginOtp,
       verifyLoginOtp,
+      forgotPasswordRequestOtp,
+      forgotPasswordVerifyAndReset,
       register,
       logout,
     }),

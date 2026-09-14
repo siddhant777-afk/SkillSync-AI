@@ -273,9 +273,9 @@ const Auth3DCanvas = ({ title = "AI Career Intelligence", subtitle = "Automated 
 
       {/* Bottom Center Brand Subtitle */}
       <div className="absolute bottom-4 z-10 text-center pointer-events-none px-4">
-        <div className="inline-flex items-center gap-2 rounded-full bg-indigo-950/60 backdrop-blur-md border border-indigo-500/30 px-3.5 py-1 text-[11px] font-bold text-indigo-200 shadow-sm">
-          <Sparkles size={13} className="text-indigo-400" />
-          <span>Interactive 3D Career Intelligence Model · Move cursor to interact</span>
+        <div className="inline-flex items-center gap-2 rounded-full bg-indigo-950/70 backdrop-blur-md border border-indigo-500/40 px-4 py-1.5 text-xs font-bold text-indigo-200 shadow-md">
+          <Sparkles size={14} className="text-indigo-400 animate-pulse" />
+          <span className="tracking-wide">SkillSync AI · Skills Must Be Preserved</span>
         </div>
       </div>
     </div>

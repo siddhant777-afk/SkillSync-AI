@@ -12,6 +12,8 @@ from app.models.resume import ResumeData
 from app.models.skill import Skill, SkillGap
 from app.models.user import User
 from app.schemas import (
+    ForgotPasswordRequest,
+    ForgotPasswordReset,
     LoginOtpChallengeResponse,
     LoginRequestOtp,
     LoginVerifyOtp,
@@ -34,6 +36,9 @@ VERIFIED_REGISTRATION_EMAILS: Dict[str, float] = {}
 
 # Pending login OTPs: email -> {"code": str, "user_id": int, "expires_at": float}
 PENDING_LOGIN_OTPS: Dict[str, Dict[str, Any]] = {}
+
+# Pending password reset OTPs: email -> {"code": str, "user_id": int, "expires_at": float}
+PENDING_PASSWORD_RESET_OTPS: Dict[str, Dict[str, Any]] = {}
 
 
 def build_user_info(user: User) -> Dict[str, Any]:
@@ -324,10 +329,110 @@ def login_verify_otp(data: LoginVerifyOtp, db: Session = Depends(get_db)):
     }
 
 
-@router.post("/login")
+@router.post("/login", response_model=TokenResponse)
 def login(data: UserLogin, db: Session = Depends(get_db)):
-    # Standard login triggers Amazon-style OTP request
-    return login_request_otp(LoginRequestOtp(email=data.email, password=data.password), db=db)
+    email_clean = data.email.lower().strip()
+    user = db.query(User).filter(User.email == email_clean).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="We cannot find an account with that email address. Please register or check your email.",
+        )
+
+    if not verify_password(data.password, user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect password. Please try again or reset your password.",
+        )
+
+    access_token = create_access_token(user.id)
+    refresh_token = create_refresh_token(user.id)
+
+    return {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "token_type": "bearer",
+        "user": build_user_info(user),
+    }
+
+
+@router.post("/forgot-password-request-otp")
+def forgot_password_request_otp(data: ForgotPasswordRequest, request: Request, db: Session = Depends(get_db)):
+    email_clean = data.email.lower().strip()
+    user = db.query(User).filter(User.email == email_clean).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No account found with this email address. Please check your email or register.",
+        )
+
+    code = f"{random.randint(100000, 999999)}"
+    client_origin = request.headers.get("origin") or request.headers.get("referer")
+    dispatch = send_otp_email(to_email=email_clean, otp_code=code, purpose="reset", client_origin=client_origin)
+
+    expires_at = time.time() + 600  # 10 minutes
+    PENDING_PASSWORD_RESET_OTPS[email_clean] = {
+        "code": code,
+        "user_id": user.id,
+        "expires_at": expires_at,
+    }
+
+    if dispatch.get("delivered"):
+        return {
+            "success": True,
+            "delivered": True,
+            "message": f"Password reset verification code sent to {email_clean}. Please check your inbox.",
+        }
+    else:
+        return {
+            "success": True,
+            "delivered": False,
+            "code": code,
+            "message": f"Password reset verification code: {code} (Host SMTP blocked)",
+        }
+
+
+@router.post("/forgot-password-verify-and-reset")
+def forgot_password_verify_and_reset(data: ForgotPasswordReset, db: Session = Depends(get_db)):
+    email_clean = data.email.lower().strip()
+    pending = PENDING_PASSWORD_RESET_OTPS.get(email_clean)
+
+    if not pending or pending.get("expires_at", 0) < time.time():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Password reset code has expired or was not requested. Please request a new code.",
+        )
+
+    if pending.get("code") != data.code.strip():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid verification code. Please check your email and try again.",
+        )
+
+    user = db.query(User).filter(User.id == pending["user_id"]).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User account not found.",
+        )
+
+    if len(data.new_password.strip()) < 6:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Password must be at least 6 characters long.",
+        )
+
+    # Overwrite old password with newly hashed password in PostgreSQL
+    user.hashed_password = get_password_hash(data.new_password.strip())
+    db.commit()
+
+    # Clear pending reset OTP
+    PENDING_PASSWORD_RESET_OTPS.pop(email_clean, None)
+
+    return {
+        "success": True,
+        "message": "Password updated successfully! You can now log in with your new password.",
+    }
 
 
 @router.post("/logout")
