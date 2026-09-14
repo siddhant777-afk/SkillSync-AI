@@ -128,6 +128,28 @@ def search_candidates(
         achievements_list = [a.title for a in u.achievements]
         achievements_count = len(achievements_list)
 
+        # Build timeline & compute authoritative score
+        from app.services.ranking_engine import RankingEngine
+        from app.services.timeline_service import TimelineService
+
+        timeline = TimelineService.build_timeline(
+            leetcode_stats=lc_stats,
+            github_stats=gh_stats,
+            codeforces_stats=cf_stats,
+            codechef_stats=cc_stats,
+            max_months=6,
+        )
+
+        ranking = RankingEngine.calculate_composite_score(
+            leetcode_stats=lc_stats,
+            codeforces_stats=cf_stats,
+            codechef_stats=cc_stats,
+            github_stats=gh_stats,
+            projects=u.projects,
+            achievements=u.achievements,
+            timeline=timeline,
+        )
+
         results.append({
             "id": u.id,
             "name": u.full_name,
@@ -136,8 +158,10 @@ def search_candidates(
             "branch": normalize_branch_name(profile.branch) if (profile and profile.branch) else "",
             "year": profile.year if (profile and profile.year) else "",
             "careerGoal": profile.career_goal or "Software Engineer",
-            "placementReadiness": readiness,
-            # Priority metrics (1 to 5)
+            "placementReadiness": ranking.get("placement_readiness", readiness),
+            "compositeScore": ranking.get("composite_score", 0.0),
+            "dimensionScores": ranking.get("dimension_scores", {}),
+            # Priority metrics
             "maxContestRating": max_contest_rating,
             "totalQuestionsSolved": total_questions,
             "achievementsCount": achievements_count,
@@ -184,16 +208,14 @@ def search_candidates(
         })
 
 
-    # Strict multi-tier priority sort:
-    # 1st: Contest Rating -> 2nd: Questions Solved -> 3rd: Achievements -> 4th: Projects -> 5th: Commits
+    # Sort by multi-dimensional composite score (highest overall talent first)
     results.sort(
         key=lambda c: (
+            c.get("compositeScore", 0.0),
             c.get("maxContestRating", 0),
             c.get("totalQuestionsSolved", 0),
-            c.get("achievementsCount", 0),
-            c.get("projectsCount", 0),
             c.get("commitsCount", 0),
-            c.get("placementReadiness", 0),
+            c.get("projectsCount", 0),
         ),
         reverse=True,
     )

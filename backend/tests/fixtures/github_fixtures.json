@@ -1,0 +1,61 @@
+{
+  "user_success": {
+    "login": "octocat",
+    "public_repos": 8,
+    "followers": 450,
+    "created_at": "2011-01-25T18:44:36Z",
+    "avatar_url": "https://avatars.githubusercontent.com/u/583231"
+  },
+  "repos_success": [
+    {
+      "name": "skillsync-ai",
+      "html_url": "https://github.com/octocat/skillsync-ai",
+      "description": "Production AI talent intelligence and ranking platform",
+      "stargazers_count": 45,
+      "forks_count": 12,
+      "language": "Python",
+      "fork": false,
+      "size": 2500,
+      "updated_at": "2026-09-10T12:00:00Z"
+    },
+    {
+      "name": "fastapi-realworld",
+      "html_url": "https://github.com/octocat/fastapi-realworld",
+      "description": "Production-ready FastAPI backend architecture",
+      "stargazers_count": 85,
+      "forks_count": 30,
+      "language": "Python",
+      "fork": false,
+      "size": 1800,
+      "updated_at": "2026-09-08T10:00:00Z"
+    },
+    {
+      "name": "random-fork",
+      "html_url": "https://github.com/octocat/random-fork",
+      "description": "Forked repository without original commits",
+      "stargazers_count": 0,
+      "forks_count": 0,
+      "language": "JavaScript",
+      "fork": true,
+      "size": 120,
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "contributions_success": {
+    "total": {"lastYear": 340},
+    "contributions": [
+      {"date": "2025-10-01", "count": 5, "level": 1},
+      {"date": "2025-11-15", "count": 12, "level": 2},
+      {"date": "2025-12-20", "count": 8, "level": 1},
+      {"date": "2026-01-10", "count": 15, "level": 3},
+      {"date": "2026-02-05", "count": 22, "level": 3},
+      {"date": "2026-03-12", "count": 18, "level": 2},
+      {"date": "2026-04-18", "count": 7, "level": 1},
+      {"date": "2026-05-22", "count": 14, "level": 2},
+      {"date": "2026-06-30", "count": 30, "level": 4},
+      {"date": "2026-07-14", "count": 25, "level": 3},
+      {"date": "2026-08-19", "count": 10, "level": 2},
+      {"date": "2026-09-05", "count": 16, "level": 2}
+    ]
+  }
+}

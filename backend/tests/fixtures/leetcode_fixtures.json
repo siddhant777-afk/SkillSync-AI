@@ -1,0 +1,60 @@
+{
+  "user_success": {
+    "data": {
+      "matchedUser": {
+        "username": "siddhantrajliwal365",
+        "submissionCalendar": "{\"1764028800\": 22, \"1766707200\": 14, \"1769385600\": 60}",
+        "submitStatsGlobal": {
+          "acSubmissionNum": [
+            {"difficulty": "All", "count": 250},
+            {"difficulty": "Easy", "count": 113},
+            {"difficulty": "Medium", "count": 121},
+            {"difficulty": "Hard", "count": 16}
+          ]
+        },
+        "profile": {
+          "ranking": 647477,
+          "reputation": 0
+        },
+        "tagProblemCounts": {
+          "advanced": [{"tagName": "Dynamic Programming", "problemsSolved": 25}],
+          "intermediate": [{"tagName": "Binary Tree", "problemsSolved": 35}],
+          "fundamental": [{"tagName": "Array", "problemsSolved": 90}]
+        }
+      },
+      "userContestRanking": {
+        "attendedContestsCount": 12,
+        "rating": 1785.4,
+        "globalRanking": 14200,
+        "totalParticipants": 150000,
+        "topPercentage": 9.4,
+        "badge": {"name": "Knight"}
+      }
+    }
+  },
+  "user_unrated": {
+    "data": {
+      "matchedUser": {
+        "username": "novice_user",
+        "submissionCalendar": "{}",
+        "submitStatsGlobal": {
+          "acSubmissionNum": [
+            {"difficulty": "All", "count": 5},
+            {"difficulty": "Easy", "count": 5},
+            {"difficulty": "Medium", "count": 0},
+            {"difficulty": "Hard", "count": 0}
+          ]
+        },
+        "profile": {"ranking": 5000000},
+        "tagProblemCounts": {"advanced": [], "intermediate": [], "fundamental": []}
+      },
+      "userContestRanking": null
+    }
+  },
+  "user_not_found": {
+    "data": {
+      "matchedUser": null,
+      "userContestRanking": null
+    }
+  }
+}

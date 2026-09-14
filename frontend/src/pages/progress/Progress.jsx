@@ -27,22 +27,25 @@ const Progress = () => {
   const completion = user?.profileCompletion ?? 0;
   const atsScore = user?.ats_score ?? user?.atsScore ?? 0;
 
-  const progressData = user?.progress || {
-    months: ["Apr", "May", "Jun", "Jul", "Aug", "Sep"],
-    leetcode: [0, 0, 0, 0, 0, lcSolved],
-    skills: [0, 0, 0, 0, 0, skillsCount],
-    github: [0, 0, 0, 0, 0, ghContribs],
-    projects: [0, 0, 0, 0, 0, projCount],
-    velocity: [0, 0, 0, 0, 0, 0],
-  };
+  const progressData = user?.progress?.months?.length
+    ? user.progress
+    : {
+        months: [],
+        leetcode: [],
+        github: [],
+        codeforces: [],
+        velocity: [],
+      };
 
-  const chartSeries = progressData[selectedMetric] || progressData.leetcode || [0, 0, 0, 0, 0, 0];
+  const chartSeries = progressData[selectedMetric] || progressData.leetcode || [];
   const maxVal = Math.max(...chartSeries, 1);
 
-  // Dynamic pillar scores
-  const cpScore = Math.min(100, Math.round((Math.min(lcSolved, 500) / 500) * 100));
-  const projScore = Math.min(100, Math.round((Math.min(ghContribs, 500) / 500) * 60 + (Math.min(projCount, 4) / 4) * 40));
-  const skillScore = Math.min(100, Math.round((Math.min(skillsCount, 8) / 8) * 100));
+  // Authoritative ranking engine pillar scores
+  const dimScores = user?.ranking?.dimension_scores || {};
+  const cpScore = dimScores.competitive_programming ?? (user?.codeforces?.rating ? Math.min(100, Math.round(user.codeforces.rating / 18)) : (lcSolved > 0 ? Math.min(100, Math.round((lcSolved / 300) * 100)) : 0));
+  const depthScore = dimScores.problem_solving_depth ?? (lcSolved > 0 ? Math.min(100, Math.round((lcSolved / 250) * 100)) : 0);
+  const engScore = dimScores.software_engineering ?? (ghContribs > 0 ? Math.min(100, Math.round((ghContribs / 200) * 100)) : 0);
+  const projScore = dimScores.project_portfolio ?? Math.min(100, projCount * 30);
 
   return (
     <div className="space-y-6 max-w-full overflow-x-hidden">
@@ -125,11 +128,10 @@ const Progress = () => {
 
           <div className="flex flex-wrap rounded-xl bg-slate-100 dark:bg-slate-800 p-1 gap-1">
             {[
-              ["leetcode", "LeetCode Solved"],
-              ["skills", "Platform Skills"],
+              ["leetcode", "LeetCode Submissions"],
+              ["github", "GitHub Contributions"],
+              ["codeforces", "Codeforces Contests"],
               ["velocity", "Velocity Index"],
-              ["github", "GitHub Commits"],
-              ["projects", "Projects Built"],
             ].map(([key, label]) => (
               <button
                 key={key}
@@ -151,11 +153,10 @@ const Progress = () => {
         <div className="mt-3 flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
           <span className="flex h-2 w-2 rounded-full bg-indigo-500" />
           <span>
-            {selectedMetric === "leetcode" && "Verified monthly submissions directly from your LeetCode profile calendar."}
-            {selectedMetric === "skills" && "Cumulative technical proficiencies added and verified on SkillSync AI over time."}
-            {selectedMetric === "velocity" && "Composite Placement Momentum score (0-100) combining DSA submissions, verified skills, and projects."}
-            {selectedMetric === "github" && "Verified commit frequency and open-source contribution velocity."}
-            {selectedMetric === "projects" && "Portfolio projects built and verified with modern tech stacks."}
+            {selectedMetric === "leetcode" && "Authentic monthly submission count directly from your LeetCode submission calendar."}
+            {selectedMetric === "github" && "Verified open-source contributions and Git commit frequency."}
+            {selectedMetric === "codeforces" && "Official Codeforces rated contest participation history."}
+            {selectedMetric === "velocity" && "Composite multi-platform momentum score combining verified coding activity."}
           </span>
         </div>
 

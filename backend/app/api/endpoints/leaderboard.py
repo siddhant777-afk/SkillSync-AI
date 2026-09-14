@@ -6,22 +6,24 @@ from app.api.deps import get_current_user, get_db
 from app.core.normalizer import normalize_college_name, normalize_branch_name
 from app.models.profile import PlatformStats, StudentProfile
 from app.models.user import User
+from app.services.ranking_engine import RankingEngine
+from app.services.timeline_service import TimelineService
 
 router = APIRouter()
-
-
-
 
 
 @router.get("")
 def get_multi_college_leaderboard(
     college: Optional[str] = Query("all", description="Filter by college name or 'all'"),
     branch: Optional[str] = Query("all", description="Filter by branch or 'all'"),
-    sort_by: Optional[str] = Query("dsa", description="Sort by: dsa, dp_advanced, contest, readiness"),
+    sort_by: Optional[str] = Query("composite", description="Sort by: composite, dsa, contest, engineering, readiness, dp_advanced"),
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Multi-college student ranking system across DSA, DP vs Basics depth, contest ratings, and readiness."""
+    """
+    Multi-college student ranking system evaluated by authoritative RankingEngine across
+    Competitive Programming, Problem Solving Depth, Software Engineering, and Portfolio.
+    """
     all_students = []
 
     # 1. Fetch real DB students
@@ -31,35 +33,50 @@ def get_multi_college_leaderboard(
         stats = {ps.platform: ps.stats_data for ps in u.platform_stats}
         lc = stats.get("leetcode", {})
         cf = stats.get("codeforces", {})
+        cc = stats.get("codechef", {})
         gh = stats.get("github", {})
 
         lc_solved = lc.get("solved", 0)
         topic_counts = lc.get("topic_counts", {})
         dp_count = topic_counts.get("dp_specific", 0)
-        dp_adv_count = topic_counts.get("dp_and_advanced", 0)
+        dp_adv_count = topic_counts.get("advanced_topics", 0) or topic_counts.get("dp_and_advanced", 0)
         alg_depth = lc.get("algorithmic_depth_score", 0)
+
         cf_rating = cf.get("rating", 0)
         cf_rank = cf.get("title", "Unrated")
-        gh_contribs = gh.get("contributions", 0)
-        readiness = profile.placement_readiness if profile and profile.placement_readiness is not None else 0
 
-        # Topic badges
-        badges = []
-        if dp_adv_count >= 30:
-            badges.append("DP & Graph Specialist")
-        elif lc_solved >= 100:
-            badges.append("Core DSA Expert")
-        elif lc_solved > 0:
-            badges.append("Active Coder")
-        else:
-            badges.append("Rising Talent")
+        cc_rating = cc.get("rating", 0)
+        cc_stars = cc.get("stars", "Unrated")
 
-        if cf_rating >= 1600:
-            badges.append("Contest Master")
-        elif cf_rating >= 1400:
-            badges.append("Contest Specialist")
+        gh_contribs = gh.get("contributions", 0) or gh.get("commits", 0)
 
-        # Top non-DSA achievement
+        # Build timeline & compute authoritative score
+        timeline = TimelineService.build_timeline(
+            leetcode_stats=lc,
+            github_stats=gh,
+            codeforces_stats=cf,
+            codechef_stats=cc,
+            max_months=6,
+        )
+
+        ranking = RankingEngine.calculate_composite_score(
+            leetcode_stats=lc,
+            codeforces_stats=cf,
+            codechef_stats=cc,
+            github_stats=gh,
+            projects=u.projects,
+            achievements=u.achievements,
+            timeline=timeline,
+        )
+
+        composite_score = ranking.get("composite_score", 0.0)
+        dim_scores = ranking.get("dimension_scores", {})
+        cp_score = dim_scores.get("competitive_programming") or 0.0
+        depth_score = dim_scores.get("problem_solving_depth") or 0.0
+        eng_score = dim_scores.get("software_engineering") or 0.0
+        proj_score = dim_scores.get("project_portfolio") or 0.0
+
+        badges = ranking.get("badges", [])
         top_ach = u.achievements[0].title if u.achievements else None
 
         user_college = normalize_college_name(profile.college) if (profile and profile.college) else ""
@@ -71,22 +88,29 @@ def get_multi_college_leaderboard(
             "college": user_college,
             "branch": user_branch,
             "year": profile.year if profile and profile.year else "",
+            "compositeScore": composite_score,
+            "cpScore": cp_score,
+            "depthScore": depth_score,
+            "engineeringScore": eng_score,
+            "projectScore": proj_score,
             "leetcodeSolved": lc_solved,
-            "dpSolved": dp_count or int(dp_adv_count * 0.4),
+            "dpSolved": dp_count,
             "dpAndAdvanced": dp_adv_count,
+            "advancedTopicsSolved": dp_adv_count,
             "algorithmicDepth": alg_depth,
             "codeforcesRating": cf_rating,
             "codeforcesRank": cf_rank,
+            "codechefRating": cc_rating,
+            "codechefStars": cc_stars,
             "githubContributions": gh_contribs,
-            "placementReadiness": readiness,
+            "placementReadiness": ranking.get("placement_readiness", 0),
             "badges": badges,
             "nonDsaAchievement": top_ach,
-            "verified": lc.get("verified", False) or cf.get("verified", False) or gh.get("verified", False),
+            "verified": lc.get("verified", False) or cf.get("verified", False) or gh.get("verified", False) or cc.get("verified", False),
             "isCurrentUser": u.id == user.id,
         })
 
-
-    # Group colleges and branches case-insensitively so differing casing maps to a single canonical name
+    # Group colleges and branches case-insensitively
     college_map = {}
     for s in all_students:
         c = s.get("college", "")
@@ -137,14 +161,16 @@ def get_multi_college_leaderboard(
         ]
 
     # Apply sorting
-    if sort_by == "contest":
-        filtered.sort(key=lambda s: (s["codeforcesRating"], s["leetcodeSolved"]), reverse=True)
-    elif sort_by == "readiness":
-        filtered.sort(key=lambda s: (s["placementReadiness"], s["leetcodeSolved"]), reverse=True)
+    if sort_by in ("contest", "cp"):
+        filtered.sort(key=lambda s: (s["cpScore"], s["codeforcesRating"], s["leetcodeSolved"]), reverse=True)
+    elif sort_by in ("dsa", "depth"):
+        filtered.sort(key=lambda s: (s["depthScore"], s["leetcodeSolved"], s["algorithmicDepth"]), reverse=True)
+    elif sort_by in ("engineering", "github"):
+        filtered.sort(key=lambda s: (s["engineeringScore"], s["githubContributions"]), reverse=True)
     elif sort_by in ("dp_advanced", "advanced_topics"):
-        filtered.sort(key=lambda s: (s.get("advancedTopicsSolved", s.get("dpSolved", 0)), s["algorithmicDepth"], s["leetcodeSolved"]), reverse=True)
-    else:  # default 'dsa'
-        filtered.sort(key=lambda s: (s["leetcodeSolved"], s["algorithmicDepth"]), reverse=True)
+        filtered.sort(key=lambda s: (s["advancedTopicsSolved"], s["algorithmicDepth"], s["leetcodeSolved"]), reverse=True)
+    else:  # default 'composite' or 'readiness'
+        filtered.sort(key=lambda s: (s["compositeScore"], s["depthScore"], s["leetcodeSolved"]), reverse=True)
 
     # Assign rank numbers
     ranked_list = []
@@ -153,7 +179,6 @@ def get_multi_college_leaderboard(
         item["rank"] = idx
         ranked_list.append(item)
 
-    # Top podium (ranks 1, 2, 3)
     podium = ranked_list[:3]
 
     return {

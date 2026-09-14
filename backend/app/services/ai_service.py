@@ -53,48 +53,41 @@ class AIService:
         skills: List[Skill],
         projects: List[Project],
         resume: Optional[ResumeData],
+        achievements: Optional[List[Any]] = None,
+        timeline: Optional[Dict[str, Any]] = None,
     ) -> int:
         """
-        Calculates a composite placement readiness score (0-100) based on:
-        - 35% Competitive Coding (LeetCode solved + Codeforces rating)
-        - 30% Portfolio Projects & GitHub activity
-        - 20% Verified Technical Skills Breadth
-        - 15% Resume ATS and Completeness
+        Authoritative composite placement readiness calculation powered by RankingEngine.
+        Evaluates competitive programming, problem solving depth, software engineering,
+        project portfolio, consistency, and achievements with non-punitive reweighting.
         """
-        # 1. Coding score (0-35 points)
-        lc = stats_map.get("leetcode", {})
-        solved = lc.get("solved", 0)
-        cf = stats_map.get("codeforces", {})
-        rating = cf.get("rating", 0)
+        from app.services.ranking_engine import RankingEngine
+        from app.services.timeline_service import TimelineService
 
-        # 400+ problems = ~25 pts, 1600+ rating = ~10 pts
-        lc_score = min(25, (solved / 400) * 25)
-        cf_score = min(10, (rating / 1600) * 10) if rating > 0 else min(10, (solved / 600) * 10)
-        coding_points = lc_score + cf_score
+        lc_stats = stats_map.get("leetcode", {})
+        cf_stats = stats_map.get("codeforces", {})
+        cc_stats = stats_map.get("codechef", {})
+        gh_stats = stats_map.get("github", {})
 
-        # 2. Project & GitHub score (0-30 points)
-        gh = stats_map.get("github", {})
-        contributions = gh.get("contributions", 0)
-        repos = gh.get("repositories", 0)
-        proj_count = len(projects)
+        if not timeline:
+            timeline = TimelineService.build_timeline(
+                leetcode_stats=lc_stats,
+                github_stats=gh_stats,
+                codeforces_stats=cf_stats,
+                codechef_stats=cc_stats,
+            )
 
-        proj_points = min(18, proj_count * 6)
-        gh_points = min(12, (contributions / 500) * 8 + (repos / 10) * 4)
-        project_points = proj_points + gh_points
+        ranking = RankingEngine.calculate_composite_score(
+            leetcode_stats=lc_stats,
+            codeforces_stats=cf_stats,
+            codechef_stats=cc_stats,
+            github_stats=gh_stats,
+            projects=projects or [],
+            achievements=achievements or [],
+            timeline=timeline,
+        )
 
-        # 3. Technical skills score (0-20 points)
-        if skills:
-            avg_skill = sum(s.level for s in skills) / len(skills)
-            skill_points = min(20, (avg_skill / 100) * 15 + min(5, len(skills)))
-        else:
-            skill_points = 0
-
-        # 4. Resume / Profile score (0-15 points)
-        ats = resume.ats_score if (resume and resume.ats_score is not None) else 0
-        resume_points = min(15, (ats / 100) * 15)
-
-        total_score = round(coding_points + project_points + skill_points + resume_points)
-        return max(0, min(100, total_score))
+        return ranking.get("placement_readiness", 0)
 
     @staticmethod
     def identify_skill_gaps(target_role: str, user_skills: List[Skill]) -> List[Dict[str, str]]:

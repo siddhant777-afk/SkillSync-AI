@@ -1,0 +1,118 @@
+{
+  "user_info_success": {
+    "status": "OK",
+    "result": [
+      {
+        "handle": "tourist",
+        "rating": 3301,
+        "maxRating": 4009,
+        "rank": "legendary grandmaster",
+        "maxRank": "tourist",
+        "registrationTimeSeconds": 1265987288
+      }
+    ]
+  },
+  "user_info_unrated": {
+    "status": "OK",
+    "result": [
+      {
+        "handle": "newbie_coder",
+        "rank": "unrated",
+        "registrationTimeSeconds": 1700000000
+      }
+    ]
+  },
+  "user_info_not_found": {
+    "status": "FAILED",
+    "comment": "handles: User with handle invalid_handle not found"
+  },
+  "user_rating_success": {
+    "status": "OK",
+    "result": [
+      {
+        "contestId": 2,
+        "contestName": "Codeforces Beta Round 2",
+        "handle": "tourist",
+        "rank": 14,
+        "ratingUpdateTimeSeconds": 1267124400,
+        "oldRating": 1500,
+        "newRating": 1602
+      }
+    ]
+  },
+  "user_status_success": {
+    "status": "OK",
+    "result": [
+      {
+        "id": 1001,
+        "contestId": 1800,
+        "creationTimeSeconds": 1700000000,
+        "problem": {
+          "contestId": 1800,
+          "index": "A",
+          "name": "Is It a Cat?",
+          "type": "PROGRAMMING",
+          "rating": 800,
+          "tags": ["implementation", "strings"]
+        },
+        "verdict": "OK"
+      },
+      {
+        "id": 1002,
+        "contestId": 1800,
+        "creationTimeSeconds": 1700001000,
+        "problem": {
+          "contestId": 1800,
+          "index": "B",
+          "name": "Count the Number of Pairs",
+          "type": "PROGRAMMING",
+          "rating": 1000,
+          "tags": ["greedy", "strings"]
+        },
+        "verdict": "OK"
+      },
+      {
+        "id": 1003,
+        "contestId": 1800,
+        "creationTimeSeconds": 1700002000,
+        "problem": {
+          "contestId": 1800,
+          "index": "C",
+          "name": "Powering the Hero",
+          "type": "PROGRAMMING",
+          "rating": 1200,
+          "tags": ["data structures", "greedy"]
+        },
+        "verdict": "OK"
+      },
+      {
+        "id": 1004,
+        "contestId": 1800,
+        "creationTimeSeconds": 1700003000,
+        "problem": {
+          "contestId": 1800,
+          "index": "D",
+          "name": "Remove Two Letters",
+          "type": "PROGRAMMING",
+          "rating": 1400,
+          "tags": ["data structures", "hashing", "strings"]
+        },
+        "verdict": "OK"
+      },
+      {
+        "id": 1005,
+        "contestId": 1800,
+        "creationTimeSeconds": 1700004000,
+        "problem": {
+          "contestId": 1800,
+          "index": "E",
+          "name": "Unforgivable Curse",
+          "type": "PROGRAMMING",
+          "rating": 1600,
+          "tags": ["constructive algorithms", "dsu", "greedy"]
+        },
+        "verdict": "OK"
+      }
+    ]
+  }
+}

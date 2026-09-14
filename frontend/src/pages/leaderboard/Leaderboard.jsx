@@ -14,7 +14,7 @@ const Leaderboard = () => {
   const [loading, setLoading] = useState(true);
   const [selectedCollege, setSelectedCollege] = useState("all");
   const [selectedBranch, setSelectedBranch] = useState("all");
-  const [sortBy, setSortBy] = useState("dsa");
+  const [sortBy, setSortBy] = useState("composite");
   const [searchQuery, setSearchQuery] = useState("");
 
   const fetchLeaderboard = async () => {
@@ -92,10 +92,11 @@ const Leaderboard = () => {
             onChange={(e) => setSortBy(e.target.value)}
             className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-850 px-3.5 py-2.5 text-sm font-medium text-indigo-700 dark:text-indigo-300 outline-none focus:border-indigo-500"
           >
-            <option value="dsa">🔥 Total DSA Solved</option>
+            <option value="composite">⚡ Overall Composite Rank</option>
+            <option value="contest">🏆 Competitive Programming (CF / LC / CC)</option>
+            <option value="dsa">🔥 Problem Solving Depth</option>
+            <option value="engineering">💻 Software Engineering (GitHub)</option>
             <option value="advanced_topics">🧠 Advanced Topics Depth</option>
-            <option value="contest">🏆 Contest Rating (Codeforces)</option>
-            <option value="readiness">⚡ Placement Readiness</option>
           </select>
         </div>
 

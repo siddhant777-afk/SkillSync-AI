@@ -46,10 +46,12 @@ export const UserProvider = ({ children }) => {
           codechef: { username: "", rating: 0, title: "Unrated" },
           kaggle: { username: "", notebooks: 0 },
           progress: {
-            months: ["Dec", "Jan", "Feb", "Mar", "Apr", "May"],
-            leetcode: [0, 10, 25, 30, 40, 50],
-            github: [0, 20, 50, 80, 120, 150],
-            projects: [0, 1, 1, 2, 2, 3],
+            months: [],
+            leetcode: [],
+            github: [],
+            codeforces: [],
+            codechef: [],
+            velocity: [],
           },
           upcomingEvents: [],
         });

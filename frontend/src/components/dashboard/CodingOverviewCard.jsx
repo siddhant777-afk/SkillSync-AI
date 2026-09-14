@@ -4,17 +4,18 @@ import {
   CheckCircle2,
   BrainCircuit,
   ShieldCheck,
-  Flame,
   BarChart2,
   ExternalLink,
   GitBranch,
   Star,
   Trophy,
+  Award,
+  Flame,
+  Tag,
 } from "lucide-react";
 import { FaGithub } from "react-icons/fa";
 import { SiCodechef, SiCodeforces, SiKaggle, SiLeetcode } from "react-icons/si";
 import { useUser } from "../../hooks/useUser";
-import { Link } from "react-router-dom";
 
 const CodingOverviewCard = ({ user }) => {
   const { syncAccounts, isSyncing } = useUser();
@@ -32,20 +33,27 @@ const CodingOverviewCard = ({ user }) => {
 
   // Codeforces metrics
   const cfRating = user?.codeforces?.rating ?? 0;
+  const cfMaxRating = user?.codeforces?.maxRating ?? 0;
   const cfSolved = user?.codeforces?.solved ?? 0;
   const cfTitle = user?.codeforces?.title || (cfRating > 0 ? "Rated" : "Unrated");
+  const cfRatingBands = user?.codeforces?.rating_bands || {};
+  const cfTags = user?.codeforces?.topic_tags || {};
 
   // CodeChef metrics
   const ccRating = user?.codechef?.rating ?? 0;
   const ccSolved = user?.codechef?.solved ?? 0;
   const ccStars = user?.codechef?.stars || "";
-  const ccTitle = user?.codechef?.title || (ccRating > 0 ? "Rated" : "Unrated");
+  const ccDivision = user?.codechef?.division || "";
+  const ccGlobalRank = user?.codechef?.globalRank ?? 0;
+  const ccTitle = ccStars && ccStars !== "Unrated" ? ccStars : (ccRating > 0 ? `${ccRating} pts` : "Unrated");
 
   // GitHub metrics
-  const ghCommits = user?.github?.commits ?? user?.github?.contributions ?? 0;
+  const ghCommits = user?.github?.contributions ?? user?.github?.commits ?? 0;
   const ghRepos = user?.github?.repositories ?? 0;
+  const ghSourceRepos = user?.github?.source_repositories_count ?? 0;
   const ghStars = user?.github?.stars ?? 0;
   const ghReposList = user?.github?.repositories_list || [];
+  const ghEngScore = user?.github?.engineering_score ?? 0;
 
   // Kaggle metrics
   const kgNotebooks = user?.kaggle?.notebooks ?? 0;
@@ -72,18 +80,18 @@ const CodingOverviewCard = ({ user }) => {
       contestRating: cfRating,
       contestHelper: cfTitle,
       questionsSolved: cfSolved,
-      questionsHelper: "Problems Solved",
+      questionsHelper: "Native Rating Bands",
     },
     {
       label: "CodeChef",
       icon: SiCodechef,
       iconClass: "text-amber-700 dark:text-amber-500",
       verified: user?.codechef?.verified || false,
-      badge: ccStars || ccTitle,
+      badge: ccStars || (ccRating > 0 ? "Rated" : "Unrated"),
       contestRating: ccRating,
-      contestHelper: ccStars || "Contest Rating",
+      contestHelper: ccDivision || (ccStars ? `${ccStars} Star Tier` : "Contest Rating"),
       questionsSolved: ccSolved,
-      questionsHelper: "Problems Solved",
+      questionsHelper: ccDivision ? `${ccDivision} Coder` : "Problems Solved",
     },
     {
       label: "GitHub",
@@ -92,9 +100,9 @@ const CodingOverviewCard = ({ user }) => {
       verified: user?.github?.verified || false,
       badge: ghCommits > 0 ? "Active" : "Unconnected",
       commitsCount: ghCommits,
-      commitsHelper: "Verified Commits",
+      commitsHelper: "Verified Contributions",
       repositoriesCount: ghRepos,
-      repositoriesHelper: `${ghStars} Stars Accrued`,
+      repositoriesHelper: `${ghStars} Stars · ${ghSourceRepos} Original`,
     },
     {
       label: "Kaggle",
@@ -117,15 +125,19 @@ const CodingOverviewCard = ({ user }) => {
     dp_specific: 0,
   };
   const advancedCount = topicCounts.advanced_topics || topicCounts.dp_and_advanced || 0;
-  const algorithmicDepth = user?.leetcode?.algorithmic_depth_score || 0;
 
-  // Exact mutually-exclusive difficulty percentages (sum = 100%)
+  // Exact mutually-exclusive difficulty percentages for LeetCode
   const totalDiff = lcSolved > 0 ? lcSolved : 1;
   const easyPct = Math.round((lcEasy / totalDiff) * 100);
   const medPct = Math.round((lcMed / totalDiff) * 100);
   const hardPct = Math.max(0, 100 - easyPct - medPct);
 
   const displayedRepos = showAllRepos ? ghReposList : ghReposList.slice(0, 4);
+
+  // Top Codeforces tags sorted by frequency
+  const sortedCfTags = Object.entries(cfTags)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8);
 
   return (
     <section className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-6 shadow-xs space-y-6 min-w-0">
@@ -134,10 +146,10 @@ const CodingOverviewCard = ({ user }) => {
         <div>
           <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <Trophy size={20} className="text-indigo-600 dark:text-indigo-400" />
-            Verified Coding Profiles & Topic Depth
+            Verified Coding Profiles & Platform Telemetry
           </h2>
           <p className="mt-1 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-            Platform contest ratings and question solving metrics extracted directly from official profiles.
+            Official metrics, native difficulty bands, stars, and authentic repository quality.
           </p>
         </div>
         <button
@@ -150,7 +162,7 @@ const CodingOverviewCard = ({ user }) => {
         </button>
       </div>
 
-      {/* Platform Cards Grid - Distinct Contest Rating & Questions Solved */}
+      {/* Platform Cards Grid */}
       <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 min-w-0">
         {platforms.map((p) => {
           const Icon = p.icon;
@@ -184,12 +196,12 @@ const CodingOverviewCard = ({ user }) => {
               {/* Metric 1: Contest Rating / Commits */}
               <div className="pt-2 border-t border-slate-200/60 dark:border-slate-800/80">
                 <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                  {isGitHub ? "Actual Commits" : isKaggle ? "Kaggle Tier" : "Contest Rating"}
+                  {isGitHub ? "Verified Contributions" : isKaggle ? "Kaggle Tier" : "Contest Rating"}
                 </p>
                 <div className="flex items-baseline gap-1.5 mt-0.5">
                   <span className="text-xl font-black text-slate-900 dark:text-white">
                     {isGitHub
-                      ? p.commitsCount.toLocaleString()
+                      ? p.commitsCount > 0 ? p.commitsCount.toLocaleString() : "0"
                       : isKaggle
                       ? p.tierValue
                       : p.contestRating > 0
@@ -208,12 +220,12 @@ const CodingOverviewCard = ({ user }) => {
               {/* Metric 2: Questions Solved / Repositories */}
               <div className="pt-2 border-t border-slate-200/60 dark:border-slate-800/80">
                 <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                  {isGitHub ? "Public Repositories" : isKaggle ? "Kaggle Contributions" : "Problems Solved"}
+                  {isGitHub ? "Repositories" : isKaggle ? "Notebooks" : "Problems Solved"}
                 </p>
                 <div className="flex items-baseline gap-1.5 mt-0.5">
                   <span className="text-xl font-black text-indigo-600 dark:text-indigo-400">
                     {isGitHub
-                      ? p.repositoriesCount
+                      ? `${p.repositoriesCount} repos`
                       : isKaggle
                       ? `${p.questionsSolved} notebooks`
                       : `${p.questionsSolved} solved`}
@@ -297,11 +309,11 @@ const CodingOverviewCard = ({ user }) => {
             <div className="flex items-center gap-2">
               <BrainCircuit size={19} className="text-indigo-600 dark:text-indigo-400 shrink-0" />
               <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-800 dark:text-white">
-                Multi-Platform Deep Dive & Topic Mastery
+                Multi-Platform Deep Dive & Native Telemetry
               </h3>
             </div>
             <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-              Verified ground-truth metrics across all connected platforms with equal depth.
+              Verified ground-truth metrics across each platform in its native classification system.
             </p>
           </div>
 
@@ -316,7 +328,7 @@ const CodingOverviewCard = ({ user }) => {
                   : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-750 hover:bg-slate-100 dark:hover:bg-slate-800"
               }`}
             >
-              🌐 All Platforms
+              🌐 Overview
             </button>
             <button
               type="button"
@@ -414,7 +426,7 @@ const CodingOverviewCard = ({ user }) => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <SiCodeforces className="text-blue-500 text-base" />
-                  <span className="text-xs font-bold text-slate-900 dark:text-white">Codeforces Competitive Telemetry</span>
+                  <span className="text-xs font-bold text-slate-900 dark:text-white">Codeforces Standings</span>
                 </div>
                 <span className="text-[10px] font-bold text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 rounded border border-blue-200 dark:border-blue-800">
                   {cfTitle}
@@ -440,8 +452,14 @@ const CodingOverviewCard = ({ user }) => {
               </div>
 
               <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center justify-between pt-1">
-                <span>Platform Rating Tier: <strong className="text-slate-800 dark:text-slate-200">{cfTitle}</strong></span>
-                <span className="text-blue-600 dark:text-blue-400 font-semibold">Active Sync</span>
+                <span>Rating Tier: <strong className="text-slate-800 dark:text-slate-200">{cfTitle}</strong></span>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("codeforces")}
+                  className="text-blue-600 dark:text-blue-400 font-semibold hover:underline"
+                >
+                  View Native Rating Bands →
+                </button>
               </div>
             </div>
 
@@ -453,7 +471,7 @@ const CodingOverviewCard = ({ user }) => {
                   <span className="text-xs font-bold text-slate-900 dark:text-white">CodeChef Contest Telemetry</span>
                 </div>
                 <span className="text-[10px] font-bold text-orange-700 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/60 px-2 py-0.5 rounded border border-orange-200 dark:border-orange-800">
-                  {ccStars || (ccRating > 0 ? "Rated" : "Active")}
+                  {ccStars || (ccRating > 0 ? `${ccRating} pts` : "Unrated")}
                 </span>
               </div>
 
@@ -463,7 +481,7 @@ const CodingOverviewCard = ({ user }) => {
                   <p className="text-lg font-black text-orange-700 dark:text-orange-400 mt-0.5">
                     {ccRating > 0 ? `${ccRating} pts` : "Unrated"}
                   </p>
-                  <p className="text-[10px] text-slate-400 mt-0.5">{ccStars || "Division Coder"}</p>
+                  <p className="text-[10px] text-slate-400 mt-0.5">{ccStars ? `${ccStars} Star Tier` : "Division Coder"}</p>
                 </div>
 
                 <div className="rounded-lg bg-slate-50 dark:bg-slate-850 p-3 border border-slate-100 dark:border-slate-750 text-center">
@@ -471,17 +489,23 @@ const CodingOverviewCard = ({ user }) => {
                   <p className="text-lg font-black text-slate-900 dark:text-white mt-0.5">
                     {ccSolved} <span className="text-xs font-normal text-slate-400">solved</span>
                   </p>
-                  <p className="text-[10px] text-slate-400 mt-0.5">Practice & Star Contests</p>
+                  <p className="text-[10px] text-slate-400 mt-0.5">{ccDivision || "Practice Archive"}</p>
                 </div>
               </div>
 
               <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center justify-between pt-1">
-                <span>Star Classification: <strong className="text-slate-800 dark:text-slate-200">{ccStars || "Unrated"}</strong></span>
-                <span className="text-orange-600 dark:text-orange-400 font-semibold">Active Sync</span>
+                <span>Division: <strong className="text-slate-800 dark:text-slate-200">{ccDivision || "Unrated"}</strong></span>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("codechef")}
+                  className="text-orange-600 dark:text-orange-400 font-semibold hover:underline"
+                >
+                  View Star Telemetry →
+                </button>
               </div>
             </div>
 
-            {/* GitHub Codebase Card */}
+            {/* GitHub Card */}
             <div className="rounded-xl bg-white dark:bg-slate-900 p-4 border border-slate-200 dark:border-slate-800 space-y-3 min-w-0">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -489,21 +513,21 @@ const CodingOverviewCard = ({ user }) => {
                   <span className="text-xs font-bold text-slate-900 dark:text-white">GitHub Real Code Contributions</span>
                 </div>
                 <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
-                  Verified Commits
+                  {ghCommits > 0 ? "Active Git Contributor" : "Connected"}
                 </span>
               </div>
 
               <div className="grid grid-cols-2 gap-2.5 pt-1">
                 <div className="rounded-lg bg-slate-100 dark:bg-slate-850 p-3 border border-slate-200 dark:border-slate-750 text-center">
-                  <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Commits</p>
+                  <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Contributions</p>
                   <p className="text-lg font-black text-slate-900 dark:text-white mt-0.5">
                     {ghCommits.toLocaleString()}
                   </p>
-                  <p className="text-[10px] text-slate-400 mt-0.5">Verified Git Push Events</p>
+                  <p className="text-[10px] text-slate-400 mt-0.5">Calendar Push Events</p>
                 </div>
 
                 <div className="rounded-lg bg-slate-100 dark:bg-slate-850 p-3 border border-slate-200 dark:border-slate-750 text-center">
-                  <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Public Repositories</p>
+                  <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Repositories</p>
                   <p className="text-lg font-black text-indigo-600 dark:text-indigo-400 mt-0.5">
                     {ghRepos} <span className="text-xs font-normal text-slate-400">repos</span>
                   </p>
@@ -512,13 +536,13 @@ const CodingOverviewCard = ({ user }) => {
               </div>
 
               <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center justify-between pt-1">
-                <span>Public Repos: <strong className="text-slate-800 dark:text-slate-200">{ghRepos} repositories</strong></span>
+                <span>Original Repos: <strong className="text-slate-800 dark:text-slate-200">{ghSourceRepos} source</strong></span>
                 <button
                   type="button"
-                  onClick={() => setShowAllRepos((prev) => !prev)}
+                  onClick={() => setActiveTab("github")}
                   className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline"
                 >
-                  View Code Projects ({ghReposList.length}) →
+                  View Code Quality →
                 </button>
               </div>
             </div>
@@ -562,81 +586,123 @@ const CodingOverviewCard = ({ user }) => {
             <div className="grid gap-3 grid-cols-1 sm:grid-cols-3 text-center">
               <div className="rounded-xl bg-white dark:bg-slate-900 p-3.5 border border-slate-200 dark:border-slate-800">
                 <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Fundamentals</p>
-                <p className="mt-1 text-xl font-black text-slate-900 dark:text-white">{topicCounts.fundamentals} problems</p>
+                <p className="mt-1 text-xl font-black text-slate-900 dark:text-white">{topicCounts.fundamentals || 0} problems</p>
               </div>
               <div className="rounded-xl bg-white dark:bg-slate-900 p-3.5 border border-slate-200 dark:border-slate-800">
                 <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Core DSA</p>
-                <p className="mt-1 text-xl font-black text-slate-900 dark:text-white">{topicCounts.core_dsa} problems</p>
+                <p className="mt-1 text-xl font-black text-slate-900 dark:text-white">{topicCounts.core_dsa || 0} problems</p>
               </div>
               <div className="rounded-xl bg-purple-50/50 dark:bg-purple-950/30 p-3.5 border border-purple-100 dark:border-purple-900/40">
-                <p className="text-xs font-bold text-purple-700 dark:text-purple-300">Advanced Topics</p>
+                <p className="text-xs font-bold text-purple-700 dark:text-purple-300">Advanced Topics & DP</p>
                 <p className="mt-1 text-xl font-black text-purple-700 dark:text-purple-300">{advancedCount} problems</p>
               </div>
             </div>
           </div>
         )}
 
-        {/* TAB 3: CODEFORCES FOCUSED DEEP DIVE */}
+        {/* TAB 3: CODEFORCES NATIVE RATING BANDS & TOPIC TAGS */}
         {activeTab === "codeforces" && (
-          <div className="rounded-xl bg-white dark:bg-slate-900 p-5 border border-slate-200 dark:border-slate-800 space-y-4">
-            <div className="flex items-center justify-between">
+          <div className="rounded-xl bg-white dark:bg-slate-900 p-5 border border-slate-200 dark:border-slate-800 space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <SiCodeforces className="text-blue-500 text-xl" />
                 <div>
-                  <h4 className="text-sm font-bold text-slate-900 dark:text-white">Codeforces Competitive Standing</h4>
-                  <p className="text-xs text-slate-500">Official Division contest benchmarks</p>
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white">Codeforces Native Problem Rating Bands</h4>
+                  <p className="text-xs text-slate-500">Categorized by official Codeforces difficulty rating standards, not LeetCode approximations.</p>
                 </div>
               </div>
-              <span className="text-xs font-bold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950 px-3 py-1 rounded-full border border-blue-200 dark:border-blue-800">
-                {cfTitle}
+              <span className="text-xs font-bold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950 px-3 py-1 rounded-full border border-blue-200 dark:border-blue-800 self-start sm:self-auto">
+                {cfTitle} {cfRating > 0 ? `(${cfRating} pts)` : ""}
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
-              <div className="rounded-xl bg-slate-50 dark:bg-slate-850 p-4 border border-slate-200 dark:border-slate-750">
-                <span className="text-xs font-semibold text-slate-500">Current Rating</span>
-                <p className="text-2xl font-black text-blue-600 dark:text-blue-400 mt-1">{cfRating > 0 ? `${cfRating} pts` : "Unrated"}</p>
-              </div>
-              <div className="rounded-xl bg-slate-50 dark:bg-slate-850 p-4 border border-slate-200 dark:border-slate-750">
-                <span className="text-xs font-semibold text-slate-500">Max Peak Rating</span>
-                <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">{cfRating > 0 ? `${cfRating} pts` : "Unrated"}</p>
-              </div>
-              <div className="rounded-xl bg-slate-50 dark:bg-slate-850 p-4 border border-slate-200 dark:border-slate-750">
-                <span className="text-xs font-semibold text-slate-500">Verified Solved</span>
-                <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">{cfSolved} problems</p>
-              </div>
+            {/* Codeforces Native Rating Bands Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {[
+                { band: "< 1000", label: "Newbie Basics", count: cfRatingBands["< 1000 (Newbie Basics)"] || 0, color: "text-slate-600 bg-slate-100 dark:bg-slate-800 border-slate-200" },
+                { band: "1000–1199", label: "Newbie Advanced", count: cfRatingBands["1000–1199 (Newbie Advanced)"] || 0, color: "text-slate-700 bg-slate-100 dark:bg-slate-800 border-slate-200" },
+                { band: "1200–1399", label: "Pupil", count: cfRatingBands["1200–1399 (Pupil)"] || 0, color: "text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200" },
+                { band: "1400–1599", label: "Specialist", count: cfRatingBands["1400–1599 (Specialist)"] || 0, color: "text-cyan-700 bg-cyan-50 dark:bg-cyan-950/40 border-cyan-200" },
+                { band: "1600–1899", label: "Expert", count: cfRatingBands["1600–1899 (Expert)"] || 0, color: "text-blue-700 bg-blue-50 dark:bg-blue-950/40 border-blue-200" },
+                { band: "1900–2099", label: "Candidate Master", count: cfRatingBands["1900–2099 (Candidate Master)"] || 0, color: "text-purple-700 bg-purple-50 dark:bg-purple-950/40 border-purple-200" },
+                { band: "2100+", label: "Master+", count: cfRatingBands["2100+ (Master+)"] || 0, color: "text-amber-700 bg-amber-50 dark:bg-amber-950/40 border-amber-200" },
+                { band: "Unrated", label: "Practice/Gym", count: cfRatingBands["Unrated"] || 0, color: "text-slate-500 bg-slate-50 dark:bg-slate-850 border-slate-200" },
+              ].map((item) => (
+                <div key={item.band} className={`rounded-xl p-3 border ${item.color} text-center`}>
+                  <span className="text-[10px] font-bold uppercase tracking-wider block opacity-75">{item.band}</span>
+                  <span className="text-xs font-semibold block mt-0.5 truncate">{item.label}</span>
+                  <p className="text-xl font-black mt-1">{item.count}</p>
+                </div>
+              ))}
             </div>
+
+            {/* Top Solved Tags */}
+            {sortedCfTags.length > 0 && (
+              <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-slate-300">
+                  <Tag size={13} className="text-blue-500" />
+                  <span>Demonstrated Topic Competencies</span>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {sortedCfTags.map(([tag, count]) => (
+                    <span
+                      key={tag}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200/80 dark:border-blue-900"
+                    >
+                      <span>{tag}</span>
+                      <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-blue-200/60 dark:bg-blue-800 text-blue-900 dark:text-blue-100 font-bold">{count}</span>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
         {/* TAB 4: CODECHEF FOCUSED DEEP DIVE */}
         {activeTab === "codechef" && (
           <div className="rounded-xl bg-white dark:bg-slate-900 p-5 border border-slate-200 dark:border-slate-800 space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <SiCodechef className="text-orange-500 text-xl" />
                 <div>
                   <h4 className="text-sm font-bold text-slate-900 dark:text-white">CodeChef Star Division Telemetry</h4>
-                  <p className="text-xs text-slate-500">Global rated contest standing</p>
+                  <p className="text-xs text-slate-500">Official Star Bands (1★ to 7★) and Division Ratings.</p>
                 </div>
               </div>
-              <span className="text-xs font-bold text-orange-700 dark:text-orange-300 bg-orange-50 dark:bg-orange-950 px-3 py-1 rounded-full border border-orange-200 dark:border-orange-800">
-                {ccStars || "Rated Division"}
+              <span className="text-xs font-bold text-orange-700 dark:text-orange-300 bg-orange-50 dark:bg-orange-950 px-3 py-1 rounded-full border border-orange-200 dark:border-orange-800 self-start sm:self-auto">
+                {ccStars && ccStars !== "Unrated" ? ccStars : "Rated Division"}
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-center">
               <div className="rounded-xl bg-slate-50 dark:bg-slate-850 p-4 border border-slate-200 dark:border-slate-750">
                 <span className="text-xs font-semibold text-slate-500">Contest Rating</span>
-                <p className="text-2xl font-black text-orange-600 dark:text-orange-400 mt-1">{ccRating > 0 ? `${ccRating} pts` : "Unrated"}</p>
+                <p className="text-2xl font-black text-orange-600 dark:text-orange-400 mt-1">
+                  {ccRating > 0 ? `${ccRating} pts` : "Unrated"}
+                </p>
+                <p className="text-[10px] text-slate-400 mt-0.5">{ccStars || "Standard Coder"}</p>
               </div>
               <div className="rounded-xl bg-slate-50 dark:bg-slate-850 p-4 border border-slate-200 dark:border-slate-750">
-                <span className="text-xs font-semibold text-slate-500">Star Classification</span>
-                <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">{ccStars || "1★ - 7★ Scale"}</p>
+                <span className="text-xs font-semibold text-slate-500">Star Tier</span>
+                <p className="text-2xl font-black text-amber-500 mt-1">
+                  {ccStars || "Unrated"}
+                </p>
+                <p className="text-[10px] text-slate-400 mt-0.5">1★ to 7★ Scale</p>
+              </div>
+              <div className="rounded-xl bg-slate-50 dark:bg-slate-850 p-4 border border-slate-200 dark:border-slate-750">
+                <span className="text-xs font-semibold text-slate-500">Division</span>
+                <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">
+                  {ccDivision || "Unrated"}
+                </p>
+                <p className="text-[10px] text-slate-400 mt-0.5">Official Contest Div</p>
               </div>
               <div className="rounded-xl bg-slate-50 dark:bg-slate-850 p-4 border border-slate-200 dark:border-slate-750">
                 <span className="text-xs font-semibold text-slate-500">Problems Solved</span>
-                <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">{ccSolved} solved</p>
+                <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">
+                  {ccSolved} solved
+                </p>
+                <p className="text-[10px] text-slate-400 mt-0.5">Verified Solves</p>
               </div>
             </div>
           </div>
@@ -645,31 +711,39 @@ const CodingOverviewCard = ({ user }) => {
         {/* TAB 5: GITHUB FOCUSED DEEP DIVE */}
         {activeTab === "github" && (
           <div className="rounded-xl bg-white dark:bg-slate-900 p-5 border border-slate-200 dark:border-slate-800 space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <FaGithub className="text-slate-900 dark:text-white text-xl" />
                 <div>
-                  <h4 className="text-sm font-bold text-slate-900 dark:text-white">GitHub Real Code Contributions</h4>
-                  <p className="text-xs text-slate-500">Commits, repositories, and open source projects</p>
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white">GitHub Real Code Contributions & Quality</h4>
+                  <p className="text-xs text-slate-500">Evaluates original source repositories, commit activity, and code quality rather than empty forks.</p>
                 </div>
               </div>
-              <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950 px-3 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">
-                {ghCommits} Commits
+              <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950 px-3 py-1 rounded-full border border-emerald-200 dark:border-emerald-800 self-start sm:self-auto">
+                {ghCommits} Contributions
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-center">
               <div className="rounded-xl bg-slate-50 dark:bg-slate-850 p-4 border border-slate-200 dark:border-slate-750">
-                <span className="text-xs font-semibold text-slate-500">Verified Commits</span>
+                <span className="text-xs font-semibold text-slate-500">Verified Contributions</span>
                 <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">{ghCommits.toLocaleString()}</p>
+                <p className="text-[10px] text-slate-400 mt-0.5">Calendar Activity</p>
               </div>
               <div className="rounded-xl bg-slate-50 dark:bg-slate-850 p-4 border border-slate-200 dark:border-slate-750">
-                <span className="text-xs font-semibold text-slate-500">Public Repositories</span>
-                <p className="text-2xl font-black text-indigo-600 dark:text-indigo-400 mt-1">{ghRepos} repos</p>
+                <span className="text-xs font-semibold text-slate-500">Original Source Repos</span>
+                <p className="text-2xl font-black text-indigo-600 dark:text-indigo-400 mt-1">{ghSourceRepos} repos</p>
+                <p className="text-[10px] text-slate-400 mt-0.5">Non-fork Original Projects</p>
               </div>
               <div className="rounded-xl bg-slate-50 dark:bg-slate-850 p-4 border border-slate-200 dark:border-slate-750">
-                <span className="text-xs font-semibold text-slate-500">Total Stars Accrued</span>
+                <span className="text-xs font-semibold text-slate-500">Stars Accrued</span>
                 <p className="text-2xl font-black text-amber-500 mt-1">{ghStars} ★</p>
+                <p className="text-[10px] text-slate-400 mt-0.5">Community Traction</p>
+              </div>
+              <div className="rounded-xl bg-slate-50 dark:bg-slate-850 p-4 border border-slate-200 dark:border-slate-750">
+                <span className="text-xs font-semibold text-slate-500">Engineering Score</span>
+                <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">{ghEngScore}/100</p>
+                <p className="text-[10px] text-slate-400 mt-0.5">Quality Weighted</p>
               </div>
             </div>
           </div>
