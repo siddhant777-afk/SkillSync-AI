@@ -67,30 +67,6 @@ const RegisterForm = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleDirectRegister = async () => {
-    const validationErrors = validateStepOne(formData);
-    if (Object.keys(validationErrors).length) {
-      setErrors(validationErrors);
-      return;
-    }
-
-    if (!formData.isVerified) {
-      toast.error("Please verify your email with the 6-digit code before registering.");
-      return;
-    }
-
-    setLoading(true);
-    const response = await register(formData);
-
-    if (response.success) {
-      toast.success("Account created successfully! Welcome to SkillSync AI.");
-      navigate(ROUTES.DASHBOARD);
-    } else {
-      toast.error(response.message || "Registration failed.");
-    }
-
-    setLoading(false);
-  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -164,25 +140,14 @@ const RegisterForm = () => {
           )}
 
           {step === 1 ? (
-            <div className="flex flex-col sm:flex-row gap-2.5 w-full sm:w-auto">
-              <button
-                type="button"
-                onClick={handleDirectRegister}
-                disabled={loading}
-                title="Register immediately without filling optional fields - can fill anytime from web profile"
-                className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/60 px-4 sm:px-5 py-3 text-xs sm:text-sm font-bold text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition w-full sm:w-auto"
-              >
-                <span>Skip Details & Register ⚡</span>
-              </button>
-              <button
-                type="button"
-                onClick={handleNext}
-                disabled={loading}
-                className="rounded-xl bg-indigo-600 px-6 py-3 font-semibold text-white hover:bg-indigo-700 transition shadow-xs text-xs sm:text-sm w-full sm:w-auto"
-              >
-                Next Step →
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={handleNext}
+              disabled={loading}
+              className="rounded-xl bg-indigo-600 px-6 py-3 font-semibold text-white hover:bg-indigo-700 transition shadow-xs text-xs sm:text-sm w-full sm:w-auto"
+            >
+              Next Step →
+            </button>
           ) : (
             <button
               type="submit"
