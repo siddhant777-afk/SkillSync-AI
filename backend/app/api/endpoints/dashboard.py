@@ -256,4 +256,8 @@ def get_progress_analytics(
         "profileCompletion": completion_score,
         "timeline": progress,
         "ranking": ranking_breakdown,
+        "leetcode": lc,
+        "codeforces": cf,
+        "codechef": cc,
+        "github": gh,
     }
