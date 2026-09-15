@@ -229,14 +229,23 @@ class CodeforcesAdapter(BasePlatformAdapter):
             solved_map: Dict[str, Dict[str, Any]] = {}
             topic_tags: Dict[str, int] = {}
             rating_bands = {
-                "< 1000 (Newbie Basics)": 0,
-                "1000–1199 (Newbie Advanced)": 0,
-                "1200–1399 (Pupil)": 0,
-                "1400–1599 (Specialist)": 0,
-                "1600–1899 (Expert)": 0,
-                "1900–2099 (Candidate Master)": 0,
-                "2100+ (Master+)": 0,
+                "800–999": 0,
+                "1000–1199": 0,
+                "1200–1399": 0,
+                "1400–1599": 0,
+                "1600–1799": 0,
+                "1800–1999": 0,
+                "2000–2199": 0,
+                "2200+": 0,
                 "Unrated": 0,
+            }
+            problem_indices = {
+                "A": 0,
+                "B": 0,
+                "C": 0,
+                "D": 0,
+                "E": 0,
+                "F+": 0,
             }
 
             first_sub_date = None
@@ -269,21 +278,30 @@ class CodeforcesAdapter(BasePlatformAdapter):
                                     p_rating = prob.get("rating")
                                     if p_rating is not None:
                                         if p_rating < 1000:
-                                            rating_bands["< 1000 (Newbie Basics)"] += 1
+                                            rating_bands["800–999"] += 1
                                         elif p_rating < 1200:
-                                            rating_bands["1000–1199 (Newbie Advanced)"] += 1
+                                            rating_bands["1000–1199"] += 1
                                         elif p_rating < 1400:
-                                            rating_bands["1200–1399 (Pupil)"] += 1
+                                            rating_bands["1200–1399"] += 1
                                         elif p_rating < 1600:
-                                            rating_bands["1400–1599 (Specialist)"] += 1
-                                        elif p_rating < 1900:
-                                            rating_bands["1600–1899 (Expert)"] += 1
-                                        elif p_rating < 2100:
-                                            rating_bands["1900–2099 (Candidate Master)"] += 1
+                                            rating_bands["1400–1599"] += 1
+                                        elif p_rating < 1800:
+                                            rating_bands["1600–1799"] += 1
+                                        elif p_rating < 2000:
+                                            rating_bands["1800–1999"] += 1
+                                        elif p_rating < 2200:
+                                            rating_bands["2000–2199"] += 1
                                         else:
-                                            rating_bands["2100+ (Master+)"] += 1
+                                            rating_bands["2200+"] += 1
                                     else:
                                         rating_bands["Unrated"] += 1
+
+                                    if idx:
+                                        f_char = str(idx)[0].upper()
+                                        if f_char in ("A", "B", "C", "D", "E"):
+                                            problem_indices[f_char] += 1
+                                        elif f_char.isalpha():
+                                            problem_indices["F+"] += 1
 
                                     for tag in prob.get("tags", []):
                                         t_norm = tag.lower().strip()
@@ -321,6 +339,7 @@ class CodeforcesAdapter(BasePlatformAdapter):
                 "solved": total_solved,
                 "solved_metric": solved_metric.model_dump(),
                 "rating_bands": rating_bands,
+                "problem_indices": problem_indices,
                 "topic_tags": topic_tags,
                 "contest_history": contest_history,
                 "account_created_at": account_created_at,

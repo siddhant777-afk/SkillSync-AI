@@ -37,6 +37,7 @@ const CodingOverviewCard = ({ user }) => {
   const cfSolved = user?.codeforces?.solved ?? 0;
   const cfTitle = user?.codeforces?.title || (cfRating > 0 ? "Rated" : "Unrated");
   const cfRatingBands = user?.codeforces?.rating_bands || {};
+  const cfProblemIndices = user?.codeforces?.problem_indices || {};
   const cfTags = user?.codeforces?.topic_tags || {};
 
   // CodeChef metrics - Separating User Profile from Problem Data
@@ -622,16 +623,17 @@ const CodingOverviewCard = ({ user }) => {
               </span>
             </div>
 
-            {/* Codeforces Native Rating Bands Grid */}
+            {/* Codeforces Numerical Rating Bands Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {[
-                { band: "< 1000", label: "Newbie Basics", count: cfRatingBands["< 1000 (Newbie Basics)"] || 0, color: "text-slate-600 bg-slate-100 dark:bg-slate-800 border-slate-200" },
-                { band: "1000–1199", label: "Newbie Advanced", count: cfRatingBands["1000–1199 (Newbie Advanced)"] || 0, color: "text-slate-700 bg-slate-100 dark:bg-slate-800 border-slate-200" },
-                { band: "1200–1399", label: "Pupil", count: cfRatingBands["1200–1399 (Pupil)"] || 0, color: "text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200" },
-                { band: "1400–1599", label: "Specialist", count: cfRatingBands["1400–1599 (Specialist)"] || 0, color: "text-cyan-700 bg-cyan-50 dark:bg-cyan-950/40 border-cyan-200" },
-                { band: "1600–1899", label: "Expert", count: cfRatingBands["1600–1899 (Expert)"] || 0, color: "text-blue-700 bg-blue-50 dark:bg-blue-950/40 border-blue-200" },
-                { band: "1900–2099", label: "Candidate Master", count: cfRatingBands["1900–2099 (Candidate Master)"] || 0, color: "text-purple-700 bg-purple-50 dark:bg-purple-950/40 border-purple-200" },
-                { band: "2100+", label: "Master+", count: cfRatingBands["2100+ (Master+)"] || 0, color: "text-amber-700 bg-amber-50 dark:bg-amber-950/40 border-amber-200" },
+                { band: "800–999", label: "Introductory", count: cfRatingBands["800–999"] ?? cfRatingBands["< 1000 (Newbie Basics)"] ?? 0, color: "text-slate-700 bg-slate-100 dark:bg-slate-800 border-slate-200" },
+                { band: "1000–1199", label: "Elementary", count: cfRatingBands["1000–1199"] ?? cfRatingBands["1000–1199 (Newbie Advanced)"] ?? 0, color: "text-teal-700 bg-teal-50 dark:bg-teal-950/40 border-teal-200" },
+                { band: "1200–1399", label: "Easy", count: cfRatingBands["1200–1399"] ?? cfRatingBands["1200–1399 (Pupil)"] ?? 0, color: "text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200" },
+                { band: "1400–1599", label: "Intermediate", count: cfRatingBands["1400–1599"] ?? cfRatingBands["1400–1599 (Specialist)"] ?? 0, color: "text-cyan-700 bg-cyan-50 dark:bg-cyan-950/40 border-cyan-200" },
+                { band: "1600–1799", label: "Medium-Hard", count: cfRatingBands["1600–1799"] ?? cfRatingBands["1600–1899 (Expert)"] ?? 0, color: "text-blue-700 bg-blue-50 dark:bg-blue-950/40 border-blue-200" },
+                { band: "1800–1999", label: "Advanced", count: cfRatingBands["1800–1999"] ?? cfRatingBands["1900–2099 (Candidate Master)"] ?? 0, color: "text-indigo-700 bg-indigo-50 dark:bg-indigo-950/40 border-indigo-200" },
+                { band: "2000–2199", label: "Challenging", count: cfRatingBands["2000–2199"] ?? 0, color: "text-purple-700 bg-purple-50 dark:bg-purple-950/40 border-purple-200" },
+                { band: "2200+", label: "Master-Level", count: cfRatingBands["2200+"] ?? cfRatingBands["2100+ (Master+)"] ?? 0, color: "text-rose-700 bg-rose-50 dark:bg-rose-950/40 border-rose-200" },
                 { band: "Unrated", label: "Practice/Gym", count: cfRatingBands["Unrated"] || 0, color: "text-slate-500 bg-slate-50 dark:bg-slate-850 border-slate-200" },
               ].map((item) => (
                 <div key={item.band} className={`rounded-xl p-3 border ${item.color} text-center`}>
@@ -641,6 +643,34 @@ const CodingOverviewCard = ({ user }) => {
                 </div>
               ))}
             </div>
+
+            {/* Contest Problem Index Distribution */}
+            {cfSolved > 0 && (
+              <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                    <Trophy size={13} className="text-blue-500" />
+                    Contest Problem Index Distribution (A to F+)
+                  </span>
+                  <span className="text-[10px] text-slate-400">Standard contest slots</span>
+                </div>
+                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 text-center">
+                  {[
+                    { key: "A", label: "Problem A" },
+                    { key: "B", label: "Problem B" },
+                    { key: "C", label: "Problem C" },
+                    { key: "D", label: "Problem D" },
+                    { key: "E", label: "Problem E" },
+                    { key: "F+", label: "Problem F+" },
+                  ].map((idx) => (
+                    <div key={idx.key} className="rounded-lg bg-slate-50 dark:bg-slate-850 p-2 border border-slate-200 dark:border-slate-800">
+                      <span className="text-[10px] font-bold text-slate-500 block">{idx.label}</span>
+                      <span className="text-base font-black text-blue-600 dark:text-blue-400">{cfProblemIndices[idx.key] || 0}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Top Solved Tags */}
             {sortedCfTags.length > 0 && (
@@ -748,13 +778,13 @@ const CodingOverviewCard = ({ user }) => {
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {[
-                  { band: "< 1000", label: "Intro Basics", count: ccDiffBands["< 1000"] || 0, color: "text-slate-700 bg-slate-100 dark:bg-slate-800 border-slate-200" },
-                  { band: "1000–1199", label: "Div 4 Standard", count: ccDiffBands["1000–1199"] || 0, color: "text-amber-700 bg-amber-50 dark:bg-amber-950/40 border-amber-200" },
-                  { band: "1200–1399", label: "Div 4 Advanced", count: ccDiffBands["1200–1399"] || 0, color: "text-lime-700 bg-lime-50 dark:bg-lime-950/40 border-lime-200" },
-                  { band: "1400–1599", label: "Div 3 Standard", count: ccDiffBands["1400–1599"] || 0, color: "text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200" },
-                  { band: "1600–1799", label: "Div 2 Standard", count: ccDiffBands["1600–1799"] || 0, color: "text-blue-700 bg-blue-50 dark:bg-blue-950/40 border-blue-200" },
-                  { band: "1800–1999", label: "Div 2 Advanced", count: ccDiffBands["1800–1999"] || 0, color: "text-purple-700 bg-purple-50 dark:bg-purple-950/40 border-purple-200" },
-                  { band: "2000+", label: "Div 1 Elite", count: ccDiffBands["2000+"] || 0, color: "text-rose-700 bg-rose-50 dark:bg-rose-950/40 border-rose-200" },
+                  { band: "< 1000", label: "Introductory", count: ccDiffBands["< 1000"] || 0, color: "text-slate-700 bg-slate-100 dark:bg-slate-800 border-slate-200" },
+                  { band: "1000–1199", label: "Elementary", count: ccDiffBands["1000–1199"] || 0, color: "text-amber-700 bg-amber-50 dark:bg-amber-950/40 border-amber-200" },
+                  { band: "1200–1399", label: "Easy", count: ccDiffBands["1200–1399"] || 0, color: "text-lime-700 bg-lime-50 dark:bg-lime-950/40 border-lime-200" },
+                  { band: "1400–1599", label: "Intermediate", count: ccDiffBands["1400–1599"] || 0, color: "text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200" },
+                  { band: "1600–1799", label: "Medium", count: ccDiffBands["1600–1799"] || 0, color: "text-blue-700 bg-blue-50 dark:bg-blue-950/40 border-blue-200" },
+                  { band: "1800–1999", label: "Advanced", count: ccDiffBands["1800–1999"] || 0, color: "text-purple-700 bg-purple-50 dark:bg-purple-950/40 border-purple-200" },
+                  { band: "2000+", label: "Hard / Expert", count: ccDiffBands["2000+"] || 0, color: "text-rose-700 bg-rose-50 dark:bg-rose-950/40 border-rose-200" },
                   { band: "Unrated", label: "Practice / Learning", count: ccDiffBands["Unrated"] || 0, color: "text-slate-500 bg-slate-50 dark:bg-slate-850 border-slate-200" },
                 ].map((item) => (
                   <div key={item.band} className={`rounded-xl p-3 border ${item.color} text-center`}>

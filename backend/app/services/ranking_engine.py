@@ -198,16 +198,17 @@ class RankingEngine:
             + lc_hard * DifficultyWeights.LC_HARD
         )
 
-        # 2. Codeforces weighted points
+        # 2. Codeforces weighted points based on numerical problem ratings
         cf_bands = codeforces_stats.get("rating_bands", {})
         cf_points = (
-            cf_bands.get("< 1000 (Newbie Basics)", 0) * DifficultyWeights.CF_NEWBIE_BASICS
-            + cf_bands.get("1000–1199 (Newbie Advanced)", 0) * DifficultyWeights.CF_NEWBIE_ADVANCED
-            + cf_bands.get("1200–1399 (Pupil)", 0) * DifficultyWeights.CF_PUPIL
-            + cf_bands.get("1400–1599 (Specialist)", 0) * DifficultyWeights.CF_SPECIALIST
-            + cf_bands.get("1600–1899 (Expert)", 0) * DifficultyWeights.CF_EXPERT
-            + cf_bands.get("1900–2099 (Candidate Master)", 0) * DifficultyWeights.CF_CANDIDATE_MASTER
-            + cf_bands.get("2100+ (Master+)", 0) * DifficultyWeights.CF_MASTER_PLUS
+            (cf_bands.get("800–999", 0) or cf_bands.get("< 1000", 0) or cf_bands.get("< 1000 (Newbie Basics)", 0)) * DifficultyWeights.CF_BAND_800_999
+            + (cf_bands.get("1000–1199", 0) or cf_bands.get("1000–1199 (Newbie Advanced)", 0)) * DifficultyWeights.CF_BAND_1000_1199
+            + (cf_bands.get("1200–1399", 0) or cf_bands.get("1200–1399 (Pupil)", 0)) * DifficultyWeights.CF_BAND_1200_1399
+            + (cf_bands.get("1400–1599", 0) or cf_bands.get("1400–1599 (Specialist)", 0)) * DifficultyWeights.CF_BAND_1400_1599
+            + (cf_bands.get("1600–1799", 0) or cf_bands.get("1600–1899 (Expert)", 0)) * DifficultyWeights.CF_BAND_1600_1799
+            + (cf_bands.get("1800–1999", 0) or cf_bands.get("1900–2099 (Candidate Master)", 0)) * DifficultyWeights.CF_BAND_1800_1999
+            + cf_bands.get("2000–2199", 0) * DifficultyWeights.CF_BAND_2000_2199
+            + (cf_bands.get("2200+", 0) or cf_bands.get("2100+ (Master+)", 0)) * DifficultyWeights.CF_BAND_2200_PLUS
             + cf_bands.get("Unrated", 0) * DifficultyWeights.CF_UNRATED
         )
 

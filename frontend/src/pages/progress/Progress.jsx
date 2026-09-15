@@ -44,6 +44,7 @@ const Progress = () => {
   const cfMaxRating = user?.codeforces?.maxRating ?? 0;
   const cfTitle = user?.codeforces?.title || (cfRating > 0 ? "Rated" : "Unrated");
   const cfRatingBands = user?.codeforces?.rating_bands || {};
+  const cfProblemIndices = user?.codeforces?.problem_indices || {};
   const cfTags = user?.codeforces?.topic_tags || {};
 
   // CodeChef metrics - Separating User Profile from Problem Data
@@ -71,20 +72,49 @@ const Progress = () => {
   const completion = user?.profileCompletion ?? 0;
   const atsScore = user?.ats_score ?? user?.atsScore ?? 0;
 
-  // Timeline data
-  const progressData = user?.progress?.months?.length
+  // Authoritative dynamic multi-platform timeline data
+  const rawProgress = user?.progress?.months?.length
     ? user.progress
-    : {
-        months: [],
-        leetcode: [],
-        github: [],
-        codeforces: [],
-        codechef: [],
-        velocity: [],
-      };
+    : user?.timeline?.months?.length
+    ? user.timeline
+    : null;
 
-  const timelineSeries = progressData[selectedTimelineMetric] || progressData.leetcode || [];
-  const maxTimelineVal = Math.max(...timelineSeries, 1);
+  const progressData = rawProgress || {
+    months: [],
+    month_keys: [],
+    month_full_labels: [],
+    leetcode: [],
+    github: [],
+    codeforces: [],
+    codechef: [],
+    velocity: [],
+    platforms: {},
+  };
+
+  const progressPlatforms = progressData.platforms || {};
+
+  // Selected timeline platform view (using that platform's authentic independent joined timeline)
+  const currentPlatTimeline = progressPlatforms[selectedTimelineMetric];
+  const isPlatformSelected = selectedTimelineMetric !== "velocity" && selectedTimelineMetric !== "unified";
+
+  const displayMonths =
+    isPlatformSelected && currentPlatTimeline?.months?.length
+      ? currentPlatTimeline.months
+      : progressData.months;
+
+  const displayFullLabels =
+    isPlatformSelected && currentPlatTimeline?.month_full_labels?.length
+      ? currentPlatTimeline.month_full_labels
+      : progressData.month_full_labels;
+
+  const displayActivity =
+    isPlatformSelected && currentPlatTimeline?.activity?.length
+      ? currentPlatTimeline.activity
+      : progressData[selectedTimelineMetric] || progressData.leetcode || [];
+
+  const displayContests = currentPlatTimeline?.contests_participated || [];
+  const displayRatings = currentPlatTimeline?.rating_trajectory || [];
+  const maxTimelineVal = Math.max(...displayActivity, 1);
 
   // Authoritative ranking engine pillar scores
   const dimScores = user?.ranking?.dimension_scores || {};
@@ -100,36 +130,54 @@ const Progress = () => {
   const lcMedPct = Math.round((lcMed / lcTotalDiff) * 100);
   const lcHardPct = Math.max(0, 100 - lcEasyPct - lcMedPct);
 
-  // Codeforces rating bands configuration
+  // Codeforces Numerical Rating Bands (Strictly no user titles in question difficulty)
   const CF_TIER_CONFIG = [
-    { key: "< 1000 (Newbie Basics)", label: "< 1000", subtitle: "Newbie Basics", color: "bg-gray-400 dark:bg-gray-500", text: "text-gray-600 dark:text-gray-300", border: "border-gray-200 dark:border-gray-700" },
-    { key: "1000–1199 (Newbie Advanced)", label: "1000–1199", subtitle: "Newbie Advanced", color: "bg-slate-500 dark:bg-slate-400", text: "text-slate-700 dark:text-slate-300", border: "border-slate-200 dark:border-slate-700" },
-    { key: "1200–1399 (Pupil)", label: "1200–1399", subtitle: "Pupil", color: "bg-emerald-500 dark:bg-emerald-400", text: "text-emerald-700 dark:text-emerald-300", border: "border-emerald-200 dark:border-emerald-800" },
-    { key: "1400–1599 (Specialist)", label: "1400–1599", subtitle: "Specialist", color: "bg-cyan-500 dark:bg-cyan-400", text: "text-cyan-700 dark:text-cyan-300", border: "border-cyan-200 dark:border-cyan-800" },
-    { key: "1600–1899 (Expert)", label: "1600–1899", subtitle: "Expert (Top ~3%)", color: "bg-blue-500 dark:bg-blue-400", text: "text-blue-700 dark:text-blue-300", border: "border-blue-200 dark:border-blue-800" },
-    { key: "1900–2099 (Candidate Master)", label: "1900–2099", subtitle: "Candidate Master", color: "bg-purple-500 dark:bg-purple-400", text: "text-purple-700 dark:text-purple-300", border: "border-purple-200 dark:border-purple-800" },
-    { key: "2100+ (Master+)", label: "2100+", subtitle: "Master+", color: "bg-rose-500 dark:bg-rose-400", text: "text-rose-700 dark:text-rose-300", border: "border-rose-200 dark:border-rose-800" },
+    { key: "800–999", altKey: "< 1000 (Newbie Basics)", label: "800–999", subtitle: "Introductory", color: "bg-slate-400 dark:bg-slate-500", text: "text-slate-600 dark:text-slate-300", border: "border-slate-200 dark:border-slate-700" },
+    { key: "1000–1199", altKey: "1000–1199 (Newbie Advanced)", label: "1000–1199", subtitle: "Elementary", color: "bg-teal-500 dark:bg-teal-400", text: "text-teal-700 dark:text-teal-300", border: "border-teal-200 dark:border-teal-700" },
+    { key: "1200–1399", altKey: "1200–1399 (Pupil)", label: "1200–1399", subtitle: "Easy", color: "bg-emerald-500 dark:bg-emerald-400", text: "text-emerald-700 dark:text-emerald-300", border: "border-emerald-200 dark:border-emerald-800" },
+    { key: "1400–1599", altKey: "1400–1599 (Specialist)", label: "1400–1599", subtitle: "Intermediate", color: "bg-cyan-500 dark:bg-cyan-400", text: "text-cyan-700 dark:text-cyan-300", border: "border-cyan-200 dark:border-cyan-800" },
+    { key: "1600–1799", altKey: "1600–1899 (Expert)", label: "1600–1799", subtitle: "Medium-Hard", color: "bg-blue-500 dark:bg-blue-400", text: "text-blue-700 dark:text-blue-300", border: "border-blue-200 dark:border-blue-800" },
+    { key: "1800–1999", altKey: "1900–2099 (Candidate Master)", label: "1800–1999", subtitle: "Advanced", color: "bg-indigo-500 dark:bg-indigo-400", text: "text-indigo-700 dark:text-indigo-300", border: "border-indigo-200 dark:border-indigo-800" },
+    { key: "2000–2199", altKey: null, label: "2000–2199", subtitle: "Challenging", color: "bg-purple-500 dark:bg-purple-400", text: "text-purple-700 dark:text-purple-300", border: "border-purple-200 dark:border-purple-800" },
+    { key: "2200+", altKey: "2100+ (Master+)", label: "2200+", subtitle: "Master-Level", color: "bg-rose-500 dark:bg-rose-400", text: "text-rose-700 dark:text-rose-300", border: "border-rose-200 dark:border-rose-800" },
+    { key: "Unrated", altKey: null, label: "Unrated", subtitle: "Practice / Gym", color: "bg-gray-400 dark:bg-gray-500", text: "text-gray-600 dark:text-gray-300", border: "border-gray-200 dark:border-gray-700" },
   ];
 
+  const getCfBandCount = (tier) => {
+    if (cfRatingBands[tier.key] !== undefined) return cfRatingBands[tier.key];
+    if (tier.altKey && cfRatingBands[tier.altKey] !== undefined) return cfRatingBands[tier.altKey];
+    return 0;
+  };
+
   const maxCfBandCount = Math.max(
-    ...CF_TIER_CONFIG.map((t) => cfRatingBands[t.key] || 0),
+    ...CF_TIER_CONFIG.map((t) => getCfBandCount(t)),
     1
   );
+
+  // Codeforces Contest Problem Index breakdown (A, B, C, D, E, F+)
+  const CF_INDEX_CONFIG = [
+    { key: "A", label: "Problem A", subtitle: "Warmup / Ad-hoc", color: "bg-emerald-500 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800" },
+    { key: "B", label: "Problem B", subtitle: "Simulation / Logic", color: "bg-teal-500 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800" },
+    { key: "C", label: "Problem C", subtitle: "Greedy & Math", color: "bg-cyan-500 text-cyan-700 dark:text-cyan-300 border-cyan-200 dark:border-cyan-800" },
+    { key: "D", label: "Problem D", subtitle: "Graphs & DP", color: "bg-blue-500 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800" },
+    { key: "E", label: "Problem E", subtitle: "Advanced Trees", color: "bg-purple-500 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800" },
+    { key: "F+", label: "Problem F+", subtitle: "Competitive Mastery", color: "bg-rose-500 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800" },
+  ];
 
   // Top Codeforces tags
   const sortedCfTags = Object.entries(cfTags)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 10);
 
-  // CodeChef native numerical difficulty bands configuration
+  // CodeChef native numerical difficulty bands configuration (Strictly no Div mentions in questions)
   const CC_DIFF_CONFIG = [
-    { key: "< 1000", label: "< 1000", subtitle: "Intro Basics", color: "bg-slate-400 dark:bg-slate-500", text: "text-slate-600 dark:text-slate-300", border: "border-slate-200 dark:border-slate-700" },
-    { key: "1000–1199", label: "1000–1199", subtitle: "Div 4 Standard", color: "bg-amber-500 dark:bg-amber-400", text: "text-amber-700 dark:text-amber-300", border: "border-amber-200 dark:border-amber-800" },
-    { key: "1200–1399", label: "1200–1399", subtitle: "Div 4 Advanced", color: "bg-lime-500 dark:bg-lime-400", text: "text-lime-700 dark:text-lime-300", border: "border-lime-200 dark:border-lime-800" },
-    { key: "1400–1599", label: "1400–1599", subtitle: "Div 3 Standard", color: "bg-emerald-500 dark:bg-emerald-400", text: "text-emerald-700 dark:text-emerald-300", border: "border-emerald-200 dark:border-emerald-800" },
-    { key: "1600–1799", label: "1600–1799", subtitle: "Div 2 Standard", color: "bg-blue-500 dark:bg-blue-400", text: "text-blue-700 dark:text-blue-300", border: "border-blue-200 dark:border-blue-800" },
-    { key: "1800–1999", label: "1800–1999", subtitle: "Div 2 Advanced", color: "bg-purple-500 dark:bg-purple-400", text: "text-purple-700 dark:text-purple-300", border: "border-purple-200 dark:border-purple-800" },
-    { key: "2000+", label: "2000+", subtitle: "Div 1 Elite", color: "bg-rose-500 dark:bg-rose-400", text: "text-rose-700 dark:text-rose-300", border: "border-rose-200 dark:border-rose-800" },
+    { key: "< 1000", label: "< 1000", subtitle: "Introductory", color: "bg-slate-400 dark:bg-slate-500", text: "text-slate-600 dark:text-slate-300", border: "border-slate-200 dark:border-slate-700" },
+    { key: "1000–1199", label: "1000–1199", subtitle: "Elementary", color: "bg-amber-500 dark:bg-amber-400", text: "text-amber-700 dark:text-amber-300", border: "border-amber-200 dark:border-amber-800" },
+    { key: "1200–1399", label: "1200–1399", subtitle: "Easy", color: "bg-lime-500 dark:bg-lime-400", text: "text-lime-700 dark:text-lime-300", border: "border-lime-200 dark:border-lime-800" },
+    { key: "1400–1599", label: "1400–1599", subtitle: "Intermediate", color: "bg-emerald-500 dark:bg-emerald-400", text: "text-emerald-700 dark:text-emerald-300", border: "border-emerald-200 dark:border-emerald-800" },
+    { key: "1600–1799", label: "1600–1799", subtitle: "Medium", color: "bg-blue-500 dark:bg-blue-400", text: "text-blue-700 dark:text-blue-300", border: "border-blue-200 dark:border-blue-800" },
+    { key: "1800–1999", label: "1800–1999", subtitle: "Advanced", color: "bg-purple-500 dark:bg-purple-400", text: "text-purple-700 dark:text-purple-300", border: "border-purple-200 dark:border-purple-800" },
+    { key: "2000+", label: "2000+", subtitle: "Hard / Expert", color: "bg-rose-500 dark:bg-rose-400", text: "text-rose-700 dark:text-rose-300", border: "border-rose-200 dark:border-rose-800" },
     { key: "Unrated", label: "Unrated", subtitle: "Practice / Learning", color: "bg-gray-400 dark:bg-gray-500", text: "text-gray-600 dark:text-gray-300", border: "border-gray-200 dark:border-gray-700" },
   ];
 
@@ -285,7 +333,7 @@ const Progress = () => {
                   : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-750"
               }`}
             >
-              <SiCodechef className="text-orange-500" /> CodeChef Stars & Divs
+              <SiCodechef className="text-orange-500" /> CodeChef Numerical Difficulty
             </button>
           </div>
         </div>
@@ -297,8 +345,8 @@ const Progress = () => {
             <span className="font-bold">Authoritative Platform Difference:</span>
             <p className="text-[11px] text-indigo-800/80 dark:text-indigo-300/80 leading-relaxed">
               <strong>LeetCode</strong> distributes questions into 3 discrete buckets (Easy, Medium, Hard). 
-              <strong> Codeforces</strong> does not use Easy/Med/Hard; questions are rated from 800 to 3500 and grouped into 7 official rating tiers (<span className="underline">Newbie</span> to <span className="underline">Master+</span>). 
-              <strong> CodeChef</strong> organizes problems around Star tiers (1★ to 7★) and Divisions (Div 4 down to Div 1). SkillSync AI accurately honors each platform's native taxonomy without flattening them into a single arbitrary scale.
+              <strong> Codeforces</strong> rates problems by numerical difficulty (800 to 3500) and contest problem index (Problem A, B, C, D, E, F+), completely separate from user contest titles. 
+              <strong> CodeChef</strong> organizes practice problems strictly by numerical difficulty ratings (&lt; 1000 to 2000+), while user star tiers (1★ to 7★) and divisions (Div 1 to Div 4) reflect contest ranking. SkillSync AI accurately honors each platform's native taxonomy without flattening them.
             </p>
           </div>
         </div>
@@ -605,9 +653,9 @@ const Progress = () => {
               </div>
 
               {cfSolved > 0 ? (
-                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 pt-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-9 gap-3 pt-2">
                   {CF_TIER_CONFIG.map((tier) => {
-                    const count = cfRatingBands[tier.key] || 0;
+                    const count = getCfBandCount(tier);
                     const heightPct = Math.max(8, Math.round((count / maxCfBandCount) * 100));
                     const pctOfCf = cfSolved > 0 ? Math.round((count / cfSolved) * 100) : 0;
 
@@ -641,10 +689,10 @@ const Progress = () => {
               ) : (
                 <div className="rounded-xl border border-dashed border-slate-200 dark:border-slate-800 p-8 text-center space-y-2">
                   <p className="text-xs font-semibold text-slate-600 dark:text-slate-400">
-                    Connect your Codeforces handle to view your solved problem distribution across official rating tiers.
+                    Connect your Codeforces handle to view your solved problem distribution across official numerical rating bands.
                   </p>
                   <p className="text-[11px] text-slate-400">
-                    Codeforces ranks problems from &lt;1000 (Newbie) up to 2100+ (Master and Grandmaster).
+                    Codeforces rates problems from 800 to 3500+ and by contest letters (A, B, C, D, E, F+).
                   </p>
                   <Link
                     to="/profile"
@@ -655,6 +703,36 @@ const Progress = () => {
                 </div>
               )}
             </div>
+
+            {/* Contest Problem Index Breakdown (Problem A to F+) */}
+            {cfSolved > 0 && (
+              <div className="rounded-xl bg-slate-50/70 dark:bg-slate-850/60 p-4 sm:p-5 border border-slate-200/80 dark:border-slate-800 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                    <Trophy size={16} className="text-blue-500" />
+                    Contest Problem Index Distribution (Index A to F+)
+                  </h4>
+                  <span className="text-[11px] text-slate-400">
+                    Standard contest problem difficulty slots
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 pt-1">
+                  {CF_INDEX_CONFIG.map((idxItem) => {
+                    const idxCount = cfProblemIndices[idxItem.key] || 0;
+                    return (
+                      <div
+                        key={idxItem.key}
+                        className="rounded-xl bg-white dark:bg-slate-900 p-3 border border-slate-200 dark:border-slate-800 text-center space-y-1 shadow-2xs"
+                      >
+                        <span className="text-xs font-bold text-slate-500 dark:text-slate-400 block">{idxItem.label}</span>
+                        <p className="text-xl font-black text-blue-600 dark:text-blue-400">{idxCount}</p>
+                        <p className="text-[10px] text-slate-400 truncate" title={idxItem.subtitle}>{idxItem.subtitle}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Codeforces Topic Tags Cloud */}
             {sortedCfTags.length > 0 && (
@@ -839,7 +917,9 @@ const Progress = () => {
               </h2>
             </div>
             <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
-              {progressData?.earliest_observed_activity
+              {currentPlatTimeline?.earliest_date
+                ? `Independent ${selectedTimelineMetric.toUpperCase()} timeline mapped from earliest verified joined date (${currentPlatTimeline.earliest_date})`
+                : progressData?.earliest_observed_activity
                 ? `Historical timeline mapped from earliest verified activity (${progressData.earliest_observed_activity})`
                 : "Dynamic multi-platform submission volume over time"}
             </p>
@@ -847,9 +927,11 @@ const Progress = () => {
 
           <div className="flex flex-wrap rounded-xl bg-slate-100 dark:bg-slate-800 p-1 gap-1">
             {[
-              ["leetcode", "LeetCode Submissions"],
-              ["github", "GitHub Contributions"],
-              ["codeforces", "Codeforces Contests"],
+              ["unified", "All Platforms"],
+              ["leetcode", "LeetCode"],
+              ["github", "GitHub"],
+              ["codeforces", "Codeforces"],
+              ["codechef", "CodeChef"],
               ["velocity", "Velocity Index"],
             ].map(([key, label]) => (
               <button
@@ -872,25 +954,40 @@ const Progress = () => {
         <div className="mt-3 flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
           <span className="flex h-2 w-2 rounded-full bg-indigo-500" />
           <span>
-            {selectedTimelineMetric === "leetcode" && "Authentic monthly submission count directly from your LeetCode calendar."}
-            {selectedTimelineMetric === "github" && "Verified open-source contributions and Git commit frequency."}
-            {selectedTimelineMetric === "codeforces" && "Official Codeforces rated contest participation history."}
+            {selectedTimelineMetric === "unified" && "Unified multi-platform monthly activity and composite momentum index."}
+            {selectedTimelineMetric === "leetcode" && "Authentic monthly submission count and contest participation from your LeetCode profile."}
+            {selectedTimelineMetric === "github" && "Verified open-source contributions and Git commit frequency starting from your first commit."}
+            {selectedTimelineMetric === "codeforces" && "Official Codeforces contest participation history, rating changes, and solved problems."}
+            {selectedTimelineMetric === "codechef" && "Official CodeChef contest participation history and verified rating milestones."}
             {selectedTimelineMetric === "velocity" && "Composite multi-platform momentum score combining verified coding activity."}
           </span>
         </div>
 
         {/* Timeline Bar Chart */}
-        {progressData.months.length > 0 ? (
-          <div className="mt-6 flex h-60 items-end gap-2 pt-6 sm:gap-4 md:gap-6 min-w-0 overflow-x-auto pb-2">
-            {timelineSeries.map((val, idx) => {
+        {displayMonths.length > 0 ? (
+          <div className="mt-6 flex h-64 items-end gap-2 pt-6 sm:gap-4 md:gap-6 min-w-0 overflow-x-auto pb-2">
+            {displayMonths.map((month, idx) => {
+              const val = displayActivity[idx] || 0;
+              const contestsCount = displayContests[idx] || 0;
+              const ratingVal = displayRatings[idx] || null;
               const heightPct = Math.max(6, Math.round((val / maxTimelineVal) * 100));
-              const fullMonth = progressData.month_full_labels?.[idx] || progressData.months[idx];
+              const fullMonth = displayFullLabels?.[idx] || month;
 
               return (
-                <div key={progressData.months[idx] || idx} className="flex flex-1 flex-col items-center gap-2 min-w-[36px]">
-                  <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 truncate">
-                    {val}
-                  </span>
+                <div key={month || idx} className="flex flex-1 flex-col items-center gap-1.5 min-w-[42px]">
+                  {/* Top indicators: contests badge or activity value */}
+                  <div className="flex flex-col items-center gap-0.5">
+                    {contestsCount > 0 && (
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                        {contestsCount} 🏆
+                      </span>
+                    )}
+                    <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 truncate">
+                      {val}
+                    </span>
+                  </div>
+
+                  {/* Pillar bar */}
                   <div className="w-full max-w-[44px] rounded-t-xl bg-slate-100 dark:bg-slate-800 flex items-end h-44 overflow-hidden">
                     <div
                       className={`w-full rounded-t-xl transition-all duration-500 hover:brightness-110 ${
@@ -898,17 +995,32 @@ const Progress = () => {
                           ? "bg-gradient-to-t from-emerald-600 to-emerald-400"
                           : selectedTimelineMetric === "codeforces"
                           ? "bg-gradient-to-t from-blue-600 to-blue-400"
-                          : selectedTimelineMetric === "velocity"
+                          : selectedTimelineMetric === "codechef"
+                          ? "bg-gradient-to-t from-orange-600 to-orange-400"
+                          : selectedTimelineMetric === "leetcode"
                           ? "bg-gradient-to-t from-amber-600 to-amber-400"
+                          : selectedTimelineMetric === "velocity"
+                          ? "bg-gradient-to-t from-purple-600 to-purple-400"
                           : "bg-gradient-to-t from-indigo-600 to-indigo-400"
                       }`}
                       style={{ height: `${val === 0 ? 4 : heightPct}%` }}
-                      title={`${fullMonth}: ${val}`}
+                      title={`${fullMonth}: ${val} ${
+                        contestsCount > 0 ? `· ${contestsCount} contest(s)` : ""
+                      }${ratingVal ? ` · Rating: ${ratingVal} pts` : ""}`}
                     />
                   </div>
+
+                  {/* Month label */}
                   <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500 truncate">
-                    {progressData.months[idx]}
+                    {month}
                   </span>
+
+                  {/* Rating indicator below month if available */}
+                  {ratingVal && (
+                    <span className="text-[9px] font-semibold text-indigo-600 dark:text-indigo-400 block truncate" title={`Rating: ${ratingVal} pts`}>
+                      {ratingVal}
+                    </span>
+                  )}
                 </div>
               );
             })}

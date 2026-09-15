@@ -67,6 +67,110 @@ class TimelineService:
         return months
 
     @classmethod
+    def build_individual_platform_timeline(
+        cls,
+        stats: Dict[str, Any],
+        monthly_activity: Dict[str, int],
+        contest_history: List[Dict[str, Any]],
+        now: datetime,
+        max_months: int = 24,
+    ) -> Dict[str, Any]:
+        """
+        Builds a dedicated chronological timeline starting from this specific platform's
+        earliest verified activity, without padding or truncating to match other platforms.
+        """
+        verified = stats.get("verified", False)
+        if not verified:
+            return {
+                "verified": False,
+                "has_data": False,
+                "earliest_date": None,
+                "months": [],
+                "month_keys": [],
+                "month_full_labels": [],
+                "activity": [],
+                "contests_participated": [],
+                "rating_trajectory": [],
+                "contest_history": [],
+            }
+
+        date_candidates = []
+        for k in ("earliest_activity_date", "first_activity_date", "account_created_at"):
+            v = stats.get(k)
+            dt = cls._parse_iso_or_str(v)
+            if dt:
+                date_candidates.append(dt)
+
+        if contest_history:
+            for c in contest_history:
+                dt = cls._parse_iso_or_str(c.get("timestamp"))
+                if dt:
+                    date_candidates.append(dt)
+
+        for m_key in monthly_activity.keys():
+            try:
+                dt = datetime.strptime(m_key, "%Y-%m").replace(tzinfo=timezone.utc)
+                date_candidates.append(dt)
+            except Exception:
+                pass
+
+        if not date_candidates:
+            start_dt = datetime(now.year if now.month > 6 else now.year - 1, (now.month - 6) % 12 + 1, 1, tzinfo=timezone.utc)
+            earliest_str = None
+            has_data = False
+        else:
+            earliest_dt = min(date_candidates)
+            earliest_str = earliest_dt.strftime("%Y-%m-%d")
+            min_window_dt = datetime(now.year - (1 if now.month <= max_months else 0), (now.month - max_months) % 12 + 1, 1, tzinfo=timezone.utc)
+            start_dt = max(earliest_dt, min_window_dt)
+            has_data = True
+
+        chronological_months = cls.generate_chronological_months(start_dt, now, max_months=max_months)
+        month_keys = [cm[2] for cm in chronological_months]
+        month_labels = [calendar.month_abbr[cm[1]] for cm in chronological_months]
+        month_full_labels = [cm[3] for cm in chronological_months]
+
+        contests_by_month: Dict[str, List[Dict[str, Any]]] = {}
+        for c in contest_history:
+            ts = c.get("timestamp")
+            if ts:
+                dt = cls._parse_iso_or_str(ts)
+                if dt:
+                    k = dt.strftime("%Y-%m")
+                    contests_by_month.setdefault(k, []).append(c)
+
+        activity_series = []
+        contests_participated_series = []
+        rating_trajectory_series = []
+        curr_rating = None
+
+        for m_key in month_keys:
+            act_count = monthly_activity.get(m_key, 0)
+            c_list = contests_by_month.get(m_key, [])
+            c_count = len(c_list)
+            if c_list:
+                last_r = c_list[-1].get("rating")
+                if last_r is not None:
+                    curr_rating = last_r
+
+            activity_series.append(act_count)
+            contests_participated_series.append(c_count)
+            rating_trajectory_series.append(curr_rating)
+
+        return {
+            "verified": True,
+            "has_data": has_data,
+            "earliest_date": earliest_str,
+            "months": month_labels,
+            "month_keys": month_keys,
+            "month_full_labels": month_full_labels,
+            "activity": activity_series,
+            "contests_participated": contests_participated_series,
+            "rating_trajectory": rating_trajectory_series,
+            "contest_history": contest_history,
+        }
+
+    @classmethod
     def build_timeline(
         cls,
         leetcode_stats: Dict[str, Any],
@@ -78,6 +182,7 @@ class TimelineService:
         """
         Builds a verified, multi-platform chronological timeline.
         No fabricated numbers. Distinguishes verified zero from unavailable history.
+        Includes dedicated independent per-platform timelines under 'platforms'.
         """
         now = datetime.now(timezone.utc)
 
@@ -105,7 +210,39 @@ class TimelineService:
                     key = dt.strftime("%Y-%m")
                     cc_monthly[key] = cc_monthly.get(key, 0) + 1
 
-        # 2. Find earliest observed activity
+        # Build independent per-platform timelines starting from their respective joined dates
+        platforms = {
+            "leetcode": cls.build_individual_platform_timeline(
+                leetcode_stats,
+                lc_monthly,
+                leetcode_stats.get("contest_history", []),
+                now,
+                max_months=24,
+            ),
+            "github": cls.build_individual_platform_timeline(
+                github_stats,
+                gh_monthly,
+                [],
+                now,
+                max_months=24,
+            ),
+            "codeforces": cls.build_individual_platform_timeline(
+                codeforces_stats,
+                cf_monthly,
+                codeforces_stats.get("contest_history", []),
+                now,
+                max_months=24,
+            ),
+            "codechef": cls.build_individual_platform_timeline(
+                codechef_stats,
+                cc_monthly,
+                codechef_stats.get("contest_history", []),
+                now,
+                max_months=24,
+            ),
+        }
+
+        # 2. Find earliest observed activity across all platforms for unified view
         explicit_dates: List[datetime] = []
         for d_str in [
             leetcode_stats.get("earliest_activity_date"),
@@ -143,14 +280,14 @@ class TimelineService:
             start_dt = datetime(now.year if now.month > 6 else now.year - 1, (now.month - 6) % 12 + 1, 1, tzinfo=timezone.utc)
             is_limited = False
 
-        # 3. Generate dynamic sequence of months
+        # 3. Generate dynamic sequence of months for unified view
         chronological_months = cls.generate_chronological_months(start_dt, now, max_months=max_months)
 
         month_keys = [cm[2] for cm in chronological_months]
         month_labels = [calendar.month_abbr[cm[1]] for cm in chronological_months]
         month_full_labels = [cm[3] for cm in chronological_months]
 
-        # 4. Populate exact data series
+        # 4. Populate exact data series for unified view
         lc_series: List[int] = []
         gh_series: List[int] = []
         cf_series: List[int] = []
@@ -190,6 +327,7 @@ class TimelineService:
             "codeforces": cf_series,
             "codechef": cc_series,
             "velocity": velocity_series,
+            "platforms": platforms,
             "earliest_observed_activity": earliest_observed_str,
             "history_available_from": chronological_months[0][2] if chronological_months else None,
             "is_historical_data_limited": is_limited,

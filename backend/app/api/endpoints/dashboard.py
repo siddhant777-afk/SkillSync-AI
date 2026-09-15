@@ -76,7 +76,9 @@ def get_dashboard(
         "verified": False,
         "status": "synced" if cf_verified else "unconnected",
         "rating_bands": {},
+        "problem_indices": {},
         "topic_tags": {},
+        "contest_history": [],
     })
 
     cc_verified = bool(cc_username and "codechef" in stats and stats["codechef"].get("verified"))

@@ -53,6 +53,15 @@ class LeetCodeAdapter(BasePlatformAdapter):
           name
         }
       }
+      userContestRankingHistory(username: $u) {
+        attended
+        rating
+        ranking
+        contest {
+          title
+          startTime
+        }
+      }
     }
     """
 
@@ -178,6 +187,23 @@ class LeetCodeAdapter(BasePlatformAdapter):
                         source_timestamp=now_iso,
                     )
 
+                # Contest History from userContestRankingHistory
+                contest_history = []
+                raw_ch = data.get("userContestRankingHistory") or []
+                for ch in raw_ch:
+                    if ch.get("attended"):
+                        c_obj = ch.get("contest") or {}
+                        st = c_obj.get("startTime")
+                        dt_str = datetime.fromtimestamp(st, tz=timezone.utc).isoformat() if st else None
+                        contest_history.append({
+                            "contest_id": c_obj.get("title", ""),
+                            "contest_name": c_obj.get("title", ""),
+                            "timestamp": dt_str,
+                            "unix_timestamp": st,
+                            "rating": round(ch.get("rating", 0)),
+                            "rank": ch.get("ranking"),
+                        })
+
                 # 4. Tag Problem Counts & Algorithmic Depth Score
                 tags_data = matched.get("tagProblemCounts") or {}
                 adv_tags = tags_data.get("advanced") or []
@@ -257,6 +283,11 @@ class LeetCodeAdapter(BasePlatformAdapter):
                     source_timestamp=now_iso,
                 )
 
+                if contest_history:
+                    first_c_ts = contest_history[0].get("timestamp")
+                    if first_c_ts and (earliest_activity_date is None or first_c_ts < earliest_activity_date):
+                        earliest_activity_date = first_c_ts
+
                 return {
                     "platform": cls.PLATFORM_NAME,
                     "username": matched.get("username", clean_user),
@@ -273,6 +304,7 @@ class LeetCodeAdapter(BasePlatformAdapter):
                     "contest_global_rank": contest_global_rank,
                     "contest_attended": contest_attended,
                     "contest_badge": contest_badge,
+                    "contest_history": contest_history,
                     "topic_counts": {
                         "fundamentals": sum(t.get("problemsSolved", 0) for t in fund_tags),
                         "core_dsa": sum(t.get("problemsSolved", 0) for t in inter_tags),

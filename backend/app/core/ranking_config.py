@@ -43,15 +43,25 @@ class DifficultyWeights:
     LC_MEDIUM = 2.0
     LC_HARD = 5.0
 
-    # Codeforces Native Band Weights
-    CF_NEWBIE_BASICS = 0.5     # < 1000
-    CF_NEWBIE_ADVANCED = 1.0   # 1000-1199
-    CF_PUPIL = 2.0             # 1200-1399
-    CF_SPECIALIST = 3.5        # 1400-1599
-    CF_EXPERT = 5.5            # 1600-1899
-    CF_CANDIDATE_MASTER = 8.0  # 1900-2099
-    CF_MASTER_PLUS = 12.0      # 2100+
+    # Codeforces Numerical Rating Band Weights
+    CF_BAND_800_999 = 0.5      # 800-999 (Introductory)
+    CF_BAND_1000_1199 = 1.0    # 1000-1199 (Elementary)
+    CF_BAND_1200_1399 = 2.0    # 1200-1399 (Easy)
+    CF_BAND_1400_1599 = 3.5    # 1400-1599 (Intermediate)
+    CF_BAND_1600_1799 = 5.5    # 1600-1799 (Medium-Hard)
+    CF_BAND_1800_1999 = 8.0    # 1800-1999 (Advanced)
+    CF_BAND_2000_2199 = 10.0   # 2000-2199 (Challenging)
+    CF_BAND_2200_PLUS = 12.0   # 2200+ (Master-Level)
     CF_UNRATED = 1.0
+
+    # Backward compatibility aliases
+    CF_NEWBIE_BASICS = CF_BAND_800_999
+    CF_NEWBIE_ADVANCED = CF_BAND_1000_1199
+    CF_PUPIL = CF_BAND_1200_1399
+    CF_SPECIALIST = CF_BAND_1400_1599
+    CF_EXPERT = CF_BAND_1600_1799
+    CF_CANDIDATE_MASTER = CF_BAND_1800_1999
+    CF_MASTER_PLUS = CF_BAND_2200_PLUS
 
     # CodeChef Native Band Weights
     CC_BAND_UNDER_1000 = 0.5   # < 1000 (Div 4 intro)
