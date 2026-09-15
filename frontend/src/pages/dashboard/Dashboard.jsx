@@ -33,10 +33,10 @@ const Dashboard = () => {
   const userName = user?.name ? user.name.split(" ")[0] : "Student";
   const hasUnverified = !user?.leetcode?.verified || !user?.github?.verified;
   const readiness = user?.placementReadiness ?? 0;
-  const totalCodingProblems =
-    (user?.leetcode?.solved || 0) +
-    (user?.codeforces?.solved || 0) +
-    (user?.codechef?.solved || user?.codechef?.problems?.total_solved || 0);
+  const lcSolved = user?.leetcode?.solved ?? 0;
+  const cfSolved = user?.codeforces?.solved ?? 0;
+  const ccSolved = user?.codechef?.solved ?? (user?.codechef?.problems?.total_solved ?? 0);
+  const totalCodingProblems = lcSolved + cfSolved + ccSolved;
 
   return (
     <div className="space-y-6">
@@ -96,7 +96,15 @@ const Dashboard = () => {
         <StatCard
           label="Coding Problems"
           value={totalCodingProblems}
-          helper="Verified across platforms"
+          helper={
+            <span className="flex items-center gap-1.5 flex-wrap font-semibold text-[11px]">
+              <span className="text-amber-600 dark:text-amber-400">{lcSolved} LC</span>
+              <span className="text-slate-300 dark:text-slate-600">·</span>
+              <span className="text-blue-600 dark:text-blue-400">{cfSolved} CF</span>
+              <span className="text-slate-300 dark:text-slate-600">·</span>
+              <span className="text-orange-600 dark:text-orange-400">{ccSolved} CC</span>
+            </span>
+          }
           icon={CheckCircle2}
           tone="indigo"
         />
@@ -188,9 +196,14 @@ const Dashboard = () => {
                   className="h-full rounded-full bg-indigo-600 dark:bg-indigo-500 transition-all duration-500"
                 />
               </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                {totalCodingProblems > 0 ? `${totalCodingProblems} problems verified across platforms` : "Connect coding handles to extract verified solves"}
-              </p>
+              <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 gap-1 flex-wrap">
+                <span>{totalCodingProblems} solved total</span>
+                <span className="font-semibold text-[10px]">
+                  <span className="text-amber-600 dark:text-amber-400">{lcSolved} LC</span> ·{" "}
+                  <span className="text-blue-600 dark:text-blue-400">{cfSolved} CF</span> ·{" "}
+                  <span className="text-orange-600 dark:text-orange-400">{ccSolved} CC</span>
+                </span>
+              </div>
             </div>
 
             {/* Pillar 2: Real Code & Verified Projects */}

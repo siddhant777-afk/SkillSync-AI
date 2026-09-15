@@ -27,5 +27,6 @@ export const API_ENDPOINTS = {
   VERIFY_HANDLE: "/api/v1/dashboard/verify-handle",
   VERIFY_PLATFORM: "/api/v1/users/verify-platform",
   RECRUITER_CANDIDATES: "/api/v1/recruiter/candidates",
+  CONTESTS: "/api/v1/contests",
 };
 

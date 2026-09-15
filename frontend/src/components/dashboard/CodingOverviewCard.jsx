@@ -12,6 +12,7 @@ import {
   Award,
   Flame,
   Tag,
+  Code2,
 } from "lucide-react";
 import { FaGithub } from "react-icons/fa";
 import { SiCodechef, SiCodeforces, SiLeetcode } from "react-icons/si";
@@ -152,6 +153,27 @@ const CodingOverviewCard = ({ user }) => {
           <RefreshCw size={13} className={isSyncing ? "animate-spin" : ""} />
           {isSyncing ? "Syncing..." : "Sync Platforms"}
         </button>
+      </div>
+
+      {/* Multi-Platform Solved Problems Summary Banner */}
+      <div className="rounded-xl border border-indigo-100 dark:border-indigo-950 bg-indigo-50/40 dark:bg-indigo-950/20 p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+        <div className="flex items-center gap-2">
+          <Code2 size={16} className="text-indigo-600 dark:text-indigo-400 shrink-0" />
+          <span className="font-bold text-slate-800 dark:text-slate-200">
+            Total Solved Across Platforms: <strong className="text-indigo-600 dark:text-indigo-400">{lcSolved + cfSolved + ccSolved} Problems</strong>
+          </span>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap text-[11px] font-semibold">
+          <span className="px-2 py-0.5 rounded-md bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+            LeetCode: {lcSolved}
+          </span>
+          <span className="px-2 py-0.5 rounded-md bg-blue-100 dark:bg-blue-950/80 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+            Codeforces: {cfSolved}
+          </span>
+          <span className="px-2 py-0.5 rounded-md bg-orange-100 dark:bg-orange-950/80 text-orange-800 dark:text-orange-300 border border-orange-200 dark:border-orange-800">
+            CodeChef: {ccSolved}
+          </span>
+        </div>
       </div>
 
       {/* Platform Cards Grid */}

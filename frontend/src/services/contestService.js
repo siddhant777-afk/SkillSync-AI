@@ -1,4 +1,5 @@
 import api from "./api";
+import { API_ENDPOINTS } from "../constants/api";
 
 const contestService = {
   getContests: async ({ platform = "all", status = "all", search = "", refresh = false } = {}) => {
@@ -8,7 +9,10 @@ const contestService = {
     if (search && search.trim()) params.append("search", search.trim());
     if (refresh) params.append("refresh", "true");
 
-    const response = await api.get(`/contests?${params.toString()}`);
+    const endpoint = API_ENDPOINTS.CONTESTS || "/api/v1/contests";
+    const queryString = params.toString();
+    const url = queryString ? `${endpoint}?${queryString}` : endpoint;
+    const response = await api.get(url);
     return response.data;
   },
 };

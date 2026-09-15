@@ -90,6 +90,11 @@ const JobRecommendations = () => {
     return () => window.removeEventListener("skillsync:update", handleUpdate);
   }, []);
 
+  const lcSolved = user?.leetcode?.solved ?? 0;
+  const cfSolved = user?.codeforces?.solved ?? 0;
+  const ccSolved = user?.codechef?.solved ?? (user?.codechef?.problems?.total_solved ?? 0);
+  const totalDsa = data?.totalDsaSolved ?? (lcSolved + cfSolved + ccSolved);
+
   const sectors = [
     "All",
     "Product Software Engineering",
@@ -129,11 +134,7 @@ const JobRecommendations = () => {
   // Comparison Metrics for Selected Role Chart
   const comparisonData = useMemo(() => {
     if (!selectedRole) return [];
-    const studentDsa =
-      data?.totalDsaSolved ??
-      ((user?.leetcode?.solved || 0) +
-        (user?.codeforces?.solved || 0) +
-        (user?.codechef?.solved || user?.codechef?.problems?.total_solved || 0));
+    const studentDsa = totalDsa;
     const studentDp =
       data?.dpSolved ??
       user?.leetcode?.topic_counts?.dp_specific ??
@@ -170,15 +171,11 @@ const JobRecommendations = () => {
         "Target Benchmark": 85,
       },
     ];
-  }, [selectedRole, data, user]);
+  }, [selectedRole, data, user, totalDsa]);
 
   const radarData = useMemo(() => {
     if (!selectedRole) return [];
-    const studentDsa =
-      data?.totalDsaSolved ??
-      ((user?.leetcode?.solved || 0) +
-        (user?.codeforces?.solved || 0) +
-        (user?.codechef?.solved || user?.codechef?.problems?.total_solved || 0));
+    const studentDsa = totalDsa;
     const studentDp =
       data?.dpSolved ??
       user?.leetcode?.topic_counts?.dp_specific ??
@@ -280,12 +277,13 @@ const JobRecommendations = () => {
             <Code size={18} className="text-orange-500" />
           </div>
           <p className="mt-2 text-2xl sm:text-3xl font-black text-slate-900 dark:text-white whitespace-nowrap">
-            {data?.totalDsaSolved ??
-              ((user?.leetcode?.solved || 0) +
-                (user?.codeforces?.solved || 0) +
-                (user?.codechef?.solved || user?.codechef?.problems?.total_solved || 0))}
+            {totalDsa}
           </p>
-          <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 truncate">Verified coding problems across platforms</p>
+          <div className="mt-1 flex items-center gap-1.5 flex-wrap font-semibold text-[11px] text-slate-500 dark:text-slate-400">
+            <span className="text-amber-600 dark:text-amber-400">{lcSolved} LC</span> ·
+            <span className="text-blue-600 dark:text-blue-400">{cfSolved} CF</span> ·
+            <span className="text-orange-600 dark:text-orange-400">{ccSolved} CC</span>
+          </div>
         </div>
 
         <div className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs min-w-0">
