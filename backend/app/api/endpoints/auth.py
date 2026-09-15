@@ -197,7 +197,6 @@ def register(data: UserRegister, db: Session = Depends(get_db)):
         leetcode_username=(data.leetcode or "").strip(),
         codeforces_username=(data.codeforces or "").strip(),
         codechef_username=(data.codechef or "").strip(),
-        kaggle_username=(data.kaggle or "").strip(),
     )
     db.add(accounts)
 

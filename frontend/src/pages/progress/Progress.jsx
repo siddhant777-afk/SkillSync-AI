@@ -154,16 +154,6 @@ const Progress = () => {
     1
   );
 
-  // Codeforces Contest Problem Index breakdown (A, B, C, D, E, F+)
-  const CF_INDEX_CONFIG = [
-    { key: "A", label: "Problem A", subtitle: "Warmup / Ad-hoc", color: "bg-emerald-500 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800" },
-    { key: "B", label: "Problem B", subtitle: "Simulation / Logic", color: "bg-teal-500 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800" },
-    { key: "C", label: "Problem C", subtitle: "Greedy & Math", color: "bg-cyan-500 text-cyan-700 dark:text-cyan-300 border-cyan-200 dark:border-cyan-800" },
-    { key: "D", label: "Problem D", subtitle: "Graphs & DP", color: "bg-blue-500 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800" },
-    { key: "E", label: "Problem E", subtitle: "Advanced Trees", color: "bg-purple-500 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800" },
-    { key: "F+", label: "Problem F+", subtitle: "Competitive Mastery", color: "bg-rose-500 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800" },
-  ];
-
   // Top Codeforces tags
   const sortedCfTags = Object.entries(cfTags)
     .sort((a, b) => b[1] - a[1])
@@ -704,36 +694,6 @@ const Progress = () => {
               )}
             </div>
 
-            {/* Contest Problem Index Breakdown (Problem A to F+) */}
-            {cfSolved > 0 && (
-              <div className="rounded-xl bg-slate-50/70 dark:bg-slate-850/60 p-4 sm:p-5 border border-slate-200/80 dark:border-slate-800 space-y-3">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200 flex items-center gap-2">
-                    <Trophy size={16} className="text-blue-500" />
-                    Contest Problem Index Distribution (Index A to F+)
-                  </h4>
-                  <span className="text-[11px] text-slate-400">
-                    Standard contest problem difficulty slots
-                  </span>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 pt-1">
-                  {CF_INDEX_CONFIG.map((idxItem) => {
-                    const idxCount = cfProblemIndices[idxItem.key] || 0;
-                    return (
-                      <div
-                        key={idxItem.key}
-                        className="rounded-xl bg-white dark:bg-slate-900 p-3 border border-slate-200 dark:border-slate-800 text-center space-y-1 shadow-2xs"
-                      >
-                        <span className="text-xs font-bold text-slate-500 dark:text-slate-400 block">{idxItem.label}</span>
-                        <p className="text-xl font-black text-blue-600 dark:text-blue-400">{idxCount}</p>
-                        <p className="text-[10px] text-slate-400 truncate" title={idxItem.subtitle}>{idxItem.subtitle}</p>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
             {/* Codeforces Topic Tags Cloud */}
             {sortedCfTags.length > 0 && (
               <div className="rounded-xl bg-slate-50/70 dark:bg-slate-850/60 p-4 sm:p-5 border border-slate-200/80 dark:border-slate-800 space-y-3">
@@ -872,34 +832,6 @@ const Progress = () => {
               </div>
             )}
 
-            {/* CodeChef Official Division Reference Framework */}
-            <div className="rounded-xl bg-slate-50/70 dark:bg-slate-850/60 p-4 sm:p-5 border border-slate-200/80 dark:border-slate-800 space-y-3">
-              <div className="flex items-center justify-between">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200 flex items-center gap-2">
-                  <Trophy size={15} className="text-orange-500" />
-                  CodeChef Official User Rating Framework Reference
-                </h4>
-                <span className="text-xs font-semibold text-orange-600 dark:text-orange-400">
-                  Current Standing: {ccStars || "Unrated"} ({ccDivision || "Unrated"})
-                </span>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5 pt-1">
-                {CC_TIER_CONFIG.map((tier) => (
-                  <div
-                    key={tier.label}
-                    className={`rounded-lg bg-white dark:bg-slate-900 p-2.5 border text-center ${
-                      ccDivision && tier.label.includes(ccDivision)
-                        ? "border-orange-500 ring-1 ring-orange-500/50 bg-orange-50/20"
-                        : "border-slate-200 dark:border-slate-800"
-                    }`}
-                  >
-                    <span className="text-[11px] font-bold text-slate-900 dark:text-white block">{tier.title}</span>
-                    <p className="text-xs font-black text-orange-600 dark:text-orange-400 mt-0.5">{tier.range} pts</p>
-                    <p className="text-[9px] text-slate-400 mt-0.5">{tier.label.split(" ")[0]}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
         )}
       </div>

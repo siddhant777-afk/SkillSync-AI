@@ -129,7 +129,11 @@ const JobRecommendations = () => {
   // Comparison Metrics for Selected Role Chart
   const comparisonData = useMemo(() => {
     if (!selectedRole) return [];
-    const studentDsa = data?.totalDsaSolved ?? user?.leetcode?.solved ?? 0;
+    const studentDsa =
+      data?.totalDsaSolved ??
+      ((user?.leetcode?.solved || 0) +
+        (user?.codeforces?.solved || 0) +
+        (user?.codechef?.solved || user?.codechef?.problems?.total_solved || 0));
     const studentDp =
       data?.dpSolved ??
       user?.leetcode?.topic_counts?.dp_specific ??
@@ -170,7 +174,11 @@ const JobRecommendations = () => {
 
   const radarData = useMemo(() => {
     if (!selectedRole) return [];
-    const studentDsa = data?.totalDsaSolved ?? user?.leetcode?.solved ?? 0;
+    const studentDsa =
+      data?.totalDsaSolved ??
+      ((user?.leetcode?.solved || 0) +
+        (user?.codeforces?.solved || 0) +
+        (user?.codechef?.solved || user?.codechef?.problems?.total_solved || 0));
     const studentDp =
       data?.dpSolved ??
       user?.leetcode?.topic_counts?.dp_specific ??
@@ -272,9 +280,12 @@ const JobRecommendations = () => {
             <Code size={18} className="text-orange-500" />
           </div>
           <p className="mt-2 text-2xl sm:text-3xl font-black text-slate-900 dark:text-white whitespace-nowrap">
-            {data?.totalDsaSolved ?? user?.leetcode?.solved ?? 0}
+            {data?.totalDsaSolved ??
+              ((user?.leetcode?.solved || 0) +
+                (user?.codeforces?.solved || 0) +
+                (user?.codechef?.solved || user?.codechef?.problems?.total_solved || 0))}
           </p>
-          <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 truncate">Verified LeetCode problems</p>
+          <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 truncate">Verified coding problems across platforms</p>
         </div>
 
         <div className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs min-w-0">

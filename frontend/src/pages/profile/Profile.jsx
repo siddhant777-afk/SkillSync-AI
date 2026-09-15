@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link2, Mail, MapPin, Pencil, Target, RefreshCw, ShieldCheck, CheckCircle2, AlertCircle, Star, GitBranch, ExternalLink } from "lucide-react";
-import { FaGithub, FaKaggle } from "react-icons/fa";
+import { FaGithub } from "react-icons/fa";
 import { SiCodechef, SiCodeforces, SiLeetcode } from "react-icons/si";
 
 import PageHeader from "../../components/common/PageHeader";
@@ -21,10 +21,10 @@ const Profile = () => {
 
   const handleSaveProfile = async (formData) => {
     await updateProfile({
-      full_name: formData.name,
+      bio: formData.bio,
       college: formData.college,
-      year: formData.year,
       branch: formData.branch,
+      year: formData.year,
       career_goal: formData.careerGoal,
     });
     await updateCodingProfiles({
@@ -32,21 +32,18 @@ const Profile = () => {
       leetcode_username: formData.leetcode,
       codeforces_username: formData.codeforces,
       codechef_username: formData.codechef,
-      kaggle_username: formData.kaggle,
     });
   };
 
-  const lcUser = user?.leetcode?.username || user?.connectedAccounts?.leetcode || "";
-  const ghUser = user?.github?.username || user?.connectedAccounts?.github || "";
-  const cfUser = user?.codeforces?.username || user?.connectedAccounts?.codeforces || "";
-  const ccUser = user?.codechef?.username || user?.connectedAccounts?.codechef || "";
-  const kgUser = user?.kaggle?.username || user?.connectedAccounts?.kaggle || "";
+  const lcUser = (user?.leetcode?.username || user?.connectedAccounts?.leetcode || "").trim();
+  const ghUser = (user?.github?.username || user?.connectedAccounts?.github || "").trim();
+  const cfUser = (user?.codeforces?.username || user?.connectedAccounts?.codeforces || "").trim();
+  const ccUser = (user?.codechef?.username || user?.connectedAccounts?.codechef || "").trim();
 
-  const lcVerified = Boolean(lcUser && (user?.leetcode?.verified || user?.leetcode?.status === "synced"));
-  const ghVerified = Boolean(ghUser && (user?.github?.verified || user?.github?.status === "synced"));
-  const cfVerified = Boolean(cfUser && (user?.codeforces?.verified || user?.codeforces?.status === "synced"));
-  const ccVerified = Boolean(ccUser && (user?.codechef?.verified || user?.codechef?.status === "synced"));
-  const kgVerified = Boolean(kgUser && (user?.kaggle?.verified || user?.kaggle?.status === "synced"));
+  const lcVerified = Boolean(lcUser && user?.leetcode?.verified);
+  const ghVerified = Boolean(ghUser && user?.github?.verified);
+  const cfVerified = Boolean(cfUser && user?.codeforces?.verified);
+  const ccVerified = Boolean(ccUser && user?.codechef?.verified);
 
   const platforms = [
     {
@@ -58,17 +55,6 @@ const Profile = () => {
       iconColor: "text-amber-500",
       stats: lcUser
         ? `${user?.leetcode?.solved ?? 0} solved · Contest: ${user?.leetcode?.contest_rating ? `${user?.leetcode?.contest_rating} pts (${user?.leetcode?.contest_badge || user?.leetcode?.rank})` : (user?.leetcode?.rank || "Unrated")}`
-        : "0 activity recorded",
-    },
-    {
-      id: "github",
-      name: "GitHub",
-      handle: ghUser,
-      verified: ghVerified,
-      icon: FaGithub,
-      iconColor: "text-slate-900 dark:text-white",
-      stats: ghUser
-        ? `${user?.github?.commits ?? user?.github?.contributions ?? 0} commits · ${user?.github?.repositories ?? 0} repos`
         : "0 activity recorded",
     },
     {
@@ -94,13 +80,15 @@ const Profile = () => {
         : "0 activity recorded",
     },
     {
-      id: "kaggle",
-      name: "Kaggle",
-      handle: kgUser,
-      verified: kgVerified,
-      icon: FaKaggle,
-      iconColor: "text-sky-500",
-      stats: kgUser ? `${user?.kaggle?.notebooks ?? 0} notebooks · ${user?.kaggle?.tier || "Contributor"}` : "0 activity recorded",
+      id: "github",
+      name: "GitHub",
+      handle: ghUser,
+      verified: ghVerified,
+      icon: FaGithub,
+      iconColor: "text-slate-900 dark:text-white",
+      stats: ghUser
+        ? `${user?.github?.commits ?? user?.github?.contributions ?? 0} commits · ${user?.github?.repositories ?? 0} repos`
+        : "0 activity recorded",
     },
   ];
 
@@ -266,7 +254,7 @@ const Profile = () => {
           </button>
         </div>
 
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 min-w-0">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 min-w-0">
           {platforms.map(({ id, name, handle, verified, icon: Icon, iconColor, stats }) => (
             <div
               key={id}

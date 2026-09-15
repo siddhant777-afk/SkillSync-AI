@@ -8,14 +8,17 @@ const Recommendations = () => {
 
   const careerGoal = user?.careerGoal || "Software Engineering";
   const readiness = user?.placementReadiness ?? 0;
-  const lcSolved = user?.leetcode?.solved ?? 0;
+  const codingSolved =
+    (user?.leetcode?.solved || 0) +
+    (user?.codeforces?.solved || 0) +
+    (user?.codechef?.solved || user?.codechef?.problems?.total_solved || 0);
   const ghContribs = user?.github?.contributions ?? 0;
   const projCount = user?.projects?.length ?? 0;
 
   const defaultRoadmap = [
-    lcSolved === 0
-      ? "Verify your LeetCode handle in Profile to benchmark your algorithmic problem solving."
-      : "Solve 30 more Medium/Hard Dynamic Programming and Graph problems on LeetCode.",
+    codingSolved === 0
+      ? "Verify your competitive coding handles (LeetCode, Codeforces, or CodeChef) in Profile to benchmark your algorithmic problem solving."
+      : "Solve 30 more advanced problems across Dynamic Programming and Graph algorithms.",
     ghContribs === 0
       ? "Link your GitHub account to showcase active commits and repository development."
       : "Containerize your primary project with Docker and configure CI/CD test automation.",

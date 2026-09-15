@@ -11,7 +11,7 @@ import {
   Sparkles,
   ArrowRight,
 } from "lucide-react";
-import { FaGithub, FaKaggle } from "react-icons/fa";
+import { FaGithub } from "react-icons/fa";
 import { SiCodechef, SiCodeforces, SiLeetcode } from "react-icons/si";
 import userService from "../../services/userService";
 import { useUser } from "../../hooks/useUser";
@@ -76,20 +76,6 @@ const PLATFORM_CONFIGS = [
       "Click 'Verify & Extract Live Stats' to verify stars and global rating.",
     ],
   },
-  {
-    id: "kaggle",
-    name: "Kaggle",
-    icon: FaKaggle,
-    iconColor: "text-sky-500",
-    bgColor: "bg-sky-50 dark:bg-sky-950/40 border-sky-200 dark:border-sky-900/50",
-    urlPrefix: "kaggle.com/",
-    placeholder: "e.g. your_handle",
-    instructions: [
-      "Ensure your Kaggle profile is public.",
-      "Enter your Kaggle username.",
-      "Click 'Verify & Extract Live Stats' to extract notebooks and tier badges.",
-    ],
-  },
 ];
 
 const PlatformVerificationModal = ({ isOpen, onClose, user, onSyncSuccess }) => {
@@ -99,7 +85,6 @@ const PlatformVerificationModal = ({ isOpen, onClose, user, onSyncSuccess }) => 
     github: user?.github?.username || user?.connectedAccounts?.github || "",
     codeforces: user?.codeforces?.username || user?.connectedAccounts?.codeforces || "",
     codechef: user?.codechef?.username || user?.connectedAccounts?.codechef || "",
-    kaggle: user?.kaggle?.username || user?.connectedAccounts?.kaggle || "",
   });
 
   const [expandedInstructions, setExpandedInstructions] = useState({});
@@ -149,11 +134,12 @@ const PlatformVerificationModal = ({ isOpen, onClose, user, onSyncSuccess }) => 
 
   const getPlatformVerifiedStatus = (id) => {
     if (extractedStats[id]) return true;
+    const currentHandle = (handles[id] || "").trim();
+    if (!currentHandle) return false;
     if (id === "leetcode") return Boolean(user?.leetcode?.verified || user?.leetcode?.status === "synced");
     if (id === "github") return Boolean(user?.github?.verified || user?.github?.status === "synced");
     if (id === "codeforces") return Boolean(user?.codeforces?.verified || user?.codeforces?.status === "synced");
     if (id === "codechef") return Boolean(user?.codechef?.verified || user?.codechef?.status === "synced");
-    if (id === "kaggle") return Boolean(user?.kaggle?.verified || user?.kaggle?.status === "synced");
     return false;
   };
 

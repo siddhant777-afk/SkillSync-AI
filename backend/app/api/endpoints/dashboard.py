@@ -27,106 +27,190 @@ def get_dashboard(
     platform_stats = user.platform_stats
     stats = {ps.platform: ps.stats_data for ps in platform_stats}
 
-    gh_username = accounts.github_username if accounts else ""
-    lc_username = accounts.leetcode_username if accounts else ""
-    cf_username = accounts.codeforces_username if accounts else ""
-    cc_username = accounts.codechef_username if accounts else ""
-    kg_username = accounts.kaggle_username if accounts else ""
+    gh_username = (accounts.github_username or "").strip() if accounts else ""
+    lc_username = (accounts.leetcode_username or "").strip() if accounts else ""
+    cf_username = (accounts.codeforces_username or "").strip() if accounts else ""
+    cc_username = (accounts.codechef_username or "").strip() if accounts else ""
 
-    gh_verified = bool(gh_username and "github" in stats and stats["github"].get("verified"))
-    github_stats = stats.get("github", {
-        "username": gh_username,
-        "contributions": 0,
-        "commits": 0,
-        "repositories": 0,
-        "repositories_list": [],
-        "stars": 0,
-        "followers": 0,
-        "verified": False,
-        "status": "synced" if gh_verified else "unconnected",
-    })
+    if not gh_username:
+        github_stats = {
+            "username": "",
+            "contributions": 0,
+            "commits": 0,
+            "repositories": 0,
+            "repositories_list": [],
+            "stars": 0,
+            "followers": 0,
+            "verified": False,
+            "status": "unconnected",
+        }
+    else:
+        gh_verified = bool("github" in stats and stats["github"].get("verified"))
+        github_stats = dict(stats.get("github", {
+            "username": gh_username,
+            "contributions": 0,
+            "commits": 0,
+            "repositories": 0,
+            "repositories_list": [],
+            "stars": 0,
+            "followers": 0,
+            "verified": False,
+            "status": "synced" if gh_verified else "unconnected",
+        }))
+        github_stats["username"] = gh_username
+        github_stats["verified"] = gh_verified
+        github_stats["status"] = "synced" if gh_verified else "connected"
 
-    lc_verified = bool(lc_username and "leetcode" in stats and stats["leetcode"].get("verified"))
-    leetcode_stats = stats.get("leetcode", {
-        "username": lc_username,
-        "solved": 0,
-        "rank": "Unconnected" if not lc_username else "Unranked",
-        "easy": 0,
-        "medium": 0,
-        "hard": 0,
-        "acceptanceRate": 0.0,
-        "contest_rating": 0,
-        "contest_global_rank": 0,
-        "contest_attended": 0,
-        "contest_badge": "",
-        "verified": False,
-        "status": "synced" if lc_verified else "unconnected",
-        "topic_counts": {},
-        "topics": [],
-        "algorithmic_depth_score": 0,
-    })
+    if not lc_username:
+        leetcode_stats = {
+            "username": "",
+            "solved": 0,
+            "rank": "Unconnected",
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "acceptanceRate": 0.0,
+            "contest_rating": 0,
+            "contest_global_rank": 0,
+            "contest_attended": 0,
+            "contest_badge": "",
+            "verified": False,
+            "status": "unconnected",
+            "topic_counts": {},
+            "topics": [],
+            "algorithmic_depth_score": 0,
+        }
+    else:
+        lc_verified = bool("leetcode" in stats and stats["leetcode"].get("verified"))
+        leetcode_stats = dict(stats.get("leetcode", {
+            "username": lc_username,
+            "solved": 0,
+            "rank": "Unranked",
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "acceptanceRate": 0.0,
+            "contest_rating": 0,
+            "contest_global_rank": 0,
+            "contest_attended": 0,
+            "contest_badge": "",
+            "verified": False,
+            "status": "synced" if lc_verified else "unconnected",
+            "topic_counts": {},
+            "topics": [],
+            "algorithmic_depth_score": 0,
+        }))
+        leetcode_stats["username"] = lc_username
+        leetcode_stats["verified"] = lc_verified
+        leetcode_stats["status"] = "synced" if lc_verified else "connected"
 
-    cf_verified = bool(cf_username and "codeforces" in stats and stats["codeforces"].get("verified"))
-    codeforces_stats = stats.get("codeforces", {
-        "username": cf_username,
-        "rating": 0,
-        "title": "Unconnected" if not cf_username else "Unrated",
-        "maxRating": 0,
-        "solved": 0,
-        "verified": False,
-        "status": "synced" if cf_verified else "unconnected",
-        "rating_bands": {},
-        "problem_indices": {},
-        "topic_tags": {},
-        "contest_history": [],
-    })
+    if not cf_username:
+        codeforces_stats = {
+            "username": "",
+            "rating": 0,
+            "title": "Unconnected",
+            "maxRating": 0,
+            "solved": 0,
+            "verified": False,
+            "status": "unconnected",
+            "rating_bands": {},
+            "problem_indices": {},
+            "topic_tags": {},
+            "contest_history": [],
+        }
+    else:
+        cf_verified = bool("codeforces" in stats and stats["codeforces"].get("verified"))
+        codeforces_stats = dict(stats.get("codeforces", {
+            "username": cf_username,
+            "rating": 0,
+            "title": "Unrated",
+            "maxRating": 0,
+            "solved": 0,
+            "verified": False,
+            "status": "synced" if cf_verified else "unconnected",
+            "rating_bands": {},
+            "problem_indices": {},
+            "topic_tags": {},
+            "contest_history": [],
+        }))
+        codeforces_stats["username"] = cf_username
+        codeforces_stats["verified"] = cf_verified
+        codeforces_stats["status"] = "synced" if cf_verified else "connected"
 
-    cc_verified = bool(cc_username and "codechef" in stats and stats["codechef"].get("verified"))
-    codechef_stats = stats.get("codechef", {
-        "username": cc_username,
-        "rating": 0,
-        "highest_rating": None,
-        "highestRating": None,
-        "title": "Unconnected" if not cc_username else "Unrated",
-        "global_rank": None,
-        "globalRank": 0,
-        "country_rank": None,
-        "countryRank": None,
-        "solved": 0,
-        "stars": "Unrated",
-        "division": "Unrated",
-        "difficulty_distribution": [],
-        "difficulty_bands": {},
-        "profile": {
-            "rating": None,
+    if not cc_username:
+        codechef_stats = {
+            "username": "",
+            "rating": 0,
             "highest_rating": None,
+            "highestRating": None,
+            "title": "Unconnected",
+            "global_rank": None,
+            "globalRank": 0,
+            "country_rank": None,
+            "countryRank": None,
+            "solved": 0,
             "stars": "Unrated",
             "division": "Unrated",
-            "global_rank": None,
-            "country_rank": None,
-        },
-        "problems": {
-            "total_solved": 0,
-            "unique_solved_count": 0,
             "difficulty_distribution": [],
             "difficulty_bands": {},
-            "contest_solved": 0,
-            "practice_solved": 0,
-        },
-        "verified": False,
-        "status": "synced" if cc_verified else "unconnected",
-    })
-
-
-    kg_verified = bool(kg_username and "kaggle" in stats and stats["kaggle"].get("verified"))
-    kaggle_stats = stats.get("kaggle", {
-        "username": kg_username,
-        "notebooks": 0,
-        "tier": "Unconnected" if not kg_username else "Contributor",
-        "competitions": 0,
-        "verified": False,
-        "status": "synced" if kg_verified else "unconnected",
-    })
+            "profile": {
+                "rating": None,
+                "highest_rating": None,
+                "stars": "Unrated",
+                "division": "Unrated",
+                "global_rank": None,
+                "country_rank": None,
+            },
+            "problems": {
+                "total_solved": 0,
+                "unique_solved_count": 0,
+                "difficulty_distribution": [],
+                "difficulty_bands": {},
+                "contest_solved": 0,
+                "practice_solved": 0,
+            },
+            "verified": False,
+            "status": "unconnected",
+        }
+    else:
+        cc_verified = bool("codechef" in stats and stats["codechef"].get("verified"))
+        codechef_stats = dict(stats.get("codechef", {
+            "username": cc_username,
+            "rating": 0,
+            "highest_rating": None,
+            "highestRating": None,
+            "title": "Unrated",
+            "global_rank": None,
+            "globalRank": 0,
+            "country_rank": None,
+            "countryRank": None,
+            "solved": 0,
+            "stars": "Unrated",
+            "division": "Unrated",
+            "difficulty_distribution": [],
+            "difficulty_bands": {},
+            "profile": {
+                "rating": None,
+                "highest_rating": None,
+                "stars": "Unrated",
+                "division": "Unrated",
+                "global_rank": None,
+                "country_rank": None,
+            },
+            "problems": {
+                "total_solved": 0,
+                "unique_solved_count": 0,
+                "difficulty_distribution": [],
+                "difficulty_bands": {},
+                "contest_solved": 0,
+                "practice_solved": 0,
+            },
+            "verified": False,
+            "status": "synced" if cc_verified else "unconnected",
+        }))
+        codechef_stats["username"] = cc_username
+        codechef_stats["verified"] = cc_verified
+        codechef_stats["status"] = "synced" if cc_verified else "connected"
 
     # Real user technical skills
     skills = [
@@ -224,7 +308,6 @@ def get_dashboard(
         "leetcode": leetcode_stats,
         "codeforces": codeforces_stats,
         "codechef": codechef_stats,
-        "kaggle": kaggle_stats,
         "skills": skills,
         "skillGaps": skill_gaps,
         "achievements": achievements,

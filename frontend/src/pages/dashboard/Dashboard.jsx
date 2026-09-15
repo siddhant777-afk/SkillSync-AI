@@ -9,7 +9,7 @@ import ProgressOverviewCard from "../../components/dashboard/ProgressOverviewCar
 import RecentAchievementsCard from "../../components/dashboard/RecentAchievementsCard";
 import AIRecommendationsCard from "../../components/dashboard/AIRecommendationsCard";
 import AISkillGapCard from "../../components/dashboard/AISkillGapCard";
-import UpcomingEventsCard from "../../components/dashboard/UpcomingEventsCard";
+import ContestCalendar from "../../components/dashboard/ContestCalendar";
 import PlacementReportModal from "../../components/modals/PlacementReportModal";
 import PlatformVerificationModal from "../../components/modals/PlatformVerificationModal";
 import { useUser } from "../../hooks/useUser";
@@ -33,6 +33,10 @@ const Dashboard = () => {
   const userName = user?.name ? user.name.split(" ")[0] : "Student";
   const hasUnverified = !user?.leetcode?.verified || !user?.github?.verified;
   const readiness = user?.placementReadiness ?? 0;
+  const totalCodingProblems =
+    (user?.leetcode?.solved || 0) +
+    (user?.codeforces?.solved || 0) +
+    (user?.codechef?.solved || user?.codechef?.problems?.total_solved || 0);
 
   return (
     <div className="space-y-6">
@@ -91,7 +95,7 @@ const Dashboard = () => {
         />
         <StatCard
           label="Coding Problems"
-          value={user?.leetcode?.solved ?? 0}
+          value={totalCodingProblems}
           helper="Verified across platforms"
           icon={CheckCircle2}
           tone="indigo"
@@ -172,20 +176,20 @@ const Dashboard = () => {
             <div className="rounded-xl bg-slate-50/70 dark:bg-slate-850/70 border border-slate-200/80 dark:border-slate-800 p-4 space-y-2 min-w-0">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                  1. DSA & Algorithmic Depth
+                  1. Algorithmic Problem Solving
                 </span>
                 <span className="text-xs font-black text-indigo-600 dark:text-indigo-400">
-                  {user?.leetcode?.algorithmic_depth_score || (user?.leetcode?.solved ? Math.min(100, Math.round((user.leetcode.solved / 350) * 100)) : Math.min(100, Math.round(readiness * 1.05)))}/100
+                  {user?.ranking?.dimension_scores?.problem_solving_depth ?? (totalCodingProblems > 0 ? Math.min(100, Math.round((totalCodingProblems / 350) * 100)) : Math.min(100, Math.round(readiness * 1.05)))}/100
                 </span>
               </div>
               <div className="h-2 w-full rounded-full bg-slate-200 dark:bg-slate-750 overflow-hidden">
                 <div
-                  style={{ width: `${user?.leetcode?.algorithmic_depth_score || (user?.leetcode?.solved ? Math.min(100, Math.round((user.leetcode.solved / 350) * 100)) : Math.min(100, Math.round(readiness * 1.05)))}%` }}
+                  style={{ width: `${user?.ranking?.dimension_scores?.problem_solving_depth ?? (totalCodingProblems > 0 ? Math.min(100, Math.round((totalCodingProblems / 350) * 100)) : Math.min(100, Math.round(readiness * 1.05)))}%` }}
                   className="h-full rounded-full bg-indigo-600 dark:bg-indigo-500 transition-all duration-500"
                 />
               </div>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                {user?.leetcode?.solved ?? 0} LeetCode problems verified · DP & Trees
+                {totalCodingProblems > 0 ? `${totalCodingProblems} problems verified across platforms` : "Connect coding handles to extract verified solves"}
               </p>
             </div>
 
@@ -288,7 +292,7 @@ const Dashboard = () => {
         <AISkillGapCard skills={user?.skills || []} gaps={user?.skillGaps || []} />
       </div>
 
-      <UpcomingEventsCard events={user?.upcomingEvents || []} user={user} />
+      <ContestCalendar user={user} />
 
       {/* Full Placement Report Modal */}
       <PlacementReportModal

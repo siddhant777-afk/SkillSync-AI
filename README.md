@@ -1,6 +1,6 @@
 # SkillSync AI – AI-Powered Career Intelligence Platform
 
-SkillSync AI is an enterprise-ready career intelligence platform that aggregates student achievements across competitive coding and professional platforms (**GitHub**, **LeetCode**, **Codeforces**, **CodeChef**, **Kaggle**), calculates an automated **Placement Readiness Score**, detects role-specific **Skill Gaps**, powers an interactive **ATS Resume Builder**, and provides a **Recruiter Talent Explorer**.
+SkillSync AI is an enterprise-ready career intelligence platform that aggregates student achievements across competitive coding and professional platforms (**GitHub**, **LeetCode**, **Codeforces**, and **CodeChef**), calculates an automated **Placement Readiness Score**, detects role-specific **Skill Gaps**, powers an interactive **ATS Resume Builder**, and provides a **Recruiter Talent Explorer**.
 
 ---
 

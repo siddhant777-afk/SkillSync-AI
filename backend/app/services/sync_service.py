@@ -1,6 +1,6 @@
 """
 Platform Sync Service
-Orchestrates verified data collection across GitHub, LeetCode, Codeforces, CodeChef, and Kaggle
+Orchestrates verified data collection across GitHub, LeetCode, Codeforces, and CodeChef
 using specialized platform adapters.
 Computes placement readiness via authoritative RankingEngine.
 """
@@ -78,9 +78,6 @@ class PlatformSyncService:
                 "verified": exists,
             }
 
-        elif clean_platform == "kaggle":
-            return {"platform": "kaggle", "username": clean_user, "exists": bool(clean_user), "verified": bool(clean_user)}
-
         return {"platform": clean_platform, "username": clean_user, "exists": False, "verified": False}
 
     @classmethod
@@ -100,27 +97,6 @@ class PlatformSyncService:
         return await CodeChefAdapter.fetch_data(username)
 
     @classmethod
-    async def sync_kaggle(cls, username: str) -> Dict[str, Any]:
-        clean_user = (username or "").strip()
-        if not clean_user:
-            return {
-                "username": "",
-                "notebooks": 0,
-                "tier": "Unconnected",
-                "competitions": 0,
-                "verified": False,
-                "status": "unconnected",
-            }
-        return {
-            "username": clean_user,
-            "notebooks": 0,
-            "tier": "Contributor",
-            "competitions": 0,
-            "verified": True,
-            "status": "synced",
-        }
-
-    @classmethod
     async def sync_all_accounts(cls, db: Session, user_id: int) -> Dict[str, Any]:
         user = db.query(User).filter(User.id == user_id).first()
         if not user:
@@ -138,14 +114,12 @@ class PlatformSyncService:
         cf_data = await cls.sync_codeforces(accounts.codeforces_username)
         lc_data = await cls.sync_leetcode(accounts.leetcode_username)
         cc_data = await cls.sync_codechef(accounts.codechef_username)
-        kg_data = await cls.sync_kaggle(accounts.kaggle_username)
 
         platforms_map = {
             "github": gh_data,
             "codeforces": cf_data,
             "leetcode": lc_data,
             "codechef": cc_data,
-            "kaggle": kg_data,
         }
 
         # Persist stats in PlatformStats

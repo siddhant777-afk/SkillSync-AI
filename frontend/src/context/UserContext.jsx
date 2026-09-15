@@ -44,7 +44,6 @@ export const UserProvider = ({ children }) => {
           leetcode: { username: "", solved: 0, rank: "Unranked" },
           codeforces: { username: "", rating: 0, title: "Unrated" },
           codechef: { username: "", rating: 0, title: "Unrated" },
-          kaggle: { username: "", notebooks: 0 },
           progress: {
             months: [],
             leetcode: [],

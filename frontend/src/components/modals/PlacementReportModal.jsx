@@ -178,10 +178,10 @@ const PlacementReportModal = ({ isOpen, onClose, user }) => {
             {score >= 70 ? "Target Next Steps to Reach 90+" : "Recommended Steps to Build Placement Score"}
           </h4>
           <ul className="mt-2.5 space-y-2 text-xs text-slate-600 dark:text-slate-300">
-            {lcSolved === 0 && (
+            {lcSolved === 0 && cfRating === 0 && ccSolved === 0 && (
               <li className="flex items-center gap-2">
                 <CheckCircle2 size={15} className="text-indigo-600 dark:text-indigo-400 shrink-0" />
-                <span>Verify your LeetCode handle in Profile to import solved DSA count and topic depth.</span>
+                <span>Verify your competitive coding handles (LeetCode, Codeforces, or CodeChef) to import verified problems and contest ratings.</span>
               </li>
             )}
             {ghContribs === 0 && (

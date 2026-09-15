@@ -14,7 +14,7 @@ import {
   Tag,
 } from "lucide-react";
 import { FaGithub } from "react-icons/fa";
-import { SiCodechef, SiCodeforces, SiKaggle, SiLeetcode } from "react-icons/si";
+import { SiCodechef, SiCodeforces, SiLeetcode } from "react-icons/si";
 import { useUser } from "../../hooks/useUser";
 
 const CodingOverviewCard = ({ user }) => {
@@ -62,32 +62,28 @@ const CodingOverviewCard = ({ user }) => {
   const ghReposList = user?.github?.repositories_list || [];
   const ghEngScore = user?.github?.engineering_score ?? 0;
 
-  // Kaggle metrics
-  const kgNotebooks = user?.kaggle?.notebooks ?? 0;
-  const kgTier = user?.kaggle?.tier || "Unconnected";
-
   const platforms = [
     {
       label: "LeetCode",
       icon: SiLeetcode,
       iconClass: "text-amber-500",
       verified: user?.leetcode?.verified || false,
-      badge: lcContestBadge || user?.leetcode?.rank || (lcSolved > 0 ? "Active" : "Unconnected"),
+      badge: lcContestRating > 0 ? `${lcContestRating} pts` : lcSolved > 0 ? "Active" : "Unconnected",
       contestRating: lcContestRating,
-      contestHelper: lcContestBadge || (lcGlobalRank ? `Rank #${lcGlobalRank.toLocaleString()}` : "Contest Rating"),
+      contestHelper: lcContestBadge || "Contest Rank",
       questionsSolved: lcSolved,
-      questionsHelper: `${lcEasy}E · ${lcMed}M · ${lcHard}H`,
+      questionsHelper: "Problems Solved",
     },
     {
       label: "Codeforces",
       icon: SiCodeforces,
-      iconClass: "text-blue-600 dark:text-blue-400",
+      iconClass: "text-blue-500",
       verified: user?.codeforces?.verified || false,
       badge: cfTitle,
       contestRating: cfRating,
       contestHelper: cfTitle,
       questionsSolved: cfSolved,
-      questionsHelper: "Native Rating Bands",
+      questionsHelper: "Problems Solved",
     },
     {
       label: "CodeChef",
@@ -96,9 +92,9 @@ const CodingOverviewCard = ({ user }) => {
       verified: user?.codechef?.verified || false,
       badge: ccStars || (ccRating > 0 ? "Rated" : "Unrated"),
       contestRating: ccRating,
-      contestHelper: ccDivision || (ccStars ? `${ccStars} Star Tier` : "Contest Rating"),
+      contestHelper: ccStars ? `${ccStars} Star Tier` : "Contest Rating",
       questionsSolved: ccSolved,
-      questionsHelper: ccDivision ? `${ccDivision} Coder` : "Problems Solved",
+      questionsHelper: "Problems Solved",
     },
     {
       label: "GitHub",
@@ -110,17 +106,6 @@ const CodingOverviewCard = ({ user }) => {
       commitsHelper: "Verified Contributions",
       repositoriesCount: ghRepos,
       repositoriesHelper: `${ghStars} Stars · ${ghSourceRepos} Original`,
-    },
-    {
-      label: "Kaggle",
-      icon: SiKaggle,
-      iconClass: "text-sky-600 dark:text-sky-400",
-      verified: user?.kaggle?.verified || false,
-      badge: kgTier,
-      tierValue: kgTier,
-      tierHelper: "Community Tier",
-      questionsSolved: kgNotebooks,
-      questionsHelper: "Public Notebooks",
     },
   ];
 
@@ -170,11 +155,10 @@ const CodingOverviewCard = ({ user }) => {
       </div>
 
       {/* Platform Cards Grid */}
-      <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 min-w-0">
+      <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 min-w-0">
         {platforms.map((p) => {
           const Icon = p.icon;
           const isGitHub = p.label === "GitHub";
-          const isKaggle = p.label === "Kaggle";
 
           return (
             <div
@@ -203,14 +187,12 @@ const CodingOverviewCard = ({ user }) => {
               {/* Metric 1: Contest Rating / Commits */}
               <div className="pt-2 border-t border-slate-200/60 dark:border-slate-800/80">
                 <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                  {isGitHub ? "Verified Contributions" : isKaggle ? "Kaggle Tier" : "Contest Rating"}
+                  {isGitHub ? "Verified Contributions" : "Contest Rating"}
                 </p>
                 <div className="flex items-baseline gap-1.5 mt-0.5">
                   <span className="text-xl font-black text-slate-900 dark:text-white">
                     {isGitHub
                       ? p.commitsCount > 0 ? p.commitsCount.toLocaleString() : "0"
-                      : isKaggle
-                      ? p.tierValue
                       : p.contestRating > 0
                       ? `${p.contestRating} pts`
                       : "Unrated"}
@@ -220,21 +202,19 @@ const CodingOverviewCard = ({ user }) => {
                   )}
                 </div>
                 <p className="text-[10px] text-slate-400 dark:text-slate-500 truncate mt-0.5">
-                  {isGitHub ? p.commitsHelper : isKaggle ? p.tierHelper : p.contestHelper}
+                  {isGitHub ? p.commitsHelper : p.contestHelper}
                 </p>
               </div>
 
               {/* Metric 2: Questions Solved / Repositories */}
               <div className="pt-2 border-t border-slate-200/60 dark:border-slate-800/80">
                 <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                  {isGitHub ? "Repositories" : isKaggle ? "Notebooks" : "Problems Solved"}
+                  {isGitHub ? "Repositories" : "Problems Solved"}
                 </p>
                 <div className="flex items-baseline gap-1.5 mt-0.5">
                   <span className="text-xl font-black text-indigo-600 dark:text-indigo-400">
                     {isGitHub
                       ? `${p.repositoriesCount} repos`
-                      : isKaggle
-                      ? `${p.questionsSolved} notebooks`
                       : `${p.questionsSolved} solved`}
                   </span>
                 </div>
@@ -392,39 +372,40 @@ const CodingOverviewCard = ({ user }) => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <SiLeetcode className="text-amber-500 text-base" />
-                  <span className="text-xs font-bold text-slate-900 dark:text-white">LeetCode Breakdown</span>
+                  <span className="text-xs font-bold text-slate-900 dark:text-white">LeetCode Standings</span>
                 </div>
                 <span className="text-[10px] font-bold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 px-2 py-0.5 rounded border border-amber-200 dark:border-amber-800">
-                  {lcContestRating > 0 ? `${lcContestRating} pts (${lcContestBadge || "Rated"})` : `${lcSolved} Solved`}
+                  {lcContestRating > 0 ? `${lcContestRating} pts (${lcContestBadge || "Rated"})` : (lcSolved > 0 ? `${lcSolved} Solved` : "Unrated")}
                 </span>
               </div>
 
-              {/* Stacked difficulty bar */}
-              <div className="space-y-1">
-                <div className="flex items-center justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-300">
-                  <span>Distribution ({lcSolved} total)</span>
-                  <span>{easyPct}% Easy · {medPct}% Med · {hardPct}% Hard</span>
+              <div className="grid grid-cols-2 gap-2.5 pt-1">
+                <div className="rounded-lg bg-amber-50/60 dark:bg-slate-850 p-3 border border-amber-100 dark:border-slate-750 text-center">
+                  <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Contest Rating</p>
+                  <p className="text-lg font-black text-amber-700 dark:text-amber-400 mt-0.5">
+                    {lcContestRating > 0 ? `${lcContestRating} pts` : "Unrated"}
+                  </p>
+                  <p className="text-[10px] text-slate-400 mt-0.5">{lcContestBadge || (lcGlobalRank ? `Rank #${lcGlobalRank.toLocaleString()}` : "Contest Standing")}</p>
                 </div>
-                <div className="h-2.5 w-full rounded-full bg-slate-100 dark:bg-slate-800 flex overflow-hidden">
-                  <div style={{ width: `${easyPct}%` }} className="bg-emerald-500" title={`Easy: ${lcEasy}`} />
-                  <div style={{ width: `${medPct}%` }} className="bg-amber-500" title={`Medium: ${lcMed}`} />
-                  <div style={{ width: `${hardPct}%` }} className="bg-rose-500" title={`Hard: ${lcHard}`} />
+
+                <div className="rounded-lg bg-slate-50 dark:bg-slate-850 p-3 border border-slate-100 dark:border-slate-750 text-center">
+                  <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Problems Solved</p>
+                  <p className="text-lg font-black text-slate-900 dark:text-white mt-0.5">
+                    {lcSolved} <span className="text-xs font-normal text-slate-400">solved</span>
+                  </p>
+                  <p className="text-[10px] text-slate-400 mt-0.5">DSA Archive</p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-2 text-center text-xs pt-1">
-                <div className="rounded-lg bg-slate-50 dark:bg-slate-850 p-2 border border-slate-100 dark:border-slate-750">
-                  <span className="text-[10px] font-bold text-emerald-600">Easy</span>
-                  <p className="font-black text-slate-900 dark:text-white">{lcEasy}</p>
-                </div>
-                <div className="rounded-lg bg-slate-50 dark:bg-slate-850 p-2 border border-slate-100 dark:border-slate-750">
-                  <span className="text-[10px] font-bold text-amber-600">Medium</span>
-                  <p className="font-black text-slate-900 dark:text-white">{lcMed}</p>
-                </div>
-                <div className="rounded-lg bg-slate-50 dark:bg-slate-850 p-2 border border-slate-100 dark:border-slate-750">
-                  <span className="text-[10px] font-bold text-rose-600">Hard</span>
-                  <p className="font-black text-slate-900 dark:text-white">{lcHard}</p>
-                </div>
+              <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center justify-between pt-1">
+                <span>Rating Standing: <strong className="text-slate-800 dark:text-slate-200">{lcContestBadge || (lcContestRating > 0 ? `${lcContestRating} pts` : "Unrated")}</strong></span>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("leetcode")}
+                  className="text-amber-600 dark:text-amber-400 font-semibold hover:underline"
+                >
+                  View Native Difficulty Breakdown →
+                </button>
               </div>
             </div>
 
@@ -488,7 +469,7 @@ const CodingOverviewCard = ({ user }) => {
                   <p className="text-lg font-black text-orange-700 dark:text-orange-400 mt-0.5">
                     {ccRating > 0 ? `${ccRating} pts` : "Unrated"}
                   </p>
-                  <p className="text-[10px] text-slate-400 mt-0.5">{ccStars ? `${ccStars} Star Tier` : "Division Coder"}</p>
+                  <p className="text-[10px] text-slate-400 mt-0.5">{ccStars ? `${ccStars} Star Tier` : "Rated Contestant"}</p>
                 </div>
 
                 <div className="rounded-lg bg-slate-50 dark:bg-slate-850 p-3 border border-slate-100 dark:border-slate-750 text-center">
@@ -496,12 +477,12 @@ const CodingOverviewCard = ({ user }) => {
                   <p className="text-lg font-black text-slate-900 dark:text-white mt-0.5">
                     {ccSolved} <span className="text-xs font-normal text-slate-400">solved</span>
                   </p>
-                  <p className="text-[10px] text-slate-400 mt-0.5">{ccDivision || "Practice Archive"}</p>
+                  <p className="text-[10px] text-slate-400 mt-0.5">Practice Archive</p>
                 </div>
               </div>
 
               <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center justify-between pt-1">
-                <span>Division: <strong className="text-slate-800 dark:text-slate-200">{ccDivision || "Unrated"}</strong></span>
+                <span>Star Standing: <strong className="text-slate-800 dark:text-slate-200">{ccStars || "Unrated"}</strong></span>
                 <button
                   type="button"
                   onClick={() => setActiveTab("codechef")}
@@ -644,34 +625,6 @@ const CodingOverviewCard = ({ user }) => {
               ))}
             </div>
 
-            {/* Contest Problem Index Distribution */}
-            {cfSolved > 0 && (
-              <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                    <Trophy size={13} className="text-blue-500" />
-                    Contest Problem Index Distribution (A to F+)
-                  </span>
-                  <span className="text-[10px] text-slate-400">Standard contest slots</span>
-                </div>
-                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 text-center">
-                  {[
-                    { key: "A", label: "Problem A" },
-                    { key: "B", label: "Problem B" },
-                    { key: "C", label: "Problem C" },
-                    { key: "D", label: "Problem D" },
-                    { key: "E", label: "Problem E" },
-                    { key: "F+", label: "Problem F+" },
-                  ].map((idx) => (
-                    <div key={idx.key} className="rounded-lg bg-slate-50 dark:bg-slate-850 p-2 border border-slate-200 dark:border-slate-800">
-                      <span className="text-[10px] font-bold text-slate-500 block">{idx.label}</span>
-                      <span className="text-base font-black text-blue-600 dark:text-blue-400">{cfProblemIndices[idx.key] || 0}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
             {/* Top Solved Tags */}
             {sortedCfTags.length > 0 && (
               <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
@@ -712,7 +665,7 @@ const CodingOverviewCard = ({ user }) => {
             </div>
 
             {/* 1. Verified User Profile Telemetry */}
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-center">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
               <div className="rounded-xl bg-slate-50 dark:bg-slate-850 p-3.5 border border-slate-200 dark:border-slate-750">
                 <span className="text-xs font-semibold text-slate-500">Contest Rating</span>
                 <p className="text-2xl font-black text-orange-600 dark:text-orange-400 mt-1">
@@ -732,14 +685,6 @@ const CodingOverviewCard = ({ user }) => {
               </div>
 
               <div className="rounded-xl bg-slate-50 dark:bg-slate-850 p-3.5 border border-slate-200 dark:border-slate-750">
-                <span className="text-xs font-semibold text-slate-500">Division</span>
-                <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">
-                  {ccDivision || "Unrated"}
-                </p>
-                <p className="text-[10px] text-slate-400 mt-0.5">Official Contest Div</p>
-              </div>
-
-              <div className="rounded-xl bg-slate-50 dark:bg-slate-850 p-3.5 border border-slate-200 dark:border-slate-750">
                 <span className="text-xs font-semibold text-slate-500">Global Rank</span>
                 <p className="text-xl font-black text-slate-900 dark:text-white mt-1">
                   {ccGlobalRank ? `#${ccGlobalRank.toLocaleString()}` : "Unavailable"}
@@ -749,7 +694,7 @@ const CodingOverviewCard = ({ user }) => {
                 </p>
               </div>
 
-              <div className="rounded-xl bg-slate-50 dark:bg-slate-850 p-3.5 border border-slate-200 dark:border-slate-750 col-span-2 sm:col-span-1">
+              <div className="rounded-xl bg-slate-50 dark:bg-slate-850 p-3.5 border border-slate-200 dark:border-slate-750">
                 <span className="text-xs font-semibold text-slate-500">Problems Solved</span>
                 <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">
                   {ccSolved}

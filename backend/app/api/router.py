@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.endpoints import auth, career, dashboard, leaderboard, notifications, projects, recruiter, resume, skills, users
+from app.api.endpoints import auth, career, contests, dashboard, leaderboard, notifications, projects, recruiter, resume, skills, users
 
 api_router = APIRouter()
 
@@ -8,6 +8,7 @@ api_router.include_router(auth.router, prefix="/auth", tags=["Auth"])
 api_router.include_router(users.router, prefix="/users", tags=["Users"])
 api_router.include_router(dashboard.router, prefix="/dashboard", tags=["Dashboard"])
 api_router.include_router(dashboard.router, prefix="/analytics", tags=["Analytics"])
+api_router.include_router(contests.router, prefix="/contests", tags=["Contests"])
 api_router.include_router(notifications.router, prefix="/notifications", tags=["Notifications"])
 api_router.include_router(skills.router, prefix="/skills", tags=["Skills"])
 api_router.include_router(projects.router, prefix="/projects", tags=["Projects"])

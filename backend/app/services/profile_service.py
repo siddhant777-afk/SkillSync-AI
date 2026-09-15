@@ -21,7 +21,7 @@ def calculate_profile_completion(user: User) -> int:
        - LeetCode username: 5 pts
        - GitHub username: 5 pts
        - Codeforces username: 5 pts
-       - CodeChef OR Kaggle OR LinkedIn: 5 pts
+       - CodeChef OR LinkedIn: 5 pts
     4. Technical Skills Inventory (20 pts max)
        - 1-2 skills: 5 pts
        - 3-4 skills: 10 pts
@@ -73,7 +73,6 @@ def calculate_profile_completion(user: User) -> int:
             score += 5
         if (
             (accounts.codechef_username and len(accounts.codechef_username.strip()) > 0)
-            or (accounts.kaggle_username and len(accounts.kaggle_username.strip()) > 0)
             or (accounts.linkedin_url and len(accounts.linkedin_url.strip()) > 0)
         ):
             score += 5
