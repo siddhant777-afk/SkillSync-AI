@@ -39,12 +39,18 @@ const CodingOverviewCard = ({ user }) => {
   const cfRatingBands = user?.codeforces?.rating_bands || {};
   const cfTags = user?.codeforces?.topic_tags || {};
 
-  // CodeChef metrics
-  const ccRating = user?.codechef?.rating ?? 0;
-  const ccSolved = user?.codechef?.solved ?? 0;
-  const ccStars = user?.codechef?.stars || "";
-  const ccDivision = user?.codechef?.division || "";
-  const ccGlobalRank = user?.codechef?.globalRank ?? 0;
+  // CodeChef metrics - Separating User Profile from Problem Data
+  const ccProfile = user?.codechef?.profile || {};
+  const ccProblems = user?.codechef?.problems || {};
+  const ccRating = user?.codechef?.rating ?? (ccProfile.rating ?? null);
+  const ccHighestRating = user?.codechef?.highestRating ?? user?.codechef?.highest_rating ?? (ccProfile.highest_rating ?? null);
+  const ccSolved = user?.codechef?.solved ?? (ccProblems.total_solved ?? 0);
+  const ccStars = user?.codechef?.stars || (ccProfile.stars || "");
+  const ccDivision = user?.codechef?.division || (ccProfile.division || "");
+  const ccGlobalRank = user?.codechef?.globalRank ?? user?.codechef?.global_rank ?? (ccProfile.global_rank ?? null);
+  const ccCountryRank = user?.codechef?.countryRank ?? user?.codechef?.country_rank ?? (ccProfile.country_rank ?? null);
+  const ccDiffBands = user?.codechef?.difficulty_bands || (ccProblems.difficulty_bands || {});
+  const ccDiffDist = user?.codechef?.difficulty_distribution || (ccProblems.difficulty_distribution || []);
   const ccTitle = ccStars && ccStars !== "Unrated" ? ccStars : (ccRating > 0 ? `${ccRating} pts` : "Unrated");
 
   // GitHub metrics
@@ -661,52 +667,129 @@ const CodingOverviewCard = ({ user }) => {
 
         {/* TAB 4: CODECHEF FOCUSED DEEP DIVE */}
         {activeTab === "codechef" && (
-          <div className="rounded-xl bg-white dark:bg-slate-900 p-5 border border-slate-200 dark:border-slate-800 space-y-4">
+          <div className="rounded-xl bg-white dark:bg-slate-900 p-5 border border-slate-200 dark:border-slate-800 space-y-5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <SiCodechef className="text-orange-500 text-xl" />
                 <div>
-                  <h4 className="text-sm font-bold text-slate-900 dark:text-white">CodeChef Star Division Telemetry</h4>
-                  <p className="text-xs text-slate-500">Official Star Bands (1★ to 7★) and Division Ratings.</p>
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white">CodeChef User Telemetry & Native Problem Difficulty</h4>
+                  <p className="text-xs text-slate-500">Separates official competitive profile standing from native numerical problem difficulty.</p>
                 </div>
               </div>
               <span className="text-xs font-bold text-orange-700 dark:text-orange-300 bg-orange-50 dark:bg-orange-950 px-3 py-1 rounded-full border border-orange-200 dark:border-orange-800 self-start sm:self-auto">
-                {ccStars && ccStars !== "Unrated" ? ccStars : "Rated Division"}
+                {ccStars && ccStars !== "Unrated" ? `${ccStars} (${ccDivision || "Rated"})` : (ccDivision || "Unrated")}
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-center">
-              <div className="rounded-xl bg-slate-50 dark:bg-slate-850 p-4 border border-slate-200 dark:border-slate-750">
+            {/* 1. Verified User Profile Telemetry */}
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-center">
+              <div className="rounded-xl bg-slate-50 dark:bg-slate-850 p-3.5 border border-slate-200 dark:border-slate-750">
                 <span className="text-xs font-semibold text-slate-500">Contest Rating</span>
                 <p className="text-2xl font-black text-orange-600 dark:text-orange-400 mt-1">
-                  {ccRating > 0 ? `${ccRating} pts` : "Unrated"}
+                  {ccRating ? `${ccRating} pts` : "Unrated"}
                 </p>
-                <p className="text-[10px] text-slate-400 mt-0.5">{ccStars || "Standard Coder"}</p>
+                <p className="text-[10px] text-slate-400 mt-0.5">
+                  {ccHighestRating ? `Peak: ${ccHighestRating} pts` : (ccStars || "Standard Coder")}
+                </p>
               </div>
-              <div className="rounded-xl bg-slate-50 dark:bg-slate-850 p-4 border border-slate-200 dark:border-slate-750">
+
+              <div className="rounded-xl bg-slate-50 dark:bg-slate-850 p-3.5 border border-slate-200 dark:border-slate-750">
                 <span className="text-xs font-semibold text-slate-500">Star Tier</span>
                 <p className="text-2xl font-black text-amber-500 mt-1">
                   {ccStars || "Unrated"}
                 </p>
-                <p className="text-[10px] text-slate-400 mt-0.5">1★ to 7★ Scale</p>
+                <p className="text-[10px] text-slate-400 mt-0.5">Official 1★–7★ Scale</p>
               </div>
-              <div className="rounded-xl bg-slate-50 dark:bg-slate-850 p-4 border border-slate-200 dark:border-slate-750">
+
+              <div className="rounded-xl bg-slate-50 dark:bg-slate-850 p-3.5 border border-slate-200 dark:border-slate-750">
                 <span className="text-xs font-semibold text-slate-500">Division</span>
                 <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">
                   {ccDivision || "Unrated"}
                 </p>
                 <p className="text-[10px] text-slate-400 mt-0.5">Official Contest Div</p>
               </div>
-              <div className="rounded-xl bg-slate-50 dark:bg-slate-850 p-4 border border-slate-200 dark:border-slate-750">
+
+              <div className="rounded-xl bg-slate-50 dark:bg-slate-850 p-3.5 border border-slate-200 dark:border-slate-750">
+                <span className="text-xs font-semibold text-slate-500">Global Rank</span>
+                <p className="text-xl font-black text-slate-900 dark:text-white mt-1">
+                  {ccGlobalRank ? `#${ccGlobalRank.toLocaleString()}` : "Unavailable"}
+                </p>
+                <p className="text-[10px] text-slate-400 mt-0.5 truncate">
+                  {ccCountryRank ? `Country: #${ccCountryRank.toLocaleString()}` : "Country: Unavailable"}
+                </p>
+              </div>
+
+              <div className="rounded-xl bg-slate-50 dark:bg-slate-850 p-3.5 border border-slate-200 dark:border-slate-750 col-span-2 sm:col-span-1">
                 <span className="text-xs font-semibold text-slate-500">Problems Solved</span>
                 <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">
-                  {ccSolved} solved
+                  {ccSolved}
                 </p>
-                <p className="text-[10px] text-slate-400 mt-0.5">Verified Solves</p>
+                <p className="text-[10px] text-slate-400 mt-0.5">
+                  {user?.codechef?.problems?.unique_solved_count ? `${user.codechef.problems.unique_solved_count} Unique Solves` : "Verified Solves"}
+                </p>
               </div>
+            </div>
+
+            {/* 2. CodeChef Native Numerical Problem Difficulty Distribution */}
+            <div className="pt-2 space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h5 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200">
+                    Native Numerical Problem Difficulty Distribution
+                  </h5>
+                  <p className="text-[11px] text-slate-500">
+                    Categorized by CodeChef numerical difficulty standards. Strictly no LeetCode Easy/Medium/Hard approximation.
+                  </p>
+                </div>
+                <span className="text-xs font-semibold text-slate-400">
+                  {ccSolved > 0 ? `${ccSolved} Solved` : "No Activity"}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {[
+                  { band: "< 1000", label: "Intro Basics", count: ccDiffBands["< 1000"] || 0, color: "text-slate-700 bg-slate-100 dark:bg-slate-800 border-slate-200" },
+                  { band: "1000–1199", label: "Div 4 Standard", count: ccDiffBands["1000–1199"] || 0, color: "text-amber-700 bg-amber-50 dark:bg-amber-950/40 border-amber-200" },
+                  { band: "1200–1399", label: "Div 4 Advanced", count: ccDiffBands["1200–1399"] || 0, color: "text-lime-700 bg-lime-50 dark:bg-lime-950/40 border-lime-200" },
+                  { band: "1400–1599", label: "Div 3 Standard", count: ccDiffBands["1400–1599"] || 0, color: "text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200" },
+                  { band: "1600–1799", label: "Div 2 Standard", count: ccDiffBands["1600–1799"] || 0, color: "text-blue-700 bg-blue-50 dark:bg-blue-950/40 border-blue-200" },
+                  { band: "1800–1999", label: "Div 2 Advanced", count: ccDiffBands["1800–1999"] || 0, color: "text-purple-700 bg-purple-50 dark:bg-purple-950/40 border-purple-200" },
+                  { band: "2000+", label: "Div 1 Elite", count: ccDiffBands["2000+"] || 0, color: "text-rose-700 bg-rose-50 dark:bg-rose-950/40 border-rose-200" },
+                  { band: "Unrated", label: "Practice / Learning", count: ccDiffBands["Unrated"] || 0, color: "text-slate-500 bg-slate-50 dark:bg-slate-850 border-slate-200" },
+                ].map((item) => (
+                  <div key={item.band} className={`rounded-xl p-3 border ${item.color} text-center`}>
+                    <span className="text-[10px] font-bold uppercase tracking-wider block opacity-75">{item.band}</span>
+                    <span className="text-xs font-semibold block mt-0.5 truncate">{item.label}</span>
+                    <p className="text-xl font-black mt-1">{item.count}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Exact Numerical Difficulty Breakdown Pills */}
+              {ccDiffDist.length > 0 && (
+                <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+                    Exact Numerical Difficulty Aggregation:
+                  </span>
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    {ccDiffDist.map((item, idx) => (
+                      <span
+                        key={idx}
+                        className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-orange-50 dark:bg-orange-950/50 text-orange-800 dark:text-orange-200 border border-orange-200/70 dark:border-orange-900"
+                      >
+                        <span>{item.difficulty !== null ? `Rating ${item.difficulty}` : "Unrated / Unavailable"}</span>
+                        <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-orange-200/80 dark:bg-orange-800 text-orange-900 dark:text-orange-100 font-bold">
+                          {item.count}
+                        </span>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
+
 
         {/* TAB 5: GITHUB FOCUSED DEEP DIVE */}
         {activeTab === "github" && (

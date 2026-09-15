@@ -46,10 +46,18 @@ const Progress = () => {
   const cfRatingBands = user?.codeforces?.rating_bands || {};
   const cfTags = user?.codeforces?.topic_tags || {};
 
-  const ccSolved = user?.codechef?.solved ?? 0;
-  const ccRating = user?.codechef?.rating ?? 0;
-  const ccStars = user?.codechef?.stars || "";
-  const ccDivision = user?.codechef?.division || "";
+  // CodeChef metrics - Separating User Profile from Problem Data
+  const ccProfile = user?.codechef?.profile || {};
+  const ccProblems = user?.codechef?.problems || {};
+  const ccSolved = user?.codechef?.solved ?? (ccProblems.total_solved ?? 0);
+  const ccRating = user?.codechef?.rating ?? (ccProfile.rating ?? null);
+  const ccHighestRating = user?.codechef?.highestRating ?? user?.codechef?.highest_rating ?? (ccProfile.highest_rating ?? null);
+  const ccStars = user?.codechef?.stars || (ccProfile.stars || "");
+  const ccDivision = user?.codechef?.division || (ccProfile.division || "");
+  const ccGlobalRank = user?.codechef?.globalRank ?? user?.codechef?.global_rank ?? (ccProfile.global_rank ?? null);
+  const ccCountryRank = user?.codechef?.countryRank ?? user?.codechef?.country_rank ?? (ccProfile.country_rank ?? null);
+  const ccDiffBands = user?.codechef?.difficulty_bands || (ccProblems.difficulty_bands || {});
+  const ccDiffDist = user?.codechef?.difficulty_distribution || (ccProblems.difficulty_distribution || []);
 
   const ghContribs = user?.github?.contributions ?? 0;
   const ghRepos = user?.github?.repositories ?? 0;
@@ -113,7 +121,24 @@ const Progress = () => {
     .sort((a, b) => b[1] - a[1])
     .slice(0, 10);
 
-  // CodeChef division tiers configuration
+  // CodeChef native numerical difficulty bands configuration
+  const CC_DIFF_CONFIG = [
+    { key: "< 1000", label: "< 1000", subtitle: "Intro Basics", color: "bg-slate-400 dark:bg-slate-500", text: "text-slate-600 dark:text-slate-300", border: "border-slate-200 dark:border-slate-700" },
+    { key: "1000–1199", label: "1000–1199", subtitle: "Div 4 Standard", color: "bg-amber-500 dark:bg-amber-400", text: "text-amber-700 dark:text-amber-300", border: "border-amber-200 dark:border-amber-800" },
+    { key: "1200–1399", label: "1200–1399", subtitle: "Div 4 Advanced", color: "bg-lime-500 dark:bg-lime-400", text: "text-lime-700 dark:text-lime-300", border: "border-lime-200 dark:border-lime-800" },
+    { key: "1400–1599", label: "1400–1599", subtitle: "Div 3 Standard", color: "bg-emerald-500 dark:bg-emerald-400", text: "text-emerald-700 dark:text-emerald-300", border: "border-emerald-200 dark:border-emerald-800" },
+    { key: "1600–1799", label: "1600–1799", subtitle: "Div 2 Standard", color: "bg-blue-500 dark:bg-blue-400", text: "text-blue-700 dark:text-blue-300", border: "border-blue-200 dark:border-blue-800" },
+    { key: "1800–1999", label: "1800–1999", subtitle: "Div 2 Advanced", color: "bg-purple-500 dark:bg-purple-400", text: "text-purple-700 dark:text-purple-300", border: "border-purple-200 dark:border-purple-800" },
+    { key: "2000+", label: "2000+", subtitle: "Div 1 Elite", color: "bg-rose-500 dark:bg-rose-400", text: "text-rose-700 dark:text-rose-300", border: "border-rose-200 dark:border-rose-800" },
+    { key: "Unrated", label: "Unrated", subtitle: "Practice / Learning", color: "bg-gray-400 dark:bg-gray-500", text: "text-gray-600 dark:text-gray-300", border: "border-gray-200 dark:border-gray-700" },
+  ];
+
+  const maxCcBandCount = Math.max(
+    ...CC_DIFF_CONFIG.map((t) => ccDiffBands[t.key] || 0),
+    1
+  );
+
+  // Official CodeChef division reference
   const CC_TIER_CONFIG = [
     { label: "Div 4 (< 1400)", title: "1★ Beginner", range: "0–1399", color: "bg-amber-600" },
     { label: "Div 3 (1400–1599)", title: "2★ Intermediate", range: "1400–1599", color: "bg-emerald-600" },
@@ -123,6 +148,7 @@ const Progress = () => {
     { label: "Div 1 (2200–2499)", title: "6★ Master", range: "2200–2499", color: "bg-orange-500" },
     { label: "Div 1 (2500+)", title: "7★ Grandmaster", range: "2500+", color: "bg-rose-600" },
   ];
+
 
   return (
     <div className="space-y-6 max-w-full overflow-x-hidden">
@@ -656,71 +682,142 @@ const Progress = () => {
         )}
 
         {/* ========================================================================= */}
-        {/* TAB 4: CODECHEF STARS & DIVISIONS QUESTION GRAPH */}
+        {/* TAB 4: CODECHEF NATIVE NUMERICAL PROBLEM DIFFICULTY GRAPH */}
         {/* ========================================================================= */}
         {activeQuestionTab === "codechef" && (
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-orange-50/40 dark:bg-orange-950/20 p-4 rounded-xl border border-orange-200/60 dark:border-orange-900/60">
               <div>
-                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">CodeChef Structure</span>
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">CodeChef Native System</span>
                 <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                  <SiCodechef className="text-orange-500" /> Divisions & Star Rating Framework
+                  <SiCodechef className="text-orange-500" /> Numerical Problem Difficulty Distribution
                 </h3>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="text-xs font-bold text-orange-700 dark:text-orange-400 bg-orange-100 dark:bg-orange-900/60 px-3 py-1 rounded-full">
-                  Tier: {ccStars || "Unrated"} ({ccDivision || "Contest Tier"})
+                  Profile: {ccStars || "Unrated"} ({ccDivision || "Contest Tier"})
                 </span>
                 <span className="text-xs font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 px-3 py-1 rounded-full border border-slate-200 dark:border-slate-700">
                   {ccSolved} Problems Solved
                 </span>
                 {ccRating > 0 && (
                   <span className="text-xs font-bold text-amber-700 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/60 px-3 py-1 rounded-full">
-                    Rating: {ccRating} pts
+                    Rating: {ccRating} pts {ccHighestRating && `(Max: ${ccHighestRating})`}
+                  </span>
+                )}
+                {ccGlobalRank && (
+                  <span className="text-xs font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full border border-slate-200 dark:border-slate-700">
+                    Rank #{ccGlobalRank.toLocaleString()}
                   </span>
                 )}
               </div>
             </div>
 
-            {/* Official CodeChef Division & Star Tier Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              {CC_TIER_CONFIG.slice(0, 4).map((tier) => (
-                <div
-                  key={tier.label}
-                  className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 space-y-2"
-                >
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs font-bold text-slate-900 dark:text-white">{tier.label}</span>
-                    <span className="text-[10px] font-semibold text-slate-400">{tier.range}</span>
-                  </div>
-                  <p className="text-xs font-semibold text-orange-600 dark:text-orange-400">{tier.title}</p>
-                  <div className="h-1.5 w-full rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                    <div
-                      style={{
-                        width: ccRating > 0 && ccStars ? (tier.label.includes(ccDivision) ? "100%" : "30%") : "10%",
-                      }}
-                      className={`h-full ${tier.color}`}
-                    />
-                  </div>
+            {/* Vertical Bar Graph for CodeChef Numerical Difficulty Bands */}
+            <div className="rounded-xl bg-slate-50/70 dark:bg-slate-850/60 p-4 sm:p-5 border border-slate-200/80 dark:border-slate-800 space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200">
+                  Problems Solved per Official Numerical Difficulty Band
+                </h4>
+                <span className="text-xs text-slate-400">
+                  {ccSolved > 0 ? "Authentic Problem Submissions" : "No CodeChef Handle Connected"}
+                </span>
+              </div>
+
+              {ccSolved > 0 ? (
+                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 pt-2">
+                  {CC_DIFF_CONFIG.map((tier) => {
+                    const count = ccDiffBands[tier.key] || 0;
+                    const heightPct = Math.max(8, Math.round((count / maxCcBandCount) * 100));
+                    const pctOfCc = ccSolved > 0 ? Math.round((count / ccSolved) * 100) : 0;
+
+                    return (
+                      <div
+                        key={tier.key}
+                        className={`rounded-xl border ${tier.border} bg-white dark:bg-slate-900 p-3 flex flex-col items-center justify-between text-center min-h-[190px] shadow-2xs`}
+                      >
+                        <span className="text-xs font-black text-slate-900 dark:text-white">
+                          {count}
+                          <span className="block text-[10px] font-normal text-slate-400">({pctOfCc}%)</span>
+                        </span>
+
+                        {/* Bar Pillar */}
+                        <div className="w-full h-24 flex items-end justify-center my-2">
+                          <div
+                            style={{ height: `${count > 0 ? heightPct : 6}%` }}
+                            className={`w-full max-w-[32px] rounded-t-md transition-all duration-700 ${
+                              count > 0 ? tier.color : "bg-slate-200 dark:bg-slate-800"
+                            }`}
+                          />
+                        </div>
+
+                        {/* Band Label & Subtitle */}
+                        <div className="space-y-0.5 w-full">
+                          <span className={`text-[11px] font-bold block ${tier.text}`}>
+                            {tier.label}
+                          </span>
+                          <span className="text-[9px] text-slate-400 block truncate" title={tier.subtitle}>
+                            {tier.subtitle}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              ))}
+              ) : (
+                <div className="text-center py-8 text-slate-400 text-xs">
+                  No verified CodeChef problem submissions recorded. Connect your CodeChef handle to view difficulty distribution.
+                </div>
+              )}
             </div>
 
-            {/* Division 1 Advanced Tiers */}
+            {/* Exact Numerical Difficulty Solves Aggregation */}
+            {ccDiffDist.length > 0 && (
+              <div className="rounded-xl bg-slate-50/70 dark:bg-slate-850/60 p-4 sm:p-5 border border-slate-200/80 dark:border-slate-800 space-y-3">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                  <Tag size={15} className="text-orange-500" />
+                  Exact Numerical Difficulty Solves ({ccDiffDist.length} ratings recorded)
+                </h4>
+                <div className="flex flex-wrap gap-2 pt-1">
+                  {ccDiffDist.map((item, idx) => (
+                    <span
+                      key={idx}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-750 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 shadow-2xs"
+                    >
+                      <span className="font-semibold">{item.difficulty !== null ? `Rating ${item.difficulty}` : "Unrated / Unavailable"}</span>
+                      <span className="rounded-full bg-orange-100 dark:bg-orange-900/60 px-1.5 py-0.5 text-[10px] font-bold text-orange-700 dark:text-orange-300">
+                        {item.count} solved
+                      </span>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* CodeChef Official Division Reference Framework */}
             <div className="rounded-xl bg-slate-50/70 dark:bg-slate-850/60 p-4 sm:p-5 border border-slate-200/80 dark:border-slate-800 space-y-3">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200 flex items-center gap-2">
-                <Trophy size={15} className="text-orange-500" />
-                Division 1 Elite Star Tiers (2000+ Rating)
-              </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-                {CC_TIER_CONFIG.slice(4).map((tier) => (
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                  <Trophy size={15} className="text-orange-500" />
+                  CodeChef Official User Rating Framework Reference
+                </h4>
+                <span className="text-xs font-semibold text-orange-600 dark:text-orange-400">
+                  Current Standing: {ccStars || "Unrated"} ({ccDivision || "Unrated"})
+                </span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5 pt-1">
+                {CC_TIER_CONFIG.map((tier) => (
                   <div
                     key={tier.label}
-                    className="rounded-lg bg-white dark:bg-slate-900 p-3 border border-slate-200 dark:border-slate-800 text-center"
+                    className={`rounded-lg bg-white dark:bg-slate-900 p-2.5 border text-center ${
+                      ccDivision && tier.label.includes(ccDivision)
+                        ? "border-orange-500 ring-1 ring-orange-500/50 bg-orange-50/20"
+                        : "border-slate-200 dark:border-slate-800"
+                    }`}
                   >
-                    <span className="text-xs font-bold text-slate-900 dark:text-white">{tier.title}</span>
-                    <p className="text-sm font-black text-orange-600 dark:text-orange-400 mt-1">{tier.range} pts</p>
-                    <p className="text-[10px] text-slate-400 mt-0.5">Top Competitive Programmers</p>
+                    <span className="text-[11px] font-bold text-slate-900 dark:text-white block">{tier.title}</span>
+                    <p className="text-xs font-black text-orange-600 dark:text-orange-400 mt-0.5">{tier.range} pts</p>
+                    <p className="text-[9px] text-slate-400 mt-0.5">{tier.label.split(" ")[0]}</p>
                   </div>
                 ))}
               </div>

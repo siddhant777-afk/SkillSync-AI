@@ -6,16 +6,36 @@ const PlacementReportModal = ({ isOpen, onClose, user }) => {
   const score = user?.placementReadiness ?? 0;
   const lcSolved = user?.leetcode?.solved ?? 0;
   const cfRating = user?.codeforces?.rating ?? 0;
+  const ccSolved = user?.codechef?.solved ?? (user?.codechef?.problems?.total_solved ?? 0);
+  const ccRating = user?.codechef?.rating ?? (user?.codechef?.profile?.rating ?? 0);
+  const ccStars = user?.codechef?.stars || "";
+  const ccDivision = user?.codechef?.division || "";
   const ghContribs = user?.github?.contributions ?? 0;
   const projCount = user?.projects?.length ?? (user?.github?.repositories ? Math.min(user.github.repositories, 5) : 0);
   const skillsCount = user?.skills?.length ?? 0;
   const atsScore = user?.ats_score ?? (score > 0 ? Math.min(100, Math.round(score * 1.05)) : 0);
 
-  // Dynamic evaluation pillar points
-  const codingPts = Math.min(35, Math.round((Math.min(lcSolved, 500) / 500) * 25 + (Math.min(cfRating, 1800) / 1800) * 10));
-  const projectPts = Math.min(30, Math.round((Math.min(ghContribs, 500) / 500) * 18 + (Math.min(projCount, 4) / 4) * 12));
+  // Authoritative ranking engine pillar scores
+  const dimScores = user?.ranking?.dimension_scores || {};
+  const cpScore = dimScores.competitive_programming;
+  const depthScore = dimScores.problem_solving_depth;
+  const engScore = dimScores.software_engineering;
+  const projectScore = dimScores.project_portfolio;
+
+  const codingPts = (cpScore != null || depthScore != null)
+    ? Math.min(35, Math.round(((cpScore ?? 0) * 0.15) + ((depthScore ?? 0) * 0.20)))
+    : Math.min(35, Math.round(
+        (Math.min(lcSolved, 500) / 500) * 15 +
+        (Math.min(cfRating, 1800) / 1800) * 10 +
+        (Math.min(ccRating, 1800) / 1800) * 5 +
+        (Math.min(ccSolved, 100) / 100) * 5
+      ));
+  const projectPts = (engScore != null || projectScore != null)
+    ? Math.min(30, Math.round(((engScore ?? 0) * 0.15) + ((projectScore ?? 0) * 0.15)))
+    : Math.min(30, Math.round((Math.min(ghContribs, 500) / 500) * 18 + (Math.min(projCount, 4) / 4) * 12));
   const skillPts = Math.min(20, Math.round((Math.min(skillsCount, 8) / 8) * 20));
   const atsPts = Math.min(15, Math.round((atsScore / 100) * 15));
+
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-3 sm:p-4 backdrop-blur-xs overflow-y-auto">
@@ -81,11 +101,16 @@ const PlacementReportModal = ({ isOpen, onClose, user }) => {
                 <div className="min-w-0">
                   <h4 className="font-semibold text-xs sm:text-sm text-slate-800 dark:text-slate-200">Competitive Coding (35%)</h4>
                   <p className="text-xs text-slate-400 dark:text-slate-500 truncate">
-                    {lcSolved > 0 || cfRating > 0
-                      ? `${lcSolved} LeetCode solved · Codeforces ${cfRating || "Unranked"}`
+                    {lcSolved > 0 || cfRating > 0 || ccSolved > 0
+                      ? [
+                          lcSolved > 0 && `${lcSolved} LeetCode`,
+                          cfRating > 0 && `Codeforces ${cfRating}`,
+                          (ccRating > 0 || ccSolved > 0) && `CodeChef ${ccRating > 0 ? `${ccRating} pts` : `${ccSolved} solved`} (${ccStars || ccDivision || "Rated"})`,
+                        ].filter(Boolean).join(" · ")
                       : "No verified coding handles linked"}
                   </p>
                 </div>
+
               </div>
               <span className="font-bold text-xs sm:text-sm text-slate-700 dark:text-slate-300 shrink-0">{codingPts}/35 pts</span>
             </div>

@@ -211,11 +211,25 @@ class RankingEngine:
             + cf_bands.get("Unrated", 0) * DifficultyWeights.CF_UNRATED
         )
 
-        # 3. CodeChef points
-        cc_solved = codechef_stats.get("solved", 0)
-        cc_points = cc_solved * DifficultyWeights.CC_SOLVED_DEFAULT
+        # 3. CodeChef weighted points based on native difficulty bands
+        cc_bands = codechef_stats.get("difficulty_bands") or (codechef_stats.get("problems", {}) or {}).get("difficulty_bands", {})
+        if cc_bands:
+            cc_points = (
+                cc_bands.get("< 1000", 0) * DifficultyWeights.CC_BAND_UNDER_1000
+                + cc_bands.get("1000–1199", 0) * DifficultyWeights.CC_BAND_1000_1199
+                + cc_bands.get("1200–1399", 0) * DifficultyWeights.CC_BAND_1200_1399
+                + cc_bands.get("1400–1599", 0) * DifficultyWeights.CC_BAND_1400_1599
+                + cc_bands.get("1600–1799", 0) * DifficultyWeights.CC_BAND_1600_1799
+                + cc_bands.get("1800–1999", 0) * DifficultyWeights.CC_BAND_1800_1999
+                + cc_bands.get("2000+", 0) * DifficultyWeights.CC_BAND_2000_PLUS
+                + cc_bands.get("Unrated", 0) * DifficultyWeights.CC_BAND_UNRATED
+            )
+        else:
+            cc_solved = codechef_stats.get("solved", 0)
+            cc_points = cc_solved * DifficultyWeights.CC_SOLVED_DEFAULT
 
         total_weighted_points = lc_points + cf_points + cc_points
+
 
         if total_weighted_points <= 0:
             return 0.0, {

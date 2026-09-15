@@ -53,10 +53,19 @@ class DifficultyWeights:
     CF_MASTER_PLUS = 12.0      # 2100+
     CF_UNRATED = 1.0
 
-    # CodeChef Problem Weight
+    # CodeChef Native Band Weights
+    CC_BAND_UNDER_1000 = 0.5   # < 1000 (Div 4 intro)
+    CC_BAND_1000_1199 = 1.0    # 1000-1199 (Div 4)
+    CC_BAND_1200_1399 = 1.8    # 1200-1399 (Div 4 advanced)
+    CC_BAND_1400_1599 = 2.5    # 1400-1599 (Div 3)
+    CC_BAND_1600_1799 = 4.0    # 1600-1799 (Div 2)
+    CC_BAND_1800_1999 = 6.0    # 1800-1999 (Div 2 advanced)
+    CC_BAND_2000_PLUS = 9.0    # 2000+ (Div 1)
+    CC_BAND_UNRATED = 1.0      # Practice / unrated
     CC_SOLVED_DEFAULT = 1.5
 
     # Saturation parameter K for problem solving score:
+
     # score = 100 * (1 - exp(-total_points / SATURATION_K))
     # At 250 weighted points (~75 Med + 20 Hard), score is ~80 pts.
     # At 500 weighted points, score is ~96 pts.

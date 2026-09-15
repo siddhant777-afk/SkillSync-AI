@@ -40,10 +40,24 @@ class TestPlatformAdapters(unittest.TestCase):
         self.assertIsNotNone(r_match)
         self.assertEqual(int(r_match.group(1)), 3355)
 
-        # Verify stars
+        # Verify highest rating
+        hr_match = re.search(r'eChef Rating[\s\S]*?[Hh]ighest\s*[Rr]ating\s*(\d+)', html) or re.search(r'[Hh]ighest\s*[Rr]ating\s*(\d+)', html)
+        self.assertIsNotNone(hr_match)
+        self.assertEqual(int(hr_match.group(1)), 3445)
+
+        # Verify stars & division
         stars, div = CodeChefAdapter.get_stars_and_division(3355)
         self.assertEqual(stars, "7★")
         self.assertEqual(div, "Div 1")
+
+        # Verify global rank and country rank
+        gr_match = re.search(r'<strong class=[\'"]global-rank[\'"][^>]*>\s*(\d+)\s*<', html)
+        self.assertIsNotNone(gr_match)
+        self.assertEqual(int(gr_match.group(1)), 22)
+
+        cr_match = re.search(r'<a[^>]*filterBy=Country[^>]*>\s*<strong>\s*(\d+)\s*</strong>', html, re.IGNORECASE)
+        self.assertIsNotNone(cr_match)
+        self.assertEqual(int(cr_match.group(1)), 1)
 
         # Verify contest history JSON
         all_r_match = re.search(r'var all_rating = (\[[\s\S]*?\]);', html)
@@ -53,6 +67,12 @@ class TestPlatformAdapters(unittest.TestCase):
         self.assertEqual(contests[0]["rating"], "1396")
         self.assertEqual(contests[1]["rating"], "3355")
 
+        # Verify problems extraction and deduplication
+        ps_match = re.search(r'<section class="rating-data-section problems-solved">([\s\S]*?)</section>', html)
+        self.assertIsNotNone(ps_match)
+        c_blocks = re.findall(r"<div class=['\"]content['\"]><h5><span[^>]*>([\s\S]*?)</span></h5><p><span>([\s\S]*?)</span></p></div>", ps_match.group(1))
+        self.assertEqual(len(c_blocks), 4)
+
     def test_codechef_unrated_html(self):
         with open(os.path.join(self.fixtures_dir, "codechef_unrated.html"), "r", encoding="utf-8") as f:
             html = f.read()
@@ -60,9 +80,13 @@ class TestPlatformAdapters(unittest.TestCase):
         r_match = re.search(r'class="rating-number"[^>]*>\s*(\d+)\s*<', html)
         self.assertIsNone(r_match)
 
+        hr_match = re.search(r'eChef Rating[\s\S]*?[Hh]ighest\s*[Rr]ating\s*(\d+)', html)
+        self.assertIsNone(hr_match)
+
         stars, div = CodeChefAdapter.get_stars_and_division(None)
         self.assertEqual(stars, "Unrated")
         self.assertEqual(div, "Unrated")
+
 
     def test_codeforces_tiers_and_bands(self):
         self.assertEqual(CodeforcesAdapter.get_tier_name(None), "Unrated")

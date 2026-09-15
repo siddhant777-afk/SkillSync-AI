@@ -83,14 +83,38 @@ def get_dashboard(
     codechef_stats = stats.get("codechef", {
         "username": cc_username,
         "rating": 0,
+        "highest_rating": None,
+        "highestRating": None,
         "title": "Unconnected" if not cc_username else "Unrated",
+        "global_rank": None,
         "globalRank": 0,
+        "country_rank": None,
+        "countryRank": None,
         "solved": 0,
         "stars": "Unrated",
         "division": "Unrated",
+        "difficulty_distribution": [],
+        "difficulty_bands": {},
+        "profile": {
+            "rating": None,
+            "highest_rating": None,
+            "stars": "Unrated",
+            "division": "Unrated",
+            "global_rank": None,
+            "country_rank": None,
+        },
+        "problems": {
+            "total_solved": 0,
+            "unique_solved_count": 0,
+            "difficulty_distribution": [],
+            "difficulty_bands": {},
+            "contest_solved": 0,
+            "practice_solved": 0,
+        },
         "verified": False,
         "status": "synced" if cc_verified else "unconnected",
     })
+
 
     kg_verified = bool(kg_username and "kaggle" in stats and stats["kaggle"].get("verified"))
     kaggle_stats = stats.get("kaggle", {
