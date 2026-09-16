@@ -48,27 +48,65 @@ html.dark body {
   color: #ffffff;
 }
 
-/* Printable resume styling */
-#printable-resume,
-#printable-resume *,
-html.dark #printable-resume,
-html.dark #printable-resume * {
-  color: #0f172a !important;
-}
-
+/* Printable resume canvas styling: always clean paper sheet */
 #printable-resume {
   background-color: #ffffff !important;
+  color: #1e293b;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
 }
 
-/* Print perfection: Force 100% black text on pure white paper */
+html.dark #printable-resume {
+  background-color: #ffffff !important;
+  color: #1e293b;
+}
+
+/* Print Stylesheet */
+@page {
+  size: A4 portrait;
+  margin: 10mm 12mm;
+}
+
 @media print {
-  *, html, body, html.dark, html.dark body, html.dark * {
+  body {
     background: #ffffff !important;
-    color: #0f172a !important;
+    color: #1e293b !important;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  #printable-resume,
+  #printable-resume * {
+    visibility: visible;
+  }
+
+  #printable-resume {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
     box-shadow: none !important;
-    text-shadow: none !important;
+    border: none !important;
+    background: #ffffff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .resume-section {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .no-print {
+    display: none !important;
   }
 }
+
 
 button,
 input,
