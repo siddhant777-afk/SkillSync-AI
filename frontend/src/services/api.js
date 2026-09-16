@@ -2,7 +2,7 @@ import axios from "axios";
 import { STORAGE_KEYS } from "../constants/storage";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || (import.meta.env.PROD ? "https://skillsync-ai-1-o7w6.onrender.com" : "http://127.0.0.1:8000"),
+  baseURL: import.meta.env.VITE_API_BASE_URL || "https://skillsync-ai-1-o7w6.onrender.com",
   timeout: 75000,
   headers: {
     "Content-Type": "application/json",
@@ -11,7 +11,7 @@ const api = axios.create({
 
 export const warmUpBackend = async () => {
   try {
-    const base = import.meta.env.VITE_API_BASE_URL || (import.meta.env.PROD ? "https://skillsync-ai-1-o7w6.onrender.com" : "http://127.0.0.1:8000");
+    const base = import.meta.env.VITE_API_BASE_URL || "https://skillsync-ai-1-o7w6.onrender.com";
     await fetch(`${base}/health`, { method: "GET", mode: "cors" });
   } catch {
     // Non-blocking background pre-warm

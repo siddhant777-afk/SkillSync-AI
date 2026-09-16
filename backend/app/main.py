@@ -42,10 +42,13 @@ origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
 ]
+if settings.FRONTEND_URL and settings.FRONTEND_URL not in origins:
+    origins.append(settings.FRONTEND_URL)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins if not settings.DEBUG else ["*"],
+    allow_origins=origins if not settings.DEBUG else origins + ["*"],
+    allow_origin_regex=r"https://.*\.vercel\.app|https://.*\.onrender\.com",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

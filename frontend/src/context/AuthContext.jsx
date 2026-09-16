@@ -128,7 +128,7 @@ export const AuthProvider = ({ children }) => {
       } else if (err.response?.data?.message) {
         errorMsg = err.response.data.message;
       } else if (err.code === "ERR_NETWORK" || !err.response) {
-        errorMsg = "Cannot connect to server. Please verify the backend service is running on http://127.0.0.1:8000.";
+        errorMsg = "Cannot reach server. The cloud backend may be waking up from sleep (takes ~30s), please wait a moment and try again.";
       } else if (err.response?.status >= 500) {
         errorMsg = "Server error occurred during login. Please try again or check backend logs.";
       }
