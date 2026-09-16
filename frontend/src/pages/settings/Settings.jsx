@@ -1,23 +1,26 @@
 import { useState, useEffect } from "react";
-import { Bell, Lock, Palette, Save, UserRound, CheckCircle2, Sun, Moon, Monitor } from "lucide-react";
+import { Bell, Lock, Palette, Save, UserRound, CheckCircle2, Sun, Moon, Monitor, Shield, EyeOff, Eye, Globe } from "lucide-react";
 import PageHeader from "../../components/common/PageHeader";
 import { useUser } from "../../hooks/useUser";
 import { useTheme } from "../../hooks/useTheme";
+import userService from "../../services/userService";
 import toast from "react-hot-toast";
 
 const Settings = () => {
-  const { user, updateProfile } = useUser();
+  const { user, updateProfile, refetch } = useUser();
   const { theme, setTheme } = useTheme();
 
   const [activeTab, setActiveTab] = useState("Profile");
   const [displayName, setDisplayName] = useState(user?.name || "");
   const [careerGoal, setCareerGoal] = useState(user?.careerGoal || "Software Engineer");
   const [weeklyDigest, setWeeklyDigest] = useState(true);
+  const [isPrivate, setIsPrivate] = useState(Boolean(user?.isPrivate));
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (user?.name) setDisplayName(user.name);
     if (user?.careerGoal) setCareerGoal(user.careerGoal);
+    if (user?.isPrivate !== undefined) setIsPrivate(Boolean(user.isPrivate));
   }, [user]);
 
   const handleSave = async () => {
@@ -27,8 +30,15 @@ const Settings = () => {
         await updateProfile({
           full_name: displayName,
           career_goal: careerGoal,
+          is_private: isPrivate,
         });
       }
+      await userService.updateSettings({
+        displayName,
+        careerGoal,
+        isPrivate,
+      });
+      if (refetch) await refetch();
       toast.success("Preferences updated successfully!");
     } catch {
       toast.error("Failed to save preferences.");
@@ -37,8 +47,28 @@ const Settings = () => {
     }
   };
 
+  const handleTogglePrivacy = async (newVal) => {
+    setIsPrivate(newVal);
+    setLoading(true);
+    try {
+      await userService.updateSettings({
+        displayName,
+        careerGoal,
+        isPrivate: newVal,
+      });
+      if (refetch) await refetch();
+      toast.success(newVal ? "Private Profile enabled! Your profile is hidden from the world." : "Public Profile enabled!");
+    } catch {
+      toast.error("Failed to update privacy settings.");
+      setIsPrivate(!newVal);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const tabs = [
     ["Profile", UserRound],
+    ["Privacy", Shield],
     ["Notifications", Bell],
     ["Appearance", Palette],
     ["Security", Lock],
@@ -125,6 +155,87 @@ const Settings = () => {
                 <Save size={16} />
                 {loading ? "Saving..." : "Save Changes"}
               </button>
+            </div>
+          )}
+
+          {activeTab === "Privacy" && (
+            <div className="space-y-6 min-w-0">
+              <div>
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <Shield className="text-indigo-600 dark:text-indigo-400" size={20} />
+                  Privacy & Profile Visibility
+                </h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  Control your visibility across Talent Explorer, public leaderboards, and peer searches.
+                </p>
+              </div>
+
+              {/* Master Privacy Toggle Card */}
+              <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-850 p-5 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-sm text-slate-900 dark:text-white">
+                        Private Profile Mode
+                      </span>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        isPrivate
+                          ? "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-200 dark:border-amber-800"
+                          : "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
+                      }`}>
+                        {isPrivate ? "🔒 Active (Private)" : "🌐 Public"}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      When enabled, your profile, projects, achievements, and coding handles are hidden from the world.
+                    </p>
+                  </div>
+
+                  <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                    <input
+                      type="checkbox"
+                      checked={isPrivate}
+                      onChange={(e) => handleTogglePrivacy(e.target.checked)}
+                      disabled={loading}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-slate-600 peer-checked:bg-indigo-600"></div>
+                  </label>
+                </div>
+
+                <div className="grid gap-3 grid-cols-1 sm:grid-cols-3 pt-2 border-t border-slate-200 dark:border-slate-800 text-xs">
+                  <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 space-y-1">
+                    <p className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                      <EyeOff size={14} className="text-amber-500" /> Talent Explorer
+                    </p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                      {isPrivate
+                        ? "Completely hidden from recruiter searches and candidate discovery."
+                        : "Discoverable by recruiters matching your target tech stack."}
+                    </p>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 space-y-1">
+                    <p className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                      <Shield size={14} className="text-indigo-500" /> Leaderboard
+                    </p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                      {isPrivate
+                        ? "Rank & score maintained, but metrics & links are concealed from others."
+                        : "Full rank, stats, and verified credentials visible on rankings."}
+                    </p>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 space-y-1">
+                    <p className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                      <Eye size={14} className="text-emerald-500" /> Self Visibility
+                    </p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                      All your telemetry, projects, and achievements remain 100% visible to you when logged in.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 

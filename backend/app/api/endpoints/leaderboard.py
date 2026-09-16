@@ -81,6 +81,35 @@ def get_multi_college_leaderboard(
 
         user_college = normalize_college_name(profile.college) if (profile and profile.college) else ""
         user_branch = normalize_branch_name(profile.branch) if (profile and profile.branch) else ""
+        is_private = bool(profile.is_private) if profile else False
+        is_current_user = (u.id == user.id)
+
+        if is_private and not is_current_user:
+            display_lc_solved = None
+            display_dp_count = None
+            display_dp_adv = None
+            display_alg_depth = 0
+            display_cf_rating = 0
+            display_cf_rank = "Private"
+            display_cc_rating = 0
+            display_cc_stars = "Private"
+            display_gh_contribs = None
+            display_badges = []
+            display_top_ach = None
+            display_verified = False
+        else:
+            display_lc_solved = lc_solved
+            display_dp_count = dp_count
+            display_dp_adv = dp_adv_count
+            display_alg_depth = alg_depth
+            display_cf_rating = cf_rating
+            display_cf_rank = cf_rank
+            display_cc_rating = cc_rating
+            display_cc_stars = cc_stars
+            display_gh_contribs = gh_contribs
+            display_badges = badges
+            display_top_ach = top_ach
+            display_verified = lc.get("verified", False) or cf.get("verified", False) or gh.get("verified", False) or cc.get("verified", False)
 
         all_students.append({
             "id": u.id,
@@ -93,21 +122,22 @@ def get_multi_college_leaderboard(
             "depthScore": depth_score,
             "engineeringScore": eng_score,
             "projectScore": proj_score,
-            "leetcodeSolved": lc_solved,
-            "dpSolved": dp_count,
-            "dpAndAdvanced": dp_adv_count,
-            "advancedTopicsSolved": dp_adv_count,
-            "algorithmicDepth": alg_depth,
-            "codeforcesRating": cf_rating,
-            "codeforcesRank": cf_rank,
-            "codechefRating": cc_rating,
-            "codechefStars": cc_stars,
-            "githubContributions": gh_contribs,
+            "leetcodeSolved": display_lc_solved,
+            "dpSolved": display_dp_count,
+            "dpAndAdvanced": display_dp_adv,
+            "advancedTopicsSolved": display_dp_adv,
+            "algorithmicDepth": display_alg_depth,
+            "codeforcesRating": display_cf_rating,
+            "codeforcesRank": display_cf_rank,
+            "codechefRating": display_cc_rating,
+            "codechefStars": display_cc_stars,
+            "githubContributions": display_gh_contribs,
             "placementReadiness": ranking.get("placement_readiness", 0),
-            "badges": badges,
-            "nonDsaAchievement": top_ach,
-            "verified": lc.get("verified", False) or cf.get("verified", False) or gh.get("verified", False) or cc.get("verified", False),
-            "isCurrentUser": u.id == user.id,
+            "badges": display_badges,
+            "nonDsaAchievement": display_top_ach,
+            "verified": display_verified,
+            "isCurrentUser": is_current_user,
+            "isPrivate": is_private,
         })
 
     # Group colleges and branches case-insensitively

@@ -4,8 +4,6 @@ import PageHeader from "../../components/common/PageHeader";
 import StatCard from "../../components/common/StatCard";
 import ScoreRing from "../../components/dashboard/ScoreRing";
 import CodingOverviewCard from "../../components/dashboard/CodingOverviewCard";
-import SkillsOverviewCard from "../../components/dashboard/SkillsOverviewCard";
-import ProgressOverviewCard from "../../components/dashboard/ProgressOverviewCard";
 import RecentAchievementsCard from "../../components/dashboard/RecentAchievementsCard";
 import AIRecommendationsCard from "../../components/dashboard/AIRecommendationsCard";
 import AISkillGapCard from "../../components/dashboard/AISkillGapCard";
@@ -292,11 +290,6 @@ const Dashboard = () => {
       {/* FULL-WIDTH CODING OVERVIEW CARD */}
       <div className="w-full min-w-0">
         <CodingOverviewCard user={user} />
-      </div>
-
-      <div className="grid gap-6 grid-cols-1 xl:grid-cols-2 min-w-0">
-        <SkillsOverviewCard skills={user?.skills || []} />
-        <ProgressOverviewCard progress={user?.progress} />
       </div>
 
       <div className="grid gap-6 grid-cols-1 md:grid-cols-2 xl:grid-cols-3 min-w-0">

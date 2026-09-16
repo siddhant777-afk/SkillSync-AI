@@ -140,11 +140,15 @@ const Leaderboard = () => {
                 <div className="mt-4 grid grid-cols-2 gap-2 w-full text-center">
                   <div className="rounded-xl bg-white dark:bg-slate-900 p-2 border border-slate-100 dark:border-slate-800 min-w-0">
                     <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold uppercase truncate">DSA Solved</p>
-                    <p className="text-sm sm:text-base font-extrabold text-slate-800 dark:text-slate-200 whitespace-nowrap">{data.topPodium[1].leetcodeSolved}</p>
+                    <p className="text-sm sm:text-base font-extrabold text-slate-800 dark:text-slate-200 whitespace-nowrap">
+                      {data.topPodium[1].leetcodeSolved !== null && data.topPodium[1].leetcodeSolved !== undefined ? data.topPodium[1].leetcodeSolved : "—"}
+                    </p>
                   </div>
                   <div className="rounded-xl bg-white dark:bg-slate-900 p-2 border border-slate-100 dark:border-slate-800 min-w-0">
                     <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold uppercase truncate">Adv Topics</p>
-                    <p className="text-sm sm:text-base font-extrabold text-indigo-600 dark:text-indigo-400 whitespace-nowrap">{data.topPodium[1].dpSolved}</p>
+                    <p className="text-sm sm:text-base font-extrabold text-indigo-600 dark:text-indigo-400 whitespace-nowrap">
+                      {data.topPodium[1].dpSolved !== null && data.topPodium[1].dpSolved !== undefined ? data.topPodium[1].dpSolved : "—"}
+                    </p>
                   </div>
                 </div>
                 <span className="mt-3 inline-flex text-[11px] font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-lg truncate">
@@ -168,15 +172,21 @@ const Leaderboard = () => {
                 <div className="mt-4 grid grid-cols-3 gap-2 w-full text-center">
                   <div className="rounded-xl bg-amber-50/80 dark:bg-slate-900 p-2 border border-amber-100 dark:border-slate-800 min-w-0">
                     <p className="text-[10px] text-amber-700 dark:text-amber-400 font-bold uppercase truncate">DSA</p>
-                    <p className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white whitespace-nowrap">{data.topPodium[0].leetcodeSolved}</p>
+                    <p className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white whitespace-nowrap">
+                      {data.topPodium[0].leetcodeSolved !== null && data.topPodium[0].leetcodeSolved !== undefined ? data.topPodium[0].leetcodeSolved : "—"}
+                    </p>
                   </div>
                   <div className="rounded-xl bg-amber-50/80 dark:bg-slate-900 p-2 border border-amber-100 dark:border-slate-800 min-w-0">
                     <p className="text-[10px] text-amber-700 dark:text-amber-400 font-bold uppercase truncate">Adv Topics</p>
-                    <p className="text-sm sm:text-base font-extrabold text-indigo-600 dark:text-indigo-400 whitespace-nowrap">{data.topPodium[0].dpSolved}</p>
+                    <p className="text-sm sm:text-base font-extrabold text-indigo-600 dark:text-indigo-400 whitespace-nowrap">
+                      {data.topPodium[0].dpSolved !== null && data.topPodium[0].dpSolved !== undefined ? data.topPodium[0].dpSolved : "—"}
+                    </p>
                   </div>
                   <div className="rounded-xl bg-amber-50/80 dark:bg-slate-900 p-2 border border-amber-100 dark:border-slate-800 min-w-0">
                     <p className="text-[10px] text-amber-700 dark:text-amber-400 font-bold uppercase truncate">Rating</p>
-                    <p className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white whitespace-nowrap">{data.topPodium[0].codeforcesRating}</p>
+                    <p className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white whitespace-nowrap">
+                      {data.topPodium[0].codeforcesRating > 0 ? data.topPodium[0].codeforcesRating : "—"}
+                    </p>
                   </div>
                 </div>
                 <span className="mt-3 inline-flex text-xs font-bold text-amber-900 dark:text-amber-200 bg-amber-100 dark:bg-amber-950/60 px-3 py-1 rounded-lg truncate">
@@ -200,11 +210,15 @@ const Leaderboard = () => {
                 <div className="mt-4 grid grid-cols-2 gap-2 w-full text-center">
                   <div className="rounded-xl bg-white dark:bg-slate-900 p-2 border border-slate-100 dark:border-slate-800 min-w-0">
                     <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold uppercase truncate">DSA Solved</p>
-                    <p className="text-sm sm:text-base font-extrabold text-slate-800 dark:text-slate-200 whitespace-nowrap">{data.topPodium[2].leetcodeSolved}</p>
+                    <p className="text-sm sm:text-base font-extrabold text-slate-800 dark:text-slate-200 whitespace-nowrap">
+                      {data.topPodium[2].leetcodeSolved !== null && data.topPodium[2].leetcodeSolved !== undefined ? data.topPodium[2].leetcodeSolved : "—"}
+                    </p>
                   </div>
                   <div className="rounded-xl bg-white dark:bg-slate-900 p-2 border border-slate-100 dark:border-slate-800 min-w-0">
                     <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold uppercase truncate">Adv Topics</p>
-                    <p className="text-sm sm:text-base font-extrabold text-indigo-600 dark:text-indigo-400 whitespace-nowrap">{data.topPodium[2].dpSolved}</p>
+                    <p className="text-sm sm:text-base font-extrabold text-indigo-600 dark:text-indigo-400 whitespace-nowrap">
+                      {data.topPodium[2].dpSolved !== null && data.topPodium[2].dpSolved !== undefined ? data.topPodium[2].dpSolved : "—"}
+                    </p>
                   </div>
                 </div>
                 <span className="mt-3 inline-flex text-[11px] font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-lg truncate">
@@ -252,7 +266,12 @@ const Leaderboard = () => {
                       <td className="px-5 py-4 min-w-[200px]">
                         <div className="flex items-center gap-2 font-semibold text-slate-900 dark:text-white">
                           <span className="truncate">{student.name}</span>
-                          {student.verified && (
+                          {student.isPrivate && (
+                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 border border-amber-200 dark:border-amber-800 shrink-0">
+                              🔒 Private
+                            </span>
+                          )}
+                          {!student.isPrivate && student.verified && (
                             <CheckCircle2 size={14} className="text-emerald-500 shrink-0" title="Verified Profile" />
                           )}
                         </div>
@@ -262,15 +281,17 @@ const Leaderboard = () => {
                       </td>
 
                       <td className="px-5 py-4 text-center font-bold text-slate-800 dark:text-slate-200">
-                        {student.leetcodeSolved}
+                        {student.isPrivate && !student.isCurrentUser ? "—" : (student.leetcodeSolved ?? "—")}
                       </td>
 
                       <td className="px-5 py-4 text-center font-bold text-purple-700 dark:text-purple-400">
-                        {student.dpSolved || 0}
+                        {student.isPrivate && !student.isCurrentUser ? "—" : (student.dpSolved ?? "—")}
                       </td>
 
                       <td className="px-5 py-4 text-center font-medium text-slate-600 dark:text-slate-400">
-                        {student.codeforcesRating > 0 ? student.codeforcesRating : "—"}
+                        {student.isPrivate && !student.isCurrentUser
+                          ? "—"
+                          : (student.codeforcesRating > 0 ? student.codeforcesRating : "—")}
                       </td>
 
                       <td className="px-5 py-4 text-center">
@@ -280,13 +301,19 @@ const Leaderboard = () => {
                       </td>
 
                       <td className="px-5 py-4 text-right">
-                        <span className={`inline-flex rounded-md px-2 py-0.5 text-[11px] font-semibold ${
-                          student.verified
-                            ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-800"
-                            : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
-                        }`}>
-                          {student.verified ? "Verified" : "Unconnected"}
-                        </span>
+                        {student.isPrivate ? (
+                          <span className="inline-flex rounded-md px-2 py-0.5 text-[11px] font-semibold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                            {student.isCurrentUser ? "🔒 Private (You)" : "🔒 Private"}
+                          </span>
+                        ) : (
+                          <span className={`inline-flex rounded-md px-2 py-0.5 text-[11px] font-semibold ${
+                            student.verified
+                              ? "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-800"
+                              : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                          }`}>
+                            {student.verified ? "Verified" : "Unconnected"}
+                          </span>
+                        )}
                       </td>
                     </tr>
                   ))}

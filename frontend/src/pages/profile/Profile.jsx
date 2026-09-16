@@ -1,11 +1,13 @@
 import { useState } from "react";
-import { Link2, Mail, MapPin, Pencil, Target, RefreshCw, ShieldCheck, CheckCircle2, AlertCircle, Star, GitBranch, ExternalLink } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Link2, Mail, MapPin, Pencil, Target, RefreshCw, ShieldCheck, CheckCircle2, AlertCircle, Star, GitBranch, ExternalLink, Trophy, Lock, Globe } from "lucide-react";
 import { FaGithub } from "react-icons/fa";
 import { SiCodechef, SiCodeforces, SiLeetcode } from "react-icons/si";
 
 import PageHeader from "../../components/common/PageHeader";
 import EditProfileModal from "../../components/modals/EditProfileModal";
 import PlatformVerificationModal from "../../components/modals/PlatformVerificationModal";
+import SkillsOverviewCard from "../../components/dashboard/SkillsOverviewCard";
 import { useUser } from "../../hooks/useUser";
 
 const Profile = () => {
@@ -139,9 +141,26 @@ const Profile = () => {
             </div>
 
             <div className="min-w-0 flex-1">
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white break-words">
-                {user?.name || "Student"}
-              </h2>
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-white break-words">
+                  {user?.name || "Student"}
+                </h2>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-bold text-amber-700 border border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800">
+                  <Trophy size={13} className="text-amber-500" />
+                  Overall Rank #{user?.overallRank || 1}
+                </span>
+                {user?.isPrivate ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-bold text-rose-700 border border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800">
+                    <Lock size={12} className="text-rose-500" />
+                    Private Profile
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-700 border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800">
+                    <Globe size={12} className="text-emerald-500" />
+                    Public Profile
+                  </span>
+                )}
+              </div>
 
               <p className="mt-1 text-sm text-slate-500 dark:text-slate-400 break-words">
                 {user?.year ? `${user.year} · ` : ""}{user?.branch || "Computer Science"}
@@ -161,7 +180,7 @@ const Profile = () => {
             </div>
           </div>
 
-          <div className="mt-8 grid gap-4 sm:grid-cols-2">
+          <div className="mt-8 grid gap-4 sm:grid-cols-3">
             <div className="rounded-xl bg-slate-50 p-4 dark:bg-slate-800/60 dark:border dark:border-slate-800">
               <p className="text-xs text-slate-400 dark:text-slate-500 font-medium">College / University</p>
               <p className="mt-1.5 font-semibold text-slate-800 dark:text-slate-200 break-words">
@@ -174,6 +193,17 @@ const Profile = () => {
               <p className="mt-1.5 flex items-center gap-2 font-semibold text-slate-800 dark:text-slate-200 break-words">
                 <Target size={16} className="text-indigo-600 shrink-0" />
                 {user?.careerGoal || "Goal not selected yet"}
+              </p>
+            </div>
+
+            <div className="rounded-xl bg-slate-50 p-4 dark:bg-slate-800/60 dark:border dark:border-slate-800">
+              <p className="text-xs text-slate-400 dark:text-slate-500 font-medium">Overall Standing</p>
+              <p className="mt-1.5 flex items-center gap-1.5 font-semibold text-slate-800 dark:text-slate-200 break-words">
+                <Trophy size={16} className="text-amber-500 shrink-0" />
+                Rank #{user?.overallRank || 1}
+                <span className="text-[11px] font-normal text-slate-400 dark:text-slate-500">
+                  ({user?.placementReadiness || 0}/100)
+                </span>
               </p>
             </div>
           </div>
@@ -234,6 +264,64 @@ const Profile = () => {
             Open Verification Hub →
           </button>
         </section>
+      </div>
+
+      {/* Skills Overview & Platform Standing Section */}
+      <div className="grid gap-6 grid-cols-1 lg:grid-cols-3 min-w-0">
+        <div className="lg:col-span-2 min-w-0">
+          <SkillsOverviewCard skills={user?.skills || []} />
+        </div>
+
+        <div className="min-w-0">
+          <section className="rounded-2xl border border-slate-100 bg-white p-6 shadow-xs transition-colors duration-200 dark:border-slate-800 dark:bg-slate-900 h-full flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between">
+                <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <Trophy className="text-amber-500" size={18} />
+                  Leaderboard Standing
+                </h3>
+                <span className="text-xs font-bold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 px-2.5 py-0.5 rounded-full">
+                  Rank #{user?.overallRank || 1}
+                </span>
+              </div>
+
+              <div className="mt-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 space-y-2.5">
+                <div className="flex justify-between items-center text-xs font-medium">
+                  <span className="text-slate-500 dark:text-slate-400">Readiness Score</span>
+                  <span className="font-bold text-slate-900 dark:text-white">{user?.placementReadiness || 0}/100</span>
+                </div>
+                <div className="flex justify-between items-center text-xs font-medium">
+                  <span className="text-slate-500 dark:text-slate-400">Profile Visibility</span>
+                  <span className={`font-bold inline-flex items-center gap-1 ${user?.isPrivate ? "text-rose-600 dark:text-rose-400" : "text-emerald-600 dark:text-emerald-400"}`}>
+                    {user?.isPrivate ? <Lock size={12} /> : <Globe size={12} />}
+                    {user?.isPrivate ? "Private Mode" : "Public"}
+                  </span>
+                </div>
+              </div>
+
+              <p className="mt-3 text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                {user?.isPrivate
+                  ? "Your profile, projects, and coding handles are hidden from recruiters in Talent Explorer and anonymized on the Leaderboard."
+                  : "Your verified handles, achievements, and ranking are visible to peers on the Leaderboard and recruiters in Talent Explorer."}
+              </p>
+            </div>
+
+            <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+              <Link
+                to="/leaderboard"
+                className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline inline-flex items-center gap-1"
+              >
+                View Leaderboard →
+              </Link>
+              <Link
+                to="/settings"
+                className="text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 inline-flex items-center gap-1"
+              >
+                Privacy Settings ⚙
+              </Link>
+            </div>
+          </section>
+        </div>
       </div>
 
       {/* Connected Platforms Section */}

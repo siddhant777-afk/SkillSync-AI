@@ -14,9 +14,50 @@ from app.schemas import ConnectedAccountsUpdate, ProfileUpdate
 from app.core.normalizer import normalize_college_name, normalize_branch_name
 from app.services.ai_service import AIService
 from app.services.profile_service import update_user_profile_completion
+from app.services.ranking_engine import RankingEngine
 from app.services.sync_service import PlatformSyncService
+from app.services.timeline_service import TimelineService
 
 router = APIRouter()
+
+
+def compute_user_overall_rank(user_id: int, db: Session) -> int:
+    """Calculates student's authoritative overall leaderboard rank across all enrolled students."""
+    db_users = db.query(User).filter(User.role == "student").all()
+    user_scores = []
+    for u in db_users:
+        stats = {ps.platform: ps.stats_data for ps in u.platform_stats}
+        lc = stats.get("leetcode", {})
+        cf = stats.get("codeforces", {})
+        cc = stats.get("codechef", {})
+        gh = stats.get("github", {})
+        timeline = TimelineService.build_timeline(
+            leetcode_stats=lc,
+            github_stats=gh,
+            codeforces_stats=cf,
+            codechef_stats=cc,
+            max_months=6,
+        )
+        ranking = RankingEngine.calculate_composite_score(
+            leetcode_stats=lc,
+            codeforces_stats=cf,
+            codechef_stats=cc,
+            github_stats=gh,
+            projects=u.projects,
+            achievements=u.achievements,
+            timeline=timeline,
+        )
+        composite_score = ranking.get("composite_score", 0.0)
+        depth_score = ranking.get("dimension_scores", {}).get("problem_solving_depth", 0.0)
+        lc_solved = lc.get("solved", 0)
+        user_scores.append((u.id, composite_score, depth_score, lc_solved))
+
+    user_scores.sort(key=lambda x: (x[1], x[2], x[3]), reverse=True)
+    for rank, (uid, *_) in enumerate(user_scores, start=1):
+        if uid == user_id:
+            return rank
+    return 1
+
 
 
 @router.get("/profile")
@@ -121,6 +162,8 @@ def get_user_profile(user: User = Depends(get_current_user), db: Session = Depen
         codechef_stats["verified"] = cc_verified
         codechef_stats["status"] = "synced" if cc_verified else "connected"
 
+    overall_rank = compute_user_overall_rank(user.id, db)
+
     return {
         "id": user.id,
         "name": user.full_name,
@@ -133,6 +176,8 @@ def get_user_profile(user: User = Depends(get_current_user), db: Session = Depen
         "careerGoal": profile.career_goal if profile and profile.career_goal else "",
         "placementReadiness": profile.placement_readiness if profile and profile.placement_readiness is not None else 0,
         "profileCompletion": update_user_profile_completion(user, db),
+        "overallRank": overall_rank,
+        "isPrivate": bool(profile.is_private) if profile else False,
         "github": github_stats,
         "leetcode": leetcode_stats,
         "codeforces": codeforces_stats,
@@ -172,6 +217,10 @@ def update_user_profile(
         profile.career_goal = data.career_goal
     if data.target_company_type:
         profile.target_company_type = data.target_company_type
+    if data.is_private is not None:
+        profile.is_private = bool(data.is_private)
+    elif data.isPrivate is not None:
+        profile.is_private = bool(data.isPrivate)
 
     db.commit()
     update_user_profile_completion(user, db)
@@ -254,10 +303,18 @@ def update_settings(
     db: Session = Depends(get_db),
 ):
     profile = user.profile
+    if not profile:
+        profile = StudentProfile(user_id=user.id)
+        db.add(profile)
+
     if "displayName" in data and data["displayName"]:
         user.full_name = data["displayName"]
     if "careerGoal" in data and data["careerGoal"] and profile:
         profile.career_goal = data["careerGoal"]
+    if "isPrivate" in data and profile:
+        profile.is_private = bool(data["isPrivate"])
+    elif "is_private" in data and profile:
+        profile.is_private = bool(data["is_private"])
 
     db.commit()
     update_user_profile_completion(user, db)

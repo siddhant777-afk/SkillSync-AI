@@ -11,6 +11,7 @@ from app.models.user import User
 from app.services.profile_service import update_user_profile_completion
 from app.services.ranking_engine import RankingEngine
 from app.services.timeline_service import TimelineService
+from app.api.endpoints.users import compute_user_overall_rank
 
 router = APIRouter()
 
@@ -317,6 +318,8 @@ def get_dashboard(
         "upcomingEvents": upcoming_events,
         "ats_score": ats_score,
         "atsScore": ats_score,
+        "overallRank": compute_user_overall_rank(user.id, db),
+        "isPrivate": bool(profile.is_private) if profile else False,
     }
 
 

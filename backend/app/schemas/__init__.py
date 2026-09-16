@@ -97,6 +97,8 @@ class ProfileUpdate(BaseModel):
     college: Optional[str] = None
     career_goal: Optional[str] = None
     target_company_type: Optional[str] = None
+    is_private: Optional[bool] = None
+    isPrivate: Optional[bool] = None
 
 
 class ConnectedAccountsUpdate(BaseModel):

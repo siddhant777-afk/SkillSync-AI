@@ -22,6 +22,7 @@ import {
 import { FaGithub } from "react-icons/fa";
 import { SiCodechef, SiCodeforces, SiLeetcode } from "react-icons/si";
 import PageHeader from "../../components/common/PageHeader";
+import ProgressOverviewCard from "../../components/dashboard/ProgressOverviewCard";
 import { useUser } from "../../hooks/useUser";
 import { Link } from "react-router-dom";
 
@@ -262,7 +263,12 @@ const Progress = () => {
       </div>
 
       {/* ========================================================================= */}
-      {/* 1. PLATFORM-NATIVE QUESTION DISTRIBUTION & DIFFICULTY ANALYTICS (GRAPHS) */}
+      {/* 1. DYNAMIC CODING VELOCITY & RATING TRAJECTORY (MULTI-PLATFORM GRAPH) */}
+      {/* ========================================================================= */}
+      <ProgressOverviewCard progress={rawProgress || user?.progress} />
+
+      {/* ========================================================================= */}
+      {/* 2. PLATFORM-NATIVE QUESTION DISTRIBUTION & DIFFICULTY ANALYTICS (GRAPHS) */}
       {/* ========================================================================= */}
       <div className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 shadow-xs space-y-6 min-w-0">
         {/* Section Header & Tab Controls */}

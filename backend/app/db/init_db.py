@@ -1,3 +1,4 @@
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.core.security import get_password_hash
@@ -11,6 +12,13 @@ from app.models.user import User
 
 
 def init_db(db: Session) -> None:
+    # Ensure is_private column exists on student_profiles table (idempotent)
+    try:
+        db.execute(text("ALTER TABLE student_profiles ADD COLUMN is_private BOOLEAN DEFAULT FALSE;"))
+        db.commit()
+    except Exception:
+        db.rollback()
+
     # Check if student exists
     student = db.query(User).filter(User.email == "subhi@example.com").first()
     if not student:

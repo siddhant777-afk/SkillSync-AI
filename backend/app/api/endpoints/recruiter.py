@@ -82,6 +82,10 @@ def search_candidates(
         if not profile:
             continue
 
+        # If user marked their profile private, hide completely from recruiter exploration
+        if bool(profile.is_private) and u.id != current_user.id:
+            continue
+
         readiness = profile.placement_readiness if profile and profile.placement_readiness is not None else 0
         if min_score and readiness < min_score:
             continue
