@@ -26,6 +26,11 @@ const careerService = {
     const response = await api.delete(`${API_ENDPOINTS.ACHIEVEMENTS}/${id}`);
     return response.data;
   },
+
+  getRecommendations: async () => {
+    const response = await api.get(API_ENDPOINTS.RECOMMENDATIONS);
+    return response.data;
+  },
 };
 
 export default careerService;
