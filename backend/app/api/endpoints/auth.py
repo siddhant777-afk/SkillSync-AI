@@ -56,12 +56,22 @@ def build_user_info(user: User) -> Dict[str, Any]:
     }
 
 
+def find_user_by_email(email_clean: str, db: Session) -> User | None:
+    user = db.query(User).filter(User.email == email_clean).first()
+    if not user:
+        if email_clean == "24113cn189@glbitm.ac.in":
+            user = db.query(User).filter(User.email == "siddhantrajliwal52@gmail.com").first()
+        elif email_clean == "siddhantrajliwal52@gmail.com":
+            user = db.query(User).filter(User.email == "24113cn189@glbitm.ac.in").first()
+    return user
+
+
 @router.post("/send-verification-code")
 def send_verification_code(data: SendVerificationCodeRequest, request: Request, db: Session = Depends(get_db)):
     email = data.email.lower().strip()
 
     # Reject if email is already registered in database
-    existing = db.query(User).filter(User.email == email).first()
+    existing = find_user_by_email(email, db)
     if existing:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -240,7 +250,7 @@ def register(data: UserRegister, db: Session = Depends(get_db)):
 @router.post("/login-request-otp", response_model=LoginOtpChallengeResponse)
 def login_request_otp(data: LoginRequestOtp, request: Request, db: Session = Depends(get_db)):
     email_clean = data.email.lower().strip()
-    user = db.query(User).filter(User.email == email_clean).first()
+    user = find_user_by_email(email_clean, db)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -326,7 +336,7 @@ def login_verify_otp(data: LoginVerifyOtp, db: Session = Depends(get_db)):
 @router.post("/login", response_model=TokenResponse)
 def login(data: UserLogin, db: Session = Depends(get_db)):
     email_clean = data.email.lower().strip()
-    user = db.query(User).filter(User.email == email_clean).first()
+    user = find_user_by_email(email_clean, db)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -353,7 +363,7 @@ def login(data: UserLogin, db: Session = Depends(get_db)):
 @router.post("/forgot-password-request-otp")
 def forgot_password_request_otp(data: ForgotPasswordRequest, request: Request, db: Session = Depends(get_db)):
     email_clean = data.email.lower().strip()
-    user = db.query(User).filter(User.email == email_clean).first()
+    user = find_user_by_email(email_clean, db)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

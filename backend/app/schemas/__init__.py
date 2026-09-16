@@ -37,26 +37,26 @@ class UserRegister(BaseModel):
 
 
 class SendVerificationCodeRequest(BaseModel):
-    email: EmailStr
+    email: str
 
 
 class VerifyEmailRequest(BaseModel):
-    email: EmailStr
+    email: str
     code: str
 
 
 class UserLogin(BaseModel):
-    email: EmailStr
+    email: str
     password: str
 
 
 class LoginRequestOtp(BaseModel):
-    email: EmailStr
+    email: str
     password: str
 
 
 class LoginVerifyOtp(BaseModel):
-    email: EmailStr
+    email: str
     code: str
 
 
@@ -77,11 +77,11 @@ class TokenResponse(BaseModel):
 
 
 class ForgotPasswordRequest(BaseModel):
-    email: EmailStr
+    email: str
 
 
 class ForgotPasswordReset(BaseModel):
-    email: EmailStr
+    email: str
     code: str
     new_password: str = Field(min_length=6)
 

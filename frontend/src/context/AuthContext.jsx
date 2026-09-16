@@ -120,10 +120,18 @@ export const AuthProvider = ({ children }) => {
       setIsAuthenticated(true);
       return { success: true, user };
     } catch (err) {
-      const errorMsg =
-        err.response?.data?.message ||
-        err.response?.data?.detail ||
-        "Incorrect email or password. Please try again.";
+      let errorMsg = "Incorrect email or password. Please try again.";
+      if (err.response?.data?.detail) {
+        errorMsg = typeof err.response.data.detail === "string" 
+          ? err.response.data.detail 
+          : JSON.stringify(err.response.data.detail);
+      } else if (err.response?.data?.message) {
+        errorMsg = err.response.data.message;
+      } else if (err.code === "ERR_NETWORK" || !err.response) {
+        errorMsg = "Cannot connect to server. Please verify the backend service is running on http://127.0.0.1:8000.";
+      } else if (err.response?.status >= 500) {
+        errorMsg = "Server error occurred during login. Please try again or check backend logs.";
+      }
       return { success: false, message: errorMsg };
     } finally {
       setLoading(false);
