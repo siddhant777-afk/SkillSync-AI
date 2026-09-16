@@ -2,7 +2,6 @@ import { useState } from "react";
 import {
   Award,
   BarChart3,
-  Calendar,
   CheckCircle2,
   Code2,
   ExternalLink,
@@ -29,7 +28,6 @@ import { Link } from "react-router-dom";
 const Progress = () => {
   const { user, isSyncing, syncAccounts } = useUser();
   const [activeQuestionTab, setActiveQuestionTab] = useState("all");
-  const [selectedTimelineMetric, setSelectedTimelineMetric] = useState("leetcode");
 
   // Core metrics
   const lcSolved = user?.leetcode?.solved ?? 0;
@@ -92,30 +90,6 @@ const Progress = () => {
     platforms: {},
   };
 
-  const progressPlatforms = progressData.platforms || {};
-
-  // Selected timeline platform view (using that platform's authentic independent joined timeline)
-  const currentPlatTimeline = progressPlatforms[selectedTimelineMetric];
-  const isPlatformSelected = selectedTimelineMetric !== "velocity" && selectedTimelineMetric !== "unified";
-
-  const displayMonths =
-    isPlatformSelected && currentPlatTimeline?.months?.length
-      ? currentPlatTimeline.months
-      : progressData.months;
-
-  const displayFullLabels =
-    isPlatformSelected && currentPlatTimeline?.month_full_labels?.length
-      ? currentPlatTimeline.month_full_labels
-      : progressData.month_full_labels;
-
-  const displayActivity =
-    isPlatformSelected && currentPlatTimeline?.activity?.length
-      ? currentPlatTimeline.activity
-      : progressData[selectedTimelineMetric] || progressData.leetcode || [];
-
-  const displayContests = currentPlatTimeline?.contests_participated || [];
-  const displayRatings = currentPlatTimeline?.rating_trajectory || [];
-  const maxTimelineVal = Math.max(...displayActivity, 1);
 
   // Authoritative ranking engine pillar scores
   const dimScores = user?.ranking?.dimension_scores || {};
@@ -263,9 +237,13 @@ const Progress = () => {
       </div>
 
       {/* ========================================================================= */}
-      {/* 1. DYNAMIC CODING VELOCITY & RATING TRAJECTORY (MULTI-PLATFORM GRAPH) */}
+      {/* 1. UNIFIED DYNAMIC CODING ACTIVITY & TRAJECTORY HUB (BAR GRAPH & CURVES) */}
       {/* ========================================================================= */}
-      <ProgressOverviewCard progress={rawProgress || user?.progress} />
+      <ProgressOverviewCard
+        progress={rawProgress || user?.progress}
+        syncAccounts={syncAccounts}
+        isSyncing={isSyncing}
+      />
 
       {/* ========================================================================= */}
       {/* 2. PLATFORM-NATIVE QUESTION DISTRIBUTION & DIFFICULTY ANALYTICS (GRAPHS) */}
@@ -842,146 +820,7 @@ const Progress = () => {
         )}
       </div>
 
-      {/* ========================================================================= */}
-      {/* 2. DYNAMIC CHRONOLOGICAL ACTIVITY TIMELINE GRAPH */}
-      {/* ========================================================================= */}
-      <div className="rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs min-w-0">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <Calendar size={18} className="text-indigo-600 dark:text-indigo-400 shrink-0" />
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-                Dynamic Activity & Submission Timeline
-              </h2>
-            </div>
-            <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
-              {currentPlatTimeline?.earliest_date
-                ? `Independent ${selectedTimelineMetric.toUpperCase()} timeline mapped from earliest verified joined date (${currentPlatTimeline.earliest_date})`
-                : progressData?.earliest_observed_activity
-                ? `Historical timeline mapped from earliest verified activity (${progressData.earliest_observed_activity})`
-                : "Dynamic multi-platform submission volume over time"}
-            </p>
-          </div>
 
-          <div className="flex flex-wrap rounded-xl bg-slate-100 dark:bg-slate-800 p-1 gap-1">
-            {[
-              ["unified", "All Platforms"],
-              ["leetcode", "LeetCode"],
-              ["github", "GitHub"],
-              ["codeforces", "Codeforces"],
-              ["codechef", "CodeChef"],
-              ["velocity", "Velocity Index"],
-            ].map(([key, label]) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => setSelectedTimelineMetric(key)}
-                className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
-                  selectedTimelineMetric === key
-                    ? "bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs"
-                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Selected Metric Explanation */}
-        <div className="mt-3 flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
-          <span className="flex h-2 w-2 rounded-full bg-indigo-500" />
-          <span>
-            {selectedTimelineMetric === "unified" && "Unified multi-platform monthly activity and composite momentum index."}
-            {selectedTimelineMetric === "leetcode" && "Authentic monthly submission count and contest participation from your LeetCode profile."}
-            {selectedTimelineMetric === "github" && "Verified open-source contributions and Git commit frequency starting from your first commit."}
-            {selectedTimelineMetric === "codeforces" && "Official Codeforces contest participation history, rating changes, and solved problems."}
-            {selectedTimelineMetric === "codechef" && "Official CodeChef contest participation history and verified rating milestones."}
-            {selectedTimelineMetric === "velocity" && "Composite multi-platform momentum score combining verified coding activity."}
-          </span>
-        </div>
-
-        {/* Timeline Bar Chart */}
-        {displayMonths.length > 0 ? (
-          <div className="mt-6 flex h-64 items-end gap-2 pt-6 sm:gap-4 md:gap-6 min-w-0 overflow-x-auto pb-2">
-            {displayMonths.map((month, idx) => {
-              const val = displayActivity[idx] || 0;
-              const contestsCount = displayContests[idx] || 0;
-              const ratingVal = displayRatings[idx] || null;
-              const heightPct = Math.max(6, Math.round((val / maxTimelineVal) * 100));
-              const fullMonth = displayFullLabels?.[idx] || month;
-
-              return (
-                <div key={month || idx} className="flex flex-1 flex-col items-center gap-1.5 min-w-[42px]">
-                  {/* Top indicators: contests badge or activity value */}
-                  <div className="flex flex-col items-center gap-0.5">
-                    {contestsCount > 0 && (
-                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
-                        {contestsCount} 🏆
-                      </span>
-                    )}
-                    <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 truncate">
-                      {val}
-                    </span>
-                  </div>
-
-                  {/* Pillar bar */}
-                  <div className="w-full max-w-[44px] rounded-t-xl bg-slate-100 dark:bg-slate-800 flex items-end h-44 overflow-hidden">
-                    <div
-                      className={`w-full rounded-t-xl transition-all duration-500 hover:brightness-110 ${
-                        selectedTimelineMetric === "github"
-                          ? "bg-gradient-to-t from-emerald-600 to-emerald-400"
-                          : selectedTimelineMetric === "codeforces"
-                          ? "bg-gradient-to-t from-blue-600 to-blue-400"
-                          : selectedTimelineMetric === "codechef"
-                          ? "bg-gradient-to-t from-orange-600 to-orange-400"
-                          : selectedTimelineMetric === "leetcode"
-                          ? "bg-gradient-to-t from-amber-600 to-amber-400"
-                          : selectedTimelineMetric === "velocity"
-                          ? "bg-gradient-to-t from-purple-600 to-purple-400"
-                          : "bg-gradient-to-t from-indigo-600 to-indigo-400"
-                      }`}
-                      style={{ height: `${val === 0 ? 4 : heightPct}%` }}
-                      title={`${fullMonth}: ${val} ${
-                        contestsCount > 0 ? `· ${contestsCount} contest(s)` : ""
-                      }${ratingVal ? ` · Rating: ${ratingVal} pts` : ""}`}
-                    />
-                  </div>
-
-                  {/* Month label */}
-                  <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500 truncate">
-                    {month}
-                  </span>
-
-                  {/* Rating indicator below month if available */}
-                  {ratingVal && (
-                    <span className="text-[9px] font-semibold text-indigo-600 dark:text-indigo-400 block truncate" title={`Rating: ${ratingVal} pts`}>
-                      {ratingVal}
-                    </span>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="rounded-xl border border-dashed border-slate-200 dark:border-slate-800 p-8 text-center my-6">
-            <p className="text-xs font-semibold text-slate-600 dark:text-slate-400">
-              No historical timeline activity observed yet.
-            </p>
-            <p className="text-[11px] text-slate-400 mt-1">
-              Connect your handles to generate your dynamic chronological activity window.
-            </p>
-            <button
-              onClick={syncAccounts}
-              disabled={isSyncing}
-              className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 px-3 py-1.5 text-xs font-semibold text-indigo-600 dark:text-indigo-300 hover:bg-indigo-100"
-            >
-              <RefreshCw size={13} className={isSyncing ? "animate-spin" : ""} />
-              {isSyncing ? "Syncing..." : "Sync Profiles"}
-            </button>
-          </div>
-        )}
-      </div>
 
       {/* ========================================================================= */}
       {/* 3. BREAKDOWN PILLARS & CORE COMPETENCIES */}
