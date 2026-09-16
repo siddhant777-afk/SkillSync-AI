@@ -66,6 +66,21 @@ def find_user_by_email(email_clean: str, db: Session) -> User | None:
     return user
 
 
+@router.get("/db-migrate")
+def db_migrate(db: Session = Depends(get_db)):
+    """Automatic live schema synchronizer for deployed PostgreSQL instances."""
+    results = {}
+    try:
+        from sqlalchemy import text
+        db.execute(text("ALTER TABLE student_profiles ADD COLUMN IF NOT EXISTS is_private BOOLEAN DEFAULT FALSE;"))
+        db.commit()
+        results["is_private"] = "verified"
+    except Exception as e:
+        db.rollback()
+        results["is_private"] = f"error: {str(e)}"
+    return {"success": True, "results": results}
+
+
 @router.post("/send-verification-code")
 def send_verification_code(data: SendVerificationCodeRequest, request: Request, db: Session = Depends(get_db)):
     email = data.email.lower().strip()
